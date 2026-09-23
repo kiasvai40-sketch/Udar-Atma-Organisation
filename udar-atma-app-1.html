@@ -1,0 +1,2058 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>উদার আত্মা সংগঠন | UDAR ATMA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+Da+2:wght@500;600;700;800&family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============ TOKENS ============ */
+:root{
+  --navy:#0F0F54;
+  --navy-2:#181875;
+  --navy-3:#26268f;
+  --red:#E31C24;
+  --red-2:#ff4b52;
+  --bg:#F5F5FB;
+  --surface:#FFFFFF;
+  --ink:#14142B;
+  --muted:#6F6F8C;
+  --border:#E7E7F2;
+  --success:#178A54;
+  --success-bg:#E7F6EE;
+  --warning:#B6720A;
+  --warning-bg:#FCF1DF;
+  --danger-bg:#FCEAEA;
+  --gold:#C79A2E;
+  --r-lg:22px;
+  --r-md:14px;
+  --r-sm:10px;
+  --safe-t:env(safe-area-inset-top,0px);
+  --safe-b:env(safe-area-inset-bottom,0px);
+  --shell-max:480px;
+}
+*{box-sizing:border-box;}
+html,body{height:100%;}
+body{
+  margin:0;
+  font-family:'Hind Siliguri',system-ui,sans-serif;
+  background:var(--bg);
+  color:var(--ink);
+  -webkit-tap-highlight-color:transparent;
+  overscroll-behavior-y:none;
+}
+h1,h2,h3,.display{font-family:'Baloo Da 2','Hind Siliguri',sans-serif;}
+button{font-family:inherit;}
+img{max-width:100%;display:block;}
+::-webkit-scrollbar{display:none;}
+
+/* ============ SHELL ============ */
+#shell{
+  max-width:var(--shell-max);
+  margin:0 auto;
+  min-height:100%;
+  background:var(--bg);
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  box-shadow:0 0 60px rgba(15,15,84,0.10);
+}
+@media (min-width:481px){
+  body{background:linear-gradient(160deg,#e7e7fb,#f8e9ea);}
+  #shell{min-height:100vh;margin-top:0;}
+}
+
+/* ============ SPLASH ============ */
+#splash{
+  position:fixed;inset:0;z-index:999;
+  background:radial-gradient(circle at 30% 20%, var(--navy-3), var(--navy) 60%, #0a0a3d 100%);
+  display:flex;align-items:center;justify-content:center;flex-direction:column;gap:18px;
+  color:#fff;
+  padding-top:var(--safe-t);padding-bottom:var(--safe-b);
+}
+#splash .logo-ring{
+  width:104px;height:104px;border-radius:50%;
+  background:linear-gradient(135deg,#fff,#e9e9ff);
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 0 6px rgba(255,255,255,0.12), 0 20px 40px rgba(0,0,0,0.35);
+  animation:splashPulse 1.8s ease-in-out infinite;
+  overflow:hidden;
+}
+#splash .logo-ring img{width:100%;height:100%;object-fit:contain;border-radius:50%;}
+#splash .logo-ring span{font-family:'Baloo Da 2';font-weight:800;font-size:30px;color:var(--navy);}
+@keyframes splashPulse{
+  0%,100%{transform:scale(1);box-shadow:0 0 0 6px rgba(255,255,255,0.12),0 20px 40px rgba(0,0,0,0.35);}
+  50%{transform:scale(1.05);box-shadow:0 0 0 12px rgba(255,255,255,0.06),0 20px 40px rgba(0,0,0,0.35);}
+}
+#splash h1{margin:0;font-size:22px;letter-spacing:.3px;}
+#splash p{margin:0;opacity:.75;font-size:13px;letter-spacing:2px;}
+#splash .bar{width:140px;height:3px;border-radius:3px;background:rgba(255,255,255,0.18);overflow:hidden;margin-top:6px;}
+#splash .bar i{display:block;height:100%;width:40%;background:var(--red-2);border-radius:3px;animation:load 1.1s ease-in-out infinite;}
+@keyframes load{0%{transform:translateX(-120%);}100%{transform:translateX(280%);}}
+
+/* ============ TOPBAR ============ */
+.topbar{
+  padding:calc(14px + var(--safe-t)) 18px 16px;
+  background:linear-gradient(135deg,var(--navy),var(--navy-3));
+  color:#fff;position:sticky;top:0;z-index:20;
+}
+.topbar-row{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.brand-mini{display:flex;align-items:center;gap:10px;}
+.brand-mini .mark{width:38px;height:38px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.brand-mini .mark span{font-family:'Baloo Da 2';font-weight:800;color:var(--navy);font-size:14px;}
+.brand-mini b{font-size:15px;font-weight:700;display:block;}
+.brand-mini small{font-size:10.5px;opacity:.75;letter-spacing:1px;}
+.icon-btn{
+  width:38px;height:38px;border-radius:50%;border:none;
+  background:rgba(255,255,255,0.14);color:#fff;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;font-size:17px;position:relative;
+}
+.icon-btn .dot{position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%;background:var(--red-2);border:2px solid var(--navy);}
+.topbar h2{margin:14px 0 2px;font-size:20px;}
+.topbar .sub{font-size:12.5px;opacity:.78;margin:0;}
+
+/* ============ SCREEN / CONTENT ============ */
+#content{flex:1;padding:16px 16px calc(94px + var(--safe-b));min-height:0;}
+.screen{animation:fadeUp .32s ease both;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+/* ============ CARDS / SECTIONS ============ */
+.section-title{display:flex;align-items:center;justify-content:space-between;margin:22px 0 10px;}
+.section-title h3{font-size:16px;margin:0;color:var(--navy);}
+.section-title a{font-size:12.5px;color:var(--red);text-decoration:none;font-weight:600;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px;}
+.card + .card{margin-top:10px;}
+.hero-card{
+  border-radius:var(--r-lg);
+  padding:22px 18px;
+  background:linear-gradient(150deg,var(--navy) 0%, var(--navy-3) 70%, #3a3ab0 130%);
+  color:#fff;position:relative;overflow:hidden;
+}
+.hero-card:after{content:"";position:absolute;right:-40px;top:-40px;width:160px;height:160px;border-radius:50%;background:rgba(227,28,36,0.25);filter:blur(2px);}
+.hero-card h2{margin:0 0 6px;font-size:19px;position:relative;}
+.hero-card p{margin:0;font-size:13px;opacity:.85;line-height:1.6;position:relative;max-width:88%;}
+.pill{display:inline-flex;align-items:center;gap:5px;padding:4px 11px;border-radius:999px;font-size:11.5px;font-weight:600;}
+.pill-public{background:#E9F1FF;color:#1554C7;}
+.pill-members{background:#EFE8FF;color:#5B23C7;}
+.pill-admin{background:#FCE9EE;color:#B4123A;}
+.pill-normal{background:#EFEFF7;color:var(--muted);}
+.pill-important{background:var(--warning-bg);color:var(--warning);}
+.pill-urgent{background:#FFE3D6;color:#C2440A;}
+.pill-emergency{background:var(--red);color:#fff;}
+.pill-success{background:var(--success-bg);color:var(--success);}
+.pill-danger{background:var(--danger-bg);color:#B4123A;}
+
+.list-item{display:flex;gap:12px;padding:13px 4px;border-bottom:1px solid var(--border);}
+.list-item:last-child{border-bottom:none;}
+.list-item .ico{width:42px;height:42px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;background:#EFEFF9;color:var(--navy);overflow:hidden;}
+.list-item .meta{flex:1;min-width:0;}
+.list-item .meta b{font-size:14px;display:block;margin-bottom:2px;}
+.list-item .meta span{font-size:12px;color:var(--muted);}
+.list-item .tail{font-size:11.5px;color:var(--muted);white-space:nowrap;}
+
+.notice-card{border:1px solid var(--border);border-radius:var(--r-md);padding:13px;margin-bottom:9px;background:#fff;}
+.notice-card .top-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;gap:8px;}
+.notice-card h4{margin:6px 0 4px;font-size:14.5px;}
+.notice-card p{margin:0;font-size:12.8px;color:var(--muted);line-height:1.6;}
+.notice-card .foot{margin-top:8px;font-size:11px;color:var(--muted);display:flex;justify-content:space-between;}
+
+.chip-row{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px;margin-bottom:4px;}
+.chip{flex-shrink:0;padding:7px 14px;border-radius:999px;background:#fff;border:1px solid var(--border);font-size:12.5px;font-weight:600;color:var(--muted);cursor:pointer;}
+.chip.active{background:var(--navy);color:#fff;border-color:var(--navy);}
+
+.btn{
+  border:none;border-radius:var(--r-md);padding:13px 16px;font-size:14px;font-weight:700;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:7px;width:100%;
+  transition:transform .12s ease;
+}
+.btn:active{transform:scale(0.97);}
+.btn-primary{background:var(--navy);color:#fff;}
+.btn-red{background:var(--red);color:#fff;}
+.btn-outline{background:#fff;color:var(--navy);border:1.5px solid var(--navy);}
+.btn-ghost{background:#EFEFF9;color:var(--navy);}
+.btn-sm{width:auto;padding:8px 14px;font-size:12.5px;border-radius:10px;}
+.btn-danger-outline{background:#fff;color:#B4123A;border:1.5px solid #F1B9C4;}
+.btn[disabled]{opacity:.5;pointer-events:none;}
+.btn-row{display:flex;gap:9px;}
+.btn-row .btn{flex:1;}
+
+label.field{display:block;margin-bottom:13px;}
+label.field span{display:block;font-size:12.5px;font-weight:600;color:var(--muted);margin-bottom:6px;}
+input,textarea,select{
+  width:100%;border:1.5px solid var(--border);border-radius:var(--r-sm);padding:12px 13px;font-size:14.5px;
+  font-family:inherit;background:#fff;color:var(--ink);
+}
+input:focus,textarea:focus,select:focus{outline:2px solid var(--navy-3);border-color:transparent;}
+textarea{resize:vertical;min-height:80px;}
+.pin-boxes{display:flex;gap:9px;justify-content:center;margin:6px 0 2px;}
+.pin-boxes input{width:44px;height:52px;text-align:center;font-size:20px;font-weight:700;padding:0;letter-spacing:0;}
+
+/* stat grid */
+.stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
+.stat-box{background:#fff;border:1px solid var(--border);border-radius:var(--r-md);padding:13px;cursor:pointer;}
+.stat-box b{display:block;font-size:20px;font-family:'Baloo Da 2';color:var(--navy);}
+.stat-box span{font-size:11.5px;color:var(--muted);}
+.stat-box.accent{background:linear-gradient(135deg,var(--red),#ff5a61);border:none;}
+.stat-box.accent b,.stat-box.accent span{color:#fff;}
+
+/* Action center */
+.action-row{display:flex;align-items:center;gap:11px;border:1px solid var(--border);border-radius:var(--r-md);padding:12px;margin-bottom:8px;background:#fff;cursor:pointer;}
+.action-row .count{width:30px;height:30px;border-radius:9px;background:var(--red);color:#fff;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.action-row .txt{flex:1;font-size:13.5px;font-weight:600;}
+.action-row .arrow{color:var(--muted);}
+
+/* Membership card */
+.mcard-wrap{perspective:1200px;margin:6px 0 4px;}
+.mcard{
+  position:relative;width:100%;aspect-ratio:1.586/1;border-radius:20px;transition:transform .6s cubic-bezier(.4,.2,.2,1);
+  transform-style:preserve-3d;cursor:pointer;
+}
+.mcard.flipped{transform:rotateY(180deg);}
+.mcard-face{
+  position:absolute;inset:0;border-radius:20px;backface-visibility:hidden;padding:18px;color:#fff;
+  background:linear-gradient(135deg,var(--navy) 0%,#2323a0 55%, var(--red) 160%);
+  overflow:hidden;
+}
+.mcard-face:before{content:"";position:absolute;inset:0;background:linear-gradient(120deg,transparent 30%,rgba(255,255,255,0.16) 45%,transparent 60%);background-size:220% 220%;animation:shine 5s linear infinite;}
+@keyframes shine{0%{background-position:160% 0;}100%{background-position:-60% 0;}}
+.mcard-face.back{transform:rotateY(180deg);background:linear-gradient(135deg,#1b1b78,var(--navy));display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;}
+.mcard-top{display:flex;justify-content:space-between;align-items:flex-start;position:relative;}
+.mcard-top .org{font-size:11px;opacity:.85;line-height:1.4;}
+.mcard-top .mark2{width:32px;height:32px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;}
+.mcard-top .mark2 span{font-family:'Baloo Da 2';font-weight:800;color:var(--navy);font-size:12px;}
+.mcard-mid{display:flex;gap:12px;align-items:center;margin-top:20px;position:relative;}
+.mcard-mid .photo{width:54px;height:54px;border-radius:14px;background:rgba(255,255,255,0.2);border:1.5px solid rgba(255,255,255,0.5);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;overflow:hidden;}
+.mcard-mid .info b{font-size:15.5px;display:block;}
+.mcard-mid .info span{font-size:11.5px;opacity:.85;}
+.mcard-bot{display:flex;justify-content:space-between;align-items:flex-end;position:absolute;bottom:16px;left:18px;right:18px;font-size:10.5px;opacity:.9;}
+.mcard-bot b{display:block;font-size:12px;}
+.qr-box{width:110px;height:110px;background:#fff;border-radius:12px;display:flex;align-items:center;justify-content:center;}
+
+/* points */
+.point-tri{display:flex;gap:8px;margin:12px 0 4px;}
+.point-tri div{flex:1;text-align:center;border-radius:var(--r-md);padding:12px 6px;}
+.point-tri .plus{background:var(--success-bg);}
+.point-tri .minus{background:var(--danger-bg);}
+.point-tri .final{background:var(--navy);color:#fff;}
+.point-tri b{display:block;font-size:19px;font-family:'Baloo Da 2';}
+.point-tri .plus b{color:var(--success);}
+.point-tri .minus b{color:#B4123A;}
+.point-tri span{font-size:10.5px;color:var(--muted);}
+.point-tri .final span{color:rgba(255,255,255,.8);}
+
+/* offer cards */
+.offer-card{border:1.5px solid var(--border);border-radius:var(--r-md);padding:14px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;gap:10px;background:#fff;}
+.offer-card.best{border-color:var(--gold);background:linear-gradient(135deg,#fff,#FFF8E8);}
+.offer-card b{font-size:15px;display:block;}
+.offer-card span{font-size:12px;color:var(--muted);}
+
+/* bottom nav */
+.bottomnav{
+  position:fixed;left:50%;transform:translateX(-50%);bottom:0;max-width:var(--shell-max);width:100%;
+  background:#fff;border-top:1px solid var(--border);
+  display:flex;padding:8px 6px calc(8px + var(--safe-b));z-index:30;
+  box-shadow:0 -8px 24px rgba(15,15,84,0.06);
+}
+.navbtn{flex:1;background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 2px;color:var(--muted);font-size:10.5px;font-weight:600;cursor:pointer;}
+.navbtn .ic{font-size:19px;}
+.navbtn.active{color:var(--red);}
+
+/* toast */
+#toastwrap{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(90px + var(--safe-b));max-width:calc(var(--shell-max) - 32px);width:calc(100% - 32px);z-index:200;display:flex;flex-direction:column;gap:8px;align-items:center;}
+.toast{background:var(--ink);color:#fff;padding:12px 16px;border-radius:12px;font-size:13px;box-shadow:0 10px 30px rgba(0,0,0,0.25);animation:toastIn .25s ease;display:flex;gap:8px;align-items:center;max-width:100%;}
+@keyframes toastIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+/* modal */
+.modal-back{position:fixed;inset:0;background:rgba(10,10,40,0.55);z-index:300;display:flex;align-items:flex-end;justify-content:center;animation:fadeIn .2s ease;}
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+.modal-sheet{
+  background:#fff;width:100%;max-width:var(--shell-max);border-radius:22px 22px 0 0;
+  padding:18px 18px calc(20px + var(--safe-b));max-height:88vh;overflow-y:auto;animation:sheetUp .28s cubic-bezier(.3,.7,.3,1);
+}
+@keyframes sheetUp{from{transform:translateY(40px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+.modal-handle{width:38px;height:4px;background:var(--border);border-radius:3px;margin:0 auto 14px;}
+.modal-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+.modal-title h3{margin:0;font-size:17px;color:var(--navy);}
+.modal-title button{background:#F1F1F8;border:none;width:30px;height:30px;border-radius:50%;font-size:15px;cursor:pointer;color:var(--muted);}
+.empty-state{text-align:center;padding:40px 10px;color:var(--muted);}
+.empty-state .em{font-size:34px;margin-bottom:8px;}
+.empty-state p{font-size:13px;margin:0;}
+.switch{position:relative;width:44px;height:25px;flex-shrink:0;}
+.switch input{opacity:0;width:0;height:0;}
+.switch .track{position:absolute;inset:0;background:#D8D8E8;border-radius:99px;transition:.2s;cursor:pointer;}
+.switch .track:before{content:"";position:absolute;width:19px;height:19px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,0.3);}
+.switch input:checked + .track{background:var(--success);}
+.switch input:checked + .track:before{transform:translateX(19px);}
+.switch-row{display:flex;justify-content:space-between;align-items:center;padding:13px 2px;border-bottom:1px solid var(--border);}
+.switch-row:last-child{border-bottom:none;}
+.switch-row b{font-size:13.5px;display:block;}
+.switch-row span{font-size:11.5px;color:var(--muted);}
+.tabs2{display:flex;background:#EFEFF7;border-radius:12px;padding:4px;margin-bottom:14px;}
+.tabs2 button{flex:1;border:none;background:none;padding:9px;border-radius:9px;font-weight:700;font-size:13px;color:var(--muted);cursor:pointer;}
+.tabs2 button.active{background:#fff;color:var(--navy);box-shadow:0 2px 6px rgba(0,0,0,0.08);}
+.auth-wrap{padding:26px 22px calc(30px + var(--safe-b));min-height:100%;background:linear-gradient(180deg,var(--navy) 0%, var(--navy) 220px, var(--bg) 220px);}
+.auth-logo{width:76px;height:76px;border-radius:50%;background:#fff;margin:10px auto 14px;display:flex;align-items:center;justify-content:center;}
+.auth-logo span{font-family:'Baloo Da 2';font-weight:800;color:var(--navy);font-size:24px;}
+.auth-head{text-align:center;color:#fff;margin-bottom:22px;}
+.auth-head h1{font-size:19px;margin:0 0 4px;}
+.auth-head p{font-size:12px;margin:0;opacity:.8;letter-spacing:1.5px;}
+.auth-box{background:#fff;border-radius:var(--r-lg);padding:20px 18px;box-shadow:0 20px 50px rgba(15,15,84,0.18);}
+.link-txt{text-align:center;font-size:13px;color:var(--muted);margin-top:14px;}
+.link-txt b{color:var(--red);cursor:pointer;}
+.demo-box{margin-top:16px;border-top:1px dashed rgba(255,255,255,0.3);padding-top:14px;}
+.demo-box p{color:rgba(255,255,255,.75);font-size:11px;text-align:center;margin:0 0 10px;}
+.demo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.demo-grid button{background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.25);color:#fff;border-radius:10px;padding:9px 4px;font-size:11px;font-weight:700;cursor:pointer;}
+.role-badge{position:fixed;top:calc(6px + var(--safe-t));right:8px;z-index:25;background:rgba(0,0,0,0.28);color:#fff;font-size:10px;padding:3px 9px;border-radius:99px;letter-spacing:.5px;}
+.gallery-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
+.gallery-tile{aspect-ratio:1;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;color:#fff;position:relative;overflow:hidden;}
+.gallery-tile span.cap{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(0deg,rgba(0,0,0,.55),transparent);color:#fff;font-size:10.5px;padding:16px 8px 6px;font-weight:600;}
+.donor-row{display:flex;align-items:center;gap:12px;padding:12px 2px;border-bottom:1px solid var(--border);}
+.donor-row .bg{width:44px;height:44px;border-radius:12px;background:var(--red);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
+.reason-warn{background:var(--warning-bg);color:var(--warning);font-size:12px;padding:10px 12px;border-radius:10px;margin-bottom:12px;display:flex;gap:8px;}
+.member-detail-head{display:flex;gap:12px;align-items:center;margin-bottom:16px;}
+.member-detail-head .av{width:56px;height:56px;border-radius:16px;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;flex-shrink:0;overflow:hidden;}
+.audit-row{padding:11px 2px;border-bottom:1px solid var(--border);font-size:12.5px;}
+.audit-row .who{font-weight:700;color:var(--navy);}
+.audit-row .when{color:var(--muted);font-size:11px;margin-top:2px;}
+.fine-print{font-size:11px;color:var(--muted);text-align:center;line-height:1.7;margin-top:18px;padding:0 6px;}
+.notice-banner{background:linear-gradient(135deg,#FFF3E0,#FFE9D6);border:1px solid #F6D2A6;color:#8a4b06;font-size:11.5px;padding:10px 12px;border-radius:12px;margin-bottom:14px;line-height:1.6;}
+</style>
+</head>
+<body>
+
+<div id="splash">
+  <div class="logo-ring"><img id="splashLogo" alt="উদার আত্মা সংগঠন"></div>
+  <h1>উদার আত্মা সংগঠন</h1>
+  <p>F A I T H &nbsp;B I N D S &nbsp;U S</p>
+  <div class="bar"><i></i></div>
+</div>
+
+<div id="shell" style="display:none;"></div>
+<div id="toastwrap"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
+<script>
+/* =========================================================
+   NOTE (prototype disclaimer, kept in code for transparency)
+   এটি একটি UI/UX প্রোটোটাইপ ডেমো — সব ডেটা এই ব্রাউজারের
+   localStorage-এ থাকে। প্রকৃত প্রোডাকশন সিস্টেমের জন্য দরকার
+   হবে একটি রিয়েল ব্যাকএন্ড (Firebase/Server) যা এখানে নেই।
+   ========================================================= */
+
+/* ---------------- STATE / STORAGE ---------------- */
+const LOGO_DATA = "data:image/png;base64,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";
+document.getElementById('splashLogo').src = LOGO_DATA;
+/* ---------------- FIREBASE (CLOUD SYNC) ---------------- */
+const firebaseConfig = {
+  apiKey: "AIzaSyB1_RCGGxgpnIg7vpSrx86lFfgXk3vlY2Y",
+  authDomain: "udar-atma.firebaseapp.com",
+  projectId: "udar-atma",
+  storageBucket: "udar-atma.firebasestorage.app",
+  messagingSenderId: "1055405474875",
+  appId: "1:1055405474875:web:d5e9147c51cbc8dff2c81e"
+};
+firebase.initializeApp(firebaseConfig);
+const fsDB = firebase.firestore();
+const FS_COLLECTION = 'udaratma';
+const FS_DOC = 'main';
+let cloudReady = false;
+
+async function loadDBFromCloud(){
+  try{
+    const snap = await fsDB.collection(FS_COLLECTION).doc(FS_DOC).get();
+    if(snap.exists && snap.data().state){ cloudReady = true; return snap.data().state; }
+  }catch(e){ console.warn('Cloud load failed, using local/demo data', e); }
+  cloudReady = true;
+  return null;
+}
+function saveDBToCloud(){
+  fsDB.collection(FS_COLLECTION).doc(FS_DOC).set({ state: db, updatedAt: Date.now() })
+    .catch(e=>console.warn('Cloud save failed, kept locally only', e));
+}
+async function refreshFromCloud(){
+  try{
+    const snap = await fsDB.collection(FS_COLLECTION).doc(FS_DOC).get();
+    if(snap.exists && snap.data().state){
+      db = snap.data().state;
+      localStorage.setItem(LS_KEY, JSON.stringify(db));
+      render();
+      toast('সবশেষ তথ্য আনা হয়েছে','🔄');
+    }
+  }catch(e){ toast('ইন্টারনেট সংযোগ পরীক্ষা করুন','⚠️'); }
+}
+
+const LS_KEY = 'udaratma_demo_v1';
+let db, session;
+
+function seedData(){
+  return {
+    org:{
+      nameBn:'উদার আত্মা সংগঠন', nameEn:'UDAR ATMA ORGANIZATION', slogan:'FAITH BINDS US',
+      established:'২০২৪',
+      about:'ছাতির চর, নিকলী, কিশোরগঞ্জভিত্তিক একটি স্বেচ্ছাসেবী সামাজিক সংগঠন। মানবিক সহায়তা, সামাজিক সচেতনতা, শিক্ষা, ক্রীড়া, পরিচ্ছন্নতা ও জনকল্যাণমূলক বিভিন্ন কার্যক্রমের মাধ্যমে একটি সুন্দর ও দায়িত্বশীল সমাজ গঠনে কাজ করে।',
+      mission:'আল্লাহর সন্তুষ্টির উদ্দেশ্যে ন্যায়, ইনসাফ, ভ্রাতৃত্ব ও মানবিকতার ভিত্তিতে সমাজের অবহেলিত, অসহায় ও সুবিধাবঞ্চিত মানুষের পাশে দাঁড়ানো; অন্যায়, বৈষম্য, মাদক ও সামাজিক অনাচারের বিরুদ্ধে সচেতনতা সৃষ্টি করা এবং শিক্ষা, সেবা, পরিচ্ছন্নতা ও স্বেচ্ছাসেবামূলক কার্যক্রমের মাধ্যমে একটি সুন্দর, নিরাপদ ও কল্যাণমুখী সমাজ গঠনে কাজ করা।',
+      vision:'আল্লাহভীতি, ন্যায়বোধ, মানবিকতা ও পারস্পরিক ভালোবাসায় গড়ে ওঠা এমন একটি আদর্শ সমাজ প্রতিষ্ঠা করা, যেখানে মানুষ অন্যায় ও বৈষম্য থেকে মুক্ত হয়ে মর্যাদা, নিরাপত্তা, ভ্রাতৃত্ব ও শান্তির সঙ্গে বসবাস করবে এবং প্রত্যেকে সমাজের কল্যাণে দায়িত্বশীল ভূমিকা পালন করবে।',
+      secretaryName:'এডমিন ১', secretaryMobile:'01800000001'
+    },
+    featureFlags:{messaging:true, blood:true, finance:true, events:true, registration:true, gallery:true},
+    members:[
+      {id:'UA-2026-001', name:'সুপার এডমিন', mobile:'01700000001', pin:'111111', role:'superadmin', status:'ACTIVE', position:'সুপার এডমিন', bloodGroup:'B+', joinDate:'01 জান, ২০২৪', plus:0, minus:0, avatarSeed:'সু', contribution:'PAID', nextDue:'০৫ অক্টোবর, ২০২৬', lastDonationDate:'2026-03-10', lastDonationPlace:'সদর হাসপাতাল'},
+      {id:'UA-2026-002', name:'এডমিন ১', mobile:'01800000001', pin:'222222', role:'admin', permissions:['member.approve','payment.verify','point.add','notice.publish'], status:'ACTIVE', position:'এডমিন', bloodGroup:'A+', joinDate:'03 জান, ২০২৪', plus:0, minus:0, avatarSeed:'এ১', contribution:'PAID', nextDue:'১২ অক্টোবর, ২০২৬', lastDonationDate:'2026-08-01', lastDonationPlace:'কমিউনিটি ব্লাড ব্যাংক'},
+      {id:'UA-2026-003', name:'এডমিন ২', mobile:'01800000002', pin:'222222', role:'admin', permissions:['member.approve','payment.verify','point.add','notice.publish'], status:'ACTIVE', position:'এডমিন', bloodGroup:'O+', joinDate:'03 জান, ২০২৪', plus:0, minus:0, avatarSeed:'এ২', contribution:'PAID', nextDue:'১২ অক্টোবর, ২০২৬', lastDonationDate:'2026-05-15', lastDonationPlace:'সদর হাসপাতাল'},
+      {id:'UA-2026-004', name:'এডমিন ৩', mobile:'01800000003', pin:'222222', role:'admin', permissions:['member.approve','payment.verify','point.add','notice.publish'], status:'ACTIVE', position:'এডমিন', bloodGroup:'A-', joinDate:'03 জান, ২০২৪', plus:0, minus:0, avatarSeed:'এ৩', contribution:'PAID', nextDue:'১২ অক্টোবর, ২০২৬', lastDonationDate:null, lastDonationPlace:''},
+      {id:'UA-2026-005', name:'এডমিন ৪', mobile:'01800000004', pin:'222222', role:'admin', permissions:['member.approve','payment.verify','point.add','notice.publish'], status:'ACTIVE', position:'এডমিন', bloodGroup:'B-', joinDate:'03 জান, ২০২৪', plus:0, minus:0, avatarSeed:'এ৪', contribution:'PAID', nextDue:'১২ অক্টোবর, ২০২৬', lastDonationDate:'2026-09-01', lastDonationPlace:'কমিউনিটি ব্লাড ব্যাংক'},
+      {id:'UA-2026-006', name:'এডমিন ৫', mobile:'01800000005', pin:'222222', role:'admin', permissions:['member.approve','payment.verify','point.add','notice.publish'], status:'ACTIVE', position:'এডমিন', bloodGroup:'AB+', joinDate:'03 জান, ২০২৪', plus:0, minus:0, avatarSeed:'এ৫', contribution:'PAID', nextDue:'১২ অক্টোবর, ২০২৬', lastDonationDate:null, lastDonationPlace:''},
+      {id:'UA-2026-007', name:'সুমাইয়া আক্তার', mobile:'01733333333', pin:'123456', role:'member', status:'ACTIVE', position:'সাধারণ সদস্য', bloodGroup:'O+', joinDate:'১৫ মার্চ, ২০২৪', plus:0, minus:0, avatarSeed:'সু', contribution:'DUE', nextDue:'২৫ সেপ্টেম্বর, ২০২৬', lastDonationDate:'2026-07-10', lastDonationPlace:'সদর হাসপাতাল'},
+      {id:'UA-2026-008', name:'জাহিদ হাসান', mobile:'01744444444', pin:'123456', role:'member', status:'PENDING', position:'—', bloodGroup:'AB+', joinDate:'১৯ সেপ্টেম্বর, ২০২৬', plus:0, minus:0, avatarSeed:'জা', contribution:'DUE', nextDue:'—', lastDonationDate:null, lastDonationPlace:''},
+      {id:'UA-2026-009', name:'নাসরিন সুলতানা', mobile:'01755555555', pin:'123456', role:'member', status:'MANUAL_REVIEW', position:'সাধারণ সদস্য', bloodGroup:'B-', joinDate:'১০ জুলাই, ২০২৫', plus:0, minus:0, avatarSeed:'না', contribution:'DUE', nextDue:'০১ অক্টোবর, ২০২৬', lastDonationDate:'2025-12-01', lastDonationPlace:'কমিউনিটি ব্লাড ব্যাংক'},
+      {id:'UA-2026-010', name:'ফারুক আহমেদ', mobile:'01766666666', pin:'123456', role:'member', status:'TEMP_BANNED', banUntil:'২৬ সেপ্টেম্বর, ২০২৬', banReason:'বারবার মিথ্যা রিপোর্ট জমা দেওয়ার জন্য', position:'সাধারণ সদস্য', bloodGroup:'A-', joinDate:'২২ ফেব্রুয়ারি, ২০২৫', plus:0, minus:0, avatarSeed:'ফা', contribution:'DUE', nextDue:'—', lastDonationDate:null, lastDonationPlace:''},
+    ],
+    positions:['সভাপতি','সহ-সভাপতি','সাধারণ সম্পাদক','সহ-সাধারণ সম্পাদক','সাংগঠনিক সম্পাদক','কোষাধ্যক্ষ','সাধারণ সদস্য'],
+    notices:[
+      {id:1,title:'মাসিক সাধারণ সভা আগামী শুক্রবার',body:'আগামী শুক্রবার বিকাল ৪টায় সংগঠনের মাসিক সাধারণ সভা অনুষ্ঠিত হবে। সকল সদস্যকে উপস্থিত থাকার অনুরোধ করা হলো।',visibility:'members',priority:'important',date:'১৮ সেপ্টেম্বর, ২০২৬',status:'published'},
+      {id:2,title:'শীতবস্ত্র বিতরণ কার্যক্রম',body:'শীতার্ত মানুষের মাঝে কম্বল ও শীতবস্ত্র বিতরণ কার্যক্রম আগামী মাসে শুরু হবে। স্বেচ্ছাসেবক প্রয়োজন।',visibility:'public',priority:'normal',date:'১৫ সেপ্টেম্বর, ২০২৬',status:'published'},
+      {id:3,title:'জরুরি রক্তের প্রয়োজন — B+ গ্রুপ',body:'একজন রোগীর জন্য জরুরিভাবে B+ রক্তের প্রয়োজন। সংশ্লিষ্ট ব্লাড ডোনার ট্যাব থেকে যোগাযোগ করুন।',visibility:'members',priority:'emergency',date:'২০ সেপ্টেম্বর, ২০২৬',status:'published'},
+    ],
+    activities:[
+      {id:'UA-ACT-2026-001', title:'বৃক্ষরোপণ কর্মসূচি', category:'সামাজিক সেবা', date:'২৮ সেপ্টেম্বর, ২০২৬', location:'পৌর পার্ক প্রাঙ্গণ', participants:34, status:'upcoming'},
+      {id:'UA-ACT-2026-002', title:'ফ্রি স্বাস্থ্য ক্যাম্প', category:'স্বাস্থ্যসেবা', date:'০৫ অক্টোবর, ২০২৬', location:'কমিউনিটি সেন্টার', participants:12, status:'upcoming'},
+      {id:'UA-ACT-2026-003', title:'কুইজ প্রতিযোগিতা ২০২৬', category:'শিক্ষা', date:'১০ সেপ্টেম্বর, ২০২৬', location:'সরকারি বিদ্যালয় মাঠ', participants:58, status:'completed'},
+    ],
+    bloodRequests:[
+      {id:'UA-BR-2026-001', patient:'একজন রোগী (আব্দুল হাকিম)', bg:'B+', hospital:'সদর হাসপাতাল', units:2, urgency:'জরুরি', date:'২০ সেপ্টেম্বর, ২০২৬', status:'active'},
+    ],
+    gallery:[
+      {title:'বৃক্ষরোপণ ২০২৬', emoji:'🌳', color:'#178A54'},
+      {title:'শীতবস্ত্র বিতরণ', emoji:'🧣', color:'#0F0F54'},
+      {title:'কুইজ প্রতিযোগিতা', emoji:'🏆', color:'#C79A2E'},
+      {title:'রক্তদান কর্মসূচি', emoji:'🩸', color:'#E31C24'},
+    ],
+    offers:[
+      {id:'m1', label:'১ মাস', price:100, points:10, best:false},
+      {id:'m6', label:'৬ মাস', price:600, points:70, best:true},
+      {id:'m12', label:'১২ মাস', price:1200, points:150, best:false},
+    ],
+    payments:[
+    ],
+    paymentMethods:[
+      {name:'bKash (Personal)', number:'01700-123456', active:true},
+      {name:'Nagad', number:'01700-123457', active:true},
+    ],
+    pointHistory:{
+    },
+    auditLog:[
+    ],
+    donations:[
+    ],
+    expenses:[
+    ],
+    passwordResetRequests:[],
+    logoVersion:1,
+    nextMemberSeq:11,
+    nextActivitySeq:4,
+    nextBloodReqSeq:2,
+    nextDonationSeq:1,
+    nextExpenseSeq:1,
+    nextPwReqSeq:1,
+  };
+}
+
+function loadDB(){
+  try{
+    const raw = localStorage.getItem(LS_KEY);
+    if(raw) return JSON.parse(raw);
+  }catch(e){}
+  return seedData();
+}
+function saveDB(){ localStorage.setItem(LS_KEY, JSON.stringify(db)); saveDBToCloud(); }
+function resetDemo(){ localStorage.removeItem(LS_KEY); location.reload(); }
+
+/* ---------------- SESSION ---------------- */
+function loadSession(){
+  try{ const r = sessionStorage.getItem('udaratma_session'); if(r) return JSON.parse(r); }catch(e){}
+  return {screen:'app', role:'guest', memberId:null, tab:'home', authView:'login', regStep:1, adminTab:'dashboard'};
+}
+function goToLogin(){ session.screen='auth'; session.authView='login'; render(); }
+function backToApp(){ session.screen='app'; render(); }
+function saveSession(){ sessionStorage.setItem('udaratma_session', JSON.stringify(session)); }
+
+/* ---------------- HELPERS ---------------- */
+function toast(msg, icon){
+  const wrap = document.getElementById('toastwrap');
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.innerHTML = `<span>${icon||'✅'}</span><span>${msg}</span>`;
+  wrap.appendChild(el);
+  setTimeout(()=>{ el.style.transition='opacity .3s'; el.style.opacity='0'; setTimeout(()=>el.remove(),300); }, 2400);
+}
+function getMember(id){ return db.members.find(m=>m.id===id); }
+function currentMember(){ return session.memberId ? getMember(session.memberId) : null; }
+function esc(s){ return (s+'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function avatarInner(m){
+  if(m && m.photoData) return `<img src="${m.photoData}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;">`;
+  return m ? esc(m.avatarSeed) : '';
+}
+function statusLabel(s){
+  return {ACTIVE:'সক্রিয়',PENDING:'অনুমোদনের অপেক্ষায়',MANUAL_REVIEW:'পর্যালোচনাধীন',SUSPENDED:'স্থগিত',TEMP_BANNED:'সাময়িক নিষিদ্ধ',PERMA_BANNED:'স্থায়ী নিষিদ্ধ',INACTIVE:'নিষ্ক্রিয়',ARCHIVED:'আর্কাইভড',REJECTED:'প্রত্যাখ্যাত'}[s]||s;
+}
+function statusPill(s){
+  const map={ACTIVE:'success',PENDING:'important',MANUAL_REVIEW:'urgent',SUSPENDED:'danger',TEMP_BANNED:'danger',PERMA_BANNED:'danger'};
+  return `<span class="pill pill-${map[s]||'normal'}">${statusLabel(s)}</span>`;
+}
+function closeModal(){ const m=document.getElementById('modalRoot'); if(m) m.remove(); }
+function openModal(html){
+  closeModal();
+  const div = document.createElement('div');
+  div.id='modalRoot'; div.className='modal-back';
+  div.onclick = (e)=>{ if(e.target===div) closeModal(); };
+  div.innerHTML = `<div class="modal-sheet" onclick="event.stopPropagation()"><div class="modal-handle"></div>${html}</div>`;
+  document.body.appendChild(div);
+}
+
+/* ---------------- ROUTER / RENDER ---------------- */
+function render(){
+  saveSession(); saveDB();
+  const shell = document.getElementById('shell');
+  if(session.screen==='auth'){
+    shell.innerHTML = renderAuth();
+    return;
+  }
+  const role = session.role;
+  shell.innerHTML = `
+    ${renderTopbar()}
+    <div id="content">${renderScreen()}</div>
+    ${renderBottomNav()}
+  `;
+}
+
+/* ---------------- AUTH SCREENS ---------------- */
+function renderAuth(){
+  const v = session.authView;
+  return `<div class="auth-wrap">
+    <div style="text-align:left;">
+      <button class="icon-btn" style="background:rgba(255,255,255,0.16);color:#fff;" onclick="backToApp()">←</button>
+    </div>
+    <div class="auth-logo"><img src="${LOGO_DATA}" alt="logo" style="width:100%;height:100%;object-fit:contain;border-radius:50%;"></div>
+    <div class="auth-head">
+      <h1>উদার আত্মা সংগঠন</h1>
+      <p>FAITH BINDS US</p>
+    </div>
+    <div class="auth-box">
+      ${v==='login' ? renderLoginForm() : renderRegisterForm()}
+    </div>
+  </div>`;
+}
+
+function renderLoginForm(){
+  return `
+    <label class="field"><span>মোবাইল নম্বর</span>
+      <input id="loginMobile" type="tel" placeholder="017XXXXXXXX" maxlength="11" inputmode="numeric">
+    </label>
+    <label class="field"><span>৬-সংখ্যার পিন</span>
+      <input id="loginPin" type="password" placeholder="••••••" maxlength="6" inputmode="numeric">
+    </label>
+    <button class="btn btn-primary" onclick="doLogin()">🔐 লগইন করুন</button>
+    <p class="link-txt">অ্যাকাউন্ট নেই? <b onclick="session.authView='register'; session.regStep=1; render();">রেজিস্ট্রেশন করুন</b></p>
+    <p class="link-txt"><b onclick="openForgotPassword()">🔑 পাসওয়ার্ড ভুলে গেছেন?</b></p>
+  `;
+}
+function renderRegisterForm(){
+  if(session.regStep===2){
+    return `<div style="text-align:center;padding:14px 0;">
+      <div style="font-size:44px;">⏳</div>
+      <h3 style="margin:12px 0 6px;color:var(--navy);">আপনার আবেদন জমা হয়েছে</h3>
+      <p style="font-size:13px;color:var(--muted);line-height:1.7;margin:0 0 18px;">
+        আপনার তথ্য যাচাই করে সুপার অ্যাডমিন কর্তৃক অনুমোদনের পর অ্যাকাউন্টটি সক্রিয় হবে। অনুমোদনের আগ পর্যন্ত অবস্থা <b>"অনুমোদনের অপেক্ষায়"</b> থাকবে।
+      </p>
+      <button class="btn btn-outline" onclick="session.authView='login'; render();">লগইন স্ক্রিনে ফিরে যান</button>
+    </div>`;
+  }
+  return `
+    <label class="field"><span>পূর্ণ নাম</span><input id="regName" placeholder="আপনার নাম লিখুন"></label>
+    <label class="field"><span>মোবাইল নম্বর</span><input id="regMobile" type="tel" maxlength="11" placeholder="017XXXXXXXX" inputmode="numeric"></label>
+    <label class="field"><span>৬-সংখ্যার পিন সেট করুন</span><input id="regPin" type="password" maxlength="6" placeholder="••••••" inputmode="numeric"></label>
+    <label class="field"><span>পিন নিশ্চিত করুন</span><input id="regPin2" type="password" maxlength="6" placeholder="••••••" inputmode="numeric"></label>
+    <label style="display:flex;gap:9px;align-items:flex-start;font-size:12px;color:var(--muted);margin-bottom:16px;">
+      <input type="checkbox" id="regAgree" style="width:17px;height:17px;margin-top:1px;flex-shrink:0;">
+      <span>আমি সংগঠনের নীতিমালা ও শর্তাবলীর সাথে সম্মত এবং প্রদত্ত তথ্য সঠিক বলে নিশ্চিত করছি।</span>
+    </label>
+    <button class="btn btn-red" onclick="doRegister()">✍️ আবেদন জমা দিন</button>
+    <p class="link-txt">আগে থেকে অ্যাকাউন্ট আছে? <b onclick="session.authView='login'; render();">লগইন করুন</b></p>
+  `;
+}
+
+function doLogin(){
+  const mobile = document.getElementById('loginMobile').value.trim();
+  const pin = document.getElementById('loginPin').value.trim();
+  if(!/^01[0-9]{9}$/.test(mobile)){ toast('সঠিক ১১ ডিজিটের মোবাইল নম্বর দিন','⚠️'); return; }
+  if(pin.length<4){ toast('পিন দিন','⚠️'); return; }
+  const m = db.members.find(x=>x.mobile===mobile);
+  if(!m || m.pin!==pin){ toast('মোবাইল অথবা পিন সঠিক নয়','❌'); return; }
+  if(['TEMP_BANNED','PERMA_BANNED','SUSPENDED'].includes(m.status)){
+    toast('আপনার অ্যাকাউন্টটি বর্তমানে সীমাবদ্ধ। বিস্তারিত জানতে সংগঠনের সাথে যোগাযোগ করুন।','🚫'); return;
+  }
+  if(m.status==='PENDING'){ toast('আপনার অ্যাকাউন্ট এখনো অনুমোদনের অপেক্ষায়','⏳'); return; }
+  session.screen='app'; session.memberId=m.id;
+  session.role = m.role==='superadmin'?'superadmin':m.role==='admin'?'admin':'member';
+  session.tab='home'; session.adminTab='dashboard';
+  render(); toast(`স্বাগতম, ${m.name}`,'👋');
+}
+function doRegister(){
+  const name=document.getElementById('regName').value.trim();
+  const mobile=document.getElementById('regMobile').value.trim();
+  const pin=document.getElementById('regPin').value.trim();
+  const pin2=document.getElementById('regPin2').value.trim();
+  const agree=document.getElementById('regAgree').checked;
+  if(!name){ toast('নাম লিখুন','⚠️'); return; }
+  if(!/^01[0-9]{9}$/.test(mobile)){ toast('সঠিক মোবাইল নম্বর দিন','⚠️'); return; }
+  if(db.members.some(m=>m.mobile===mobile)){ toast('এই মোবাইল নম্বরে ইতিমধ্যে একটি অ্যাকাউন্ট আছে','🚫'); return; }
+  if(pin.length!==6){ toast('৬ সংখ্যার পিন দিন','⚠️'); return; }
+  if(pin!==pin2){ toast('পিন দুটি মিলছে না','⚠️'); return; }
+  if(!agree){ toast('শর্তাবলীতে সম্মত হতে হবে','⚠️'); return; }
+  const seq = db.nextMemberSeq++;
+  db.members.push({id:`UA-2026-${String(seq).padStart(3,'0')}`,name,mobile,pin,role:'member',status:'PENDING',position:'—',bloodGroup:'—',joinDate:'১৯ সেপ্টেম্বর, ২০২৬',plus:0,minus:0,avatarSeed:name[0],contribution:'DUE',nextDue:'—',lastDonationDate:null,lastDonationPlace:''});
+  session.regStep=2; saveDB(); render();
+}
+function logout(){ session={screen:'app', role:'guest', memberId:null, tab:'home', authView:'login', regStep:1, adminTab:'dashboard'}; render(); }
+function openForgotPassword(){
+  openModal(`
+    <div class="modal-title"><h3>🔑 পাসওয়ার্ড ভুলে গেছেন?</h3><button onclick="closeModal()">✕</button></div>
+    <div class="reason-warn">ℹ️ আপনার নিবন্ধিত মোবাইল নম্বর দিন। অনুরোধটি সুপার অ্যাডমিনের কাছে পাঠানো হবে, অনুমোদনের পর নতুন পাসওয়ার্ড সেট হবে।</div>
+    <label class="field"><span>মোবাইল নম্বর</span><input id="fpMobile" type="tel" maxlength="11" placeholder="017XXXXXXXX" inputmode="numeric"></label>
+    <button class="btn btn-red" onclick="submitForgotPassword()">অনুরোধ পাঠান</button>
+  `);
+}
+function submitForgotPassword(){
+  const mobile = document.getElementById('fpMobile').value.trim();
+  if(!/^01[0-9]{9}$/.test(mobile)){ toast('সঠিক ১১ ডিজিটের মোবাইল নম্বর দিন','⚠️'); return; }
+  const m = db.members.find(x=>x.mobile===mobile);
+  if(!m){ toast('এই নম্বরে কোনো অ্যাকাউন্ট পাওয়া যায়নি','❌'); return; }
+  if(db.passwordResetRequests.some(r=>r.mobile===mobile && r.status==='pending')){ toast('এই নম্বরের অনুরোধ ইতিমধ্যে অপেক্ষমান আছে','ℹ️'); return; }
+  const seq = db.nextPwReqSeq++;
+  db.passwordResetRequests.unshift({id:seq, mobile, memberId:m.id, memberName:m.name, date:'আজ', status:'pending'});
+  saveDB(); closeModal();
+  toast('অনুরোধ সুপার অ্যাডমিনের কাছে পাঠানো হয়েছে','📨');
+}
+function roleTitle(){
+  return {guest:'অতিথি হোম',member:'সদস্য হোম',admin:'অ্যাডমিন প্যানেল',superadmin:'সুপার অ্যাডমিন প্যানেল'}[session.role];
+}
+function renderTopbar(){
+  const isAdmin = session.role==='admin'||session.role==='superadmin';
+  return `<div class="topbar">
+    <div class="topbar-row">
+      <div class="brand-mini">
+        <div class="mark"><img src="${LOGO_DATA}" alt="logo" style="width:100%;height:100%;object-fit:contain;border-radius:50%;"></div>
+        <div><b>${db.org.nameBn}</b><small>${db.org.slogan}</small></div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        ${session.role!=='guest' ? `<button class="icon-btn" onclick="refreshFromCloud()" title="সবশেষ তথ্য আনুন">🔄</button>` : ''}
+        ${session.role!=='guest' ? `<button class="icon-btn" onclick="openNotifPanel()">🔔<span class="dot"></span></button>` : ''}
+        ${session.role!=='guest' ? `<button class="icon-btn" onclick="logout()">↩️</button>` : `<button class="icon-btn" onclick="goToLogin()">🔐</button>`}
+      </div>
+    </div>
+    <h2>${screenTitle()}</h2>
+    <p class="sub">${screenSub()}</p>
+  </div>`;
+}
+function screenTitle(){
+  if(session.role==='guest') return 'স্বাগতম';
+  if(isAdminRole()) return adminTabTitles[session.adminTab||'dashboard'];
+  return memberTabTitles[session.tab||'home'];
+}
+function screenSub(){
+  if(session.role==='guest') return 'সংগঠনের কার্যক্রম সম্পর্কে জানুন';
+  const m = currentMember();
+  if(isAdminRole()) return `স্বাগতম, ${m?m.name:''}`;
+  return `${m?m.id:''} · ${statusLabel(m?m.status:'')}`;
+}
+function isAdminRole(){ return session.role==='admin'||session.role==='superadmin'; }
+
+const memberTabTitles = {home:'সদস্য হোম', notice:'নোটিশ', activity:'কার্যক্রম ও ইভেন্ট', blood:'রক্তদান', profile:'প্রোফাইল'};
+const adminTabTitles = {dashboard:'ড্যাশবোর্ড', members:'সদস্য ব্যবস্থাপনা', payments:'পেমেন্ট যাচাই', notices:'নোটিশ ব্যবস্থাপনা', more:'আরও'};
+
+/* ---------------- BOTTOM NAV ---------------- */
+function renderBottomNav(){
+  if(session.role==='guest'){
+    return `<div class="bottomnav">
+      <button class="navbtn active"><span class="ic">🏠</span>হোম</button>
+      <button class="navbtn" onclick="goToLogin()"><span class="ic">🔐</span>লগইন</button>
+    </div>`;
+  }
+  if(isAdminRole()){
+    const tabs=[['dashboard','📊','ড্যাশবোর্ড'],['members','👥','সদস্য'],['payments','💳','পেমেন্ট'],['notices','📢','নোটিশ'],['more','⚙️','আরও']];
+    return `<div class="bottomnav">${tabs.map(t=>`
+      <button class="navbtn ${session.adminTab===t[0]?'active':''}" onclick="session.adminTab='${t[0]}'; render();">
+        <span class="ic">${t[1]}</span>${t[2]}
+      </button>`).join('')}</div>`;
+  }
+  const tabs=[['home','🏠','হোম'],['notice','📢','নোটিশ'],['activity','🎯','কার্যক্রম'],['blood','🩸','রক্ত'],['profile','🪪','প্রোফাইল']];
+  return `<div class="bottomnav">${tabs.map(t=>`
+    <button class="navbtn ${session.tab===t[0]?'active':''}" onclick="session.tab='${t[0]}'; render();">
+      <span class="ic">${t[1]}</span>${t[2]}
+    </button>`).join('')}</div>`;
+}
+
+/* ---------------- SCREEN DISPATCH ---------------- */
+function renderScreen(){
+  if(session.role==='guest') return screenGuestHome();
+  if(isAdminRole()){
+    return {dashboard:screenAdminDashboard, members:screenAdminMembers, payments:screenAdminPayments, notices:screenAdminNotices, more:screenAdminMore}[session.adminTab||'dashboard']();
+  }
+  return {home:screenMemberHome, notice:screenNotices, activity:screenActivities, blood:screenBlood, profile:screenProfile}[session.tab||'home']();
+}
+
+/* ---------------- GUEST HOME ---------------- */
+function islamicIcon(size){
+  size = size||40;
+  return `<svg width="${size}" height="${size}" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="32" cy="32" r="30" fill="#0F0F54"/>
+    <circle cx="32" cy="32" r="30" fill="none" stroke="#C79A2E" stroke-width="1" opacity="0.55"/>
+    <g fill="none" stroke="#C79A2E" stroke-width="2.2" stroke-linejoin="round">
+      <rect x="17" y="17" width="30" height="30"/>
+      <rect x="17" y="17" width="30" height="30" transform="rotate(45 32 32)"/>
+    </g>
+    <circle cx="32" cy="32" r="4.5" fill="#C79A2E"/>
+  </svg>`;
+}
+function screenGuestHome(){
+  return `<div class="screen">
+    <div class="hero-card">
+      <h2>${db.org.nameBn}</h2>
+      <p>প্রতিষ্ঠিত: ${db.org.established}<br>${db.org.about}</p>
+    </div>
+
+    <div class="section-title" style="justify-content:center;"><h3>মিশন</h3></div>
+    <div class="card"><p style="margin:0;font-size:13px;color:var(--muted);line-height:1.85;">${db.org.mission}</p></div>
+
+    <div class="section-title" style="justify-content:center;margin-top:22px;"><h3>ভিশন</h3></div>
+    <div class="card"><p style="margin:0;font-size:13px;color:var(--muted);line-height:1.85;">${db.org.vision}</p></div>
+
+    <div class="section-title"><h3>📢 পাবলিক নোটিশ</h3></div>
+    ${db.notices.filter(n=>n.visibility==='public').map(noticeCardHTML).join('') || emptyState('📭','কোনো পাবলিক নোটিশ নেই')}
+
+    <div class="section-title"><h3>🎯 সাম্প্রতিক কার্যক্রম</h3></div>
+    ${db.activities.slice(0,2).map(activityRowHTML).join('')}
+
+    <div class="section-title"><h3>📞 যোগাযোগ</h3></div>
+    <div class="card">
+      <div class="list-item">
+        <div class="ico">🧑‍💼</div>
+        <div class="meta"><b>${esc(db.org.secretaryName)}</b><span>সাংগঠনিক সম্পাদক</span></div>
+        <div class="tail">${db.org.secretaryMobile}</div>
+      </div>
+    </div>
+
+    <button class="btn btn-red" style="margin-top:18px;" onclick="session.authView='register'; goToLogin();">🙋 সদস্য হতে চাই</button>
+  </div>`;
+}
+
+/* ---------------- MEMBER HOME ---------------- */
+function screenMemberHome(){
+  const m = currentMember();
+  const engagementNotices = db.notices.filter(n=>n.visibility!=='admin').slice(0,2);
+  return `<div class="screen">
+    <div class="hero-card">
+      <h2>স্বাগতম, ${m.name} 👋</h2>
+      <p>মেম্বার আইডি ${m.id} · ${m.position}</p>
+    </div>
+
+    <div class="point-tri">
+      <div class="plus"><b>+${m.plus}</b><span>প্লাস পয়েন্ট</span></div>
+      <div class="minus"><b>-${m.minus}</b><span>নেগেটিভ পয়েন্ট</span></div>
+      <div class="final"><b>${m.plus-m.minus}</b><span>কর্ম স্কোর</span></div>
+    </div>
+
+    <div class="section-title"><h3>💳 কন্ট্রিবিউশন অবস্থা</h3></div>
+    <div class="card" style="display:flex;justify-content:space-between;align-items:center;">
+      <div>
+        <b style="font-size:14px;">${contribLabel(m.contribution)}</b>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px;">পরবর্তী তারিখ: ${m.nextDue}</div>
+      </div>
+      <button class="btn btn-sm btn-red" onclick="session.tab='profile'; render(); scrollToId('contribSection');">পেমেন্ট</button>
+    </div>
+
+    <div class="section-title"><h3>📢 সাম্প্রতিক নোটিশ</h3><a onclick="session.tab='notice'; render();">সব দেখুন</a></div>
+    ${engagementNotices.map(noticeCardHTML).join('')}
+
+    <div class="section-title"><h3>🎯 আসন্ন কার্যক্রম</h3><a onclick="session.tab='activity'; render();">সব দেখুন</a></div>
+    ${db.activities.filter(a=>a.status==='upcoming').slice(0,2).map(activityRowHTML).join('')}
+  </div>`;
+}
+function contribLabel(c){ return {PAID:'✅ পরিশোধিত',DUE:'⏳ বকেয়া',PENDING_VERIFICATION:'🔍 যাচাইয়ের অপেক্ষায়',REJECTED:'❌ প্রত্যাখ্যাত'}[c]||c; }
+
+function noticeCardHTML(n){
+  const visPill = n.visibility==='public'?'pill-public':n.visibility==='members'?'pill-members':'pill-admin';
+  const visLabel = n.visibility==='public'?'পাবলিক':n.visibility==='members'?'সদস্যদের জন্য':'অ্যাডমিন';
+  const prPill = 'pill-'+n.priority;
+  const prLabel = {normal:'সাধারণ',important:'গুরুত্বপূর্ণ',urgent:'জরুরি',emergency:'ইমারজেন্সি'}[n.priority];
+  return `<div class="notice-card">
+    <div class="top-row">
+      <span class="pill ${visPill}">${visLabel}</span>
+      <span class="pill ${prPill}">${prLabel}</span>
+    </div>
+    <h4>${esc(n.title)}</h4>
+    <p>${esc(n.body)}</p>
+    <div class="foot"><span>${n.date}</span><span>${n.status==='published'?'প্রকাশিত':'খসড়া'}</span></div>
+  </div>`;
+}
+function activityRowHTML(a){
+  return `<div class="list-item">
+    <div class="ico">${a.status==='completed'?'✅':'🎯'}</div>
+    <div class="meta"><b>${esc(a.title)}</b><span>${a.category} · ${a.location}</span></div>
+    <div class="tail">${a.date}</div>
+  </div>`;
+}
+function emptyState(em,txt){ return `<div class="empty-state"><div class="em">${em}</div><p>${txt}</p></div>`; }
+function scrollToId(id){ setTimeout(()=>{ const el=document.getElementById(id); if(el) el.scrollIntoView({behavior:'smooth'}); },80); }
+
+/* ---------------- NOTICES ---------------- */
+function screenNotices(){
+  const filter = session.noticeFilter||'all';
+  let list = db.notices.filter(n=>n.status==='published');
+  if(session.role==='member') list = list.filter(n=>n.visibility!=='admin');
+  if(filter!=='all') list = list.filter(n=>n.visibility===filter);
+  return `<div class="screen">
+    <div class="chip-row">
+      ${chip('all','সব',filter)}
+      ${chip('public','পাবলিক',filter)}
+      ${chip('members','সদস্যদের',filter)}
+    </div>
+    ${list.map(noticeCardHTML).join('') || emptyState('📭','এই মুহূর্তে কোনো নোটিশ নেই')}
+  </div>`;
+}
+function chip(val,label,active){ return `<div class="chip ${active===val?'active':''}" onclick="session.noticeFilter='${val}'; render();">${label}</div>`; }
+
+/* ---------------- ACTIVITIES ---------------- */
+function screenActivities(){
+  const sub = session.actTab||'upcoming';
+  const list = db.activities.filter(a=>sub==='upcoming'?a.status==='upcoming':a.status==='completed');
+  return `<div class="screen">
+    <div class="tabs2">
+      <button class="${sub==='upcoming'?'active':''}" onclick="session.actTab='upcoming'; render();">আসন্ন</button>
+      <button class="${sub==='completed'?'active':''}" onclick="session.actTab='completed'; render();">সম্পন্ন</button>
+    </div>
+    ${list.map(a=>`
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+          <div>
+            <b style="font-size:14.5px;">${esc(a.title)}</b>
+            <div style="font-size:12px;color:var(--muted);margin-top:4px;">${a.category}</div>
+          </div>
+          <span class="pill ${a.status==='upcoming'?'pill-important':'pill-success'}">${a.status==='upcoming'?'আসন্ন':'সম্পন্ন'}</span>
+        </div>
+        <div style="font-size:12.5px;color:var(--muted);margin-top:10px;line-height:1.9;">
+          📅 ${a.date}<br>📍 ${a.location}<br>👥 ${a.participants} জন অংশগ্রহণকারী
+        </div>
+        ${a.status==='upcoming' && session.role!=='guest' ? `<button class="btn btn-outline" style="margin-top:12px;" onclick="toast('আপনার আগ্রহ নিবন্ধিত হয়েছে','✅')">✋ অংশগ্রহণ করতে চাই (RSVP)</button>`:''}
+        ${a.id.startsWith('UA-ACT') ? `<div style="font-size:10.5px;color:var(--muted);margin-top:8px;">রেফারেন্স: ${a.id}</div>`:''}
+      </div>
+    `).join('') || emptyState('🎯','কোনো কার্যক্রম নেই')}
+  </div>`;
+}
+
+/* ---------------- BLOOD ---------------- */
+function daysBetween(dateStr){
+  if(!dateStr) return Infinity;
+  const then = new Date(dateStr+'T00:00:00');
+  const now = new Date();
+  return Math.max(0, Math.floor((now-then)/(1000*60*60*24)));
+}
+function donationLabel(dateStr){
+  if(!dateStr) return 'কখনো রক্ত দেননি';
+  const d = daysBetween(dateStr);
+  if(d===0) return 'আজ';
+  if(d<30) return `${d} দিন আগে`;
+  if(d<365) return `প্রায় ${Math.floor(d/30)} মাস আগে`;
+  return `প্রায় ${Math.floor(d/365)} বছর আগে`;
+}
+function donorList(){
+  return db.members.filter(m=>m.status==='ACTIVE');
+}
+function screenBlood(){
+  const sub = session.bloodTab||'donors';
+  const groupFilter = session.bloodGroupFilter||'all';
+  const groups=['all','A+','A-','B+','B-','O+','O-','AB+','AB-'];
+  let donors = donorList();
+  if(groupFilter!=='all') donors = donors.filter(m=>m.bloodGroup===groupFilter);
+  donors = donors.slice().sort((a,b)=>daysBetween(b.lastDonationDate)-daysBetween(a.lastDonationDate));
+  return `<div class="screen">
+    <div class="tabs2">
+      <button class="${sub==='donors'?'active':''}" onclick="session.bloodTab='donors'; render();">ডোনার তালিকা</button>
+      <button class="${sub==='requests'?'active':''}" onclick="session.bloodTab='requests'; render();">রক্তের অনুরোধ</button>
+    </div>
+    ${sub==='donors' ? `
+      <button class="btn btn-red" style="margin-bottom:14px;" onclick="openBloodRequestForm()">🆘 রক্তের জন্য অনুরোধ করুন</button>
+      <div class="chip-row">
+        ${groups.map(g=>`<div class="chip ${groupFilter===g?'active':''}" onclick="session.bloodGroupFilter='${g}'; render();">${g==='all'?'সব গ্রুপ':g}</div>`).join('')}
+      </div>
+      <div class="card">
+        ${donors.map(m=>`
+          <div class="donor-row" style="cursor:pointer;" onclick="openDonorDetail('${m.id}')">
+            <div class="bg">${m.bloodGroup}</div>
+            <div class="meta" style="flex:1;">
+              <b style="font-size:13.5px;">${esc(m.name)}</b>
+              <div style="font-size:11.5px;color:var(--muted);">শেষ রক্তদান: ${donationLabel(m.lastDonationDate)}</div>
+            </div>
+            <span class="pill pill-normal">${m.id}</span>
+          </div>
+        `).join('') || emptyState('🩸','এই গ্রুপে কোনো ডোনার পাওয়া যায়নি')}
+      </div>
+    ` : `
+      ${db.bloodRequests.filter(r=>r.status==='active').map(r=>`
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;">
+            <b style="font-size:14px;">${esc(r.patient)}</b>
+            <span class="pill pill-emergency">${r.urgency}</span>
+          </div>
+          <div style="font-size:12.5px;color:var(--muted);margin-top:8px;line-height:1.9;">
+            🩸 গ্রুপ: ${r.bg} · প্রয়োজন ${r.units} ব্যাগ<br>🏥 ${r.hospital}<br>📅 ${r.date}
+          </div>
+          <button class="btn btn-ghost" style="margin-top:12px;" onclick="toast('যোগাযোগের অনুরোধ সংগঠনে পাঠানো হয়েছে','📞')">📞 যোগাযোগ করুন</button>
+        </div>
+      `).join('') || emptyState('🩸','কোনো সক্রিয় অনুরোধ নেই')}
+    `}
+  </div>`;
+}
+function openDonorDetail(id){
+  const m = getMember(id);
+  openModal(`
+    <div class="modal-title"><h3>ডোনার বিস্তারিত</h3><button onclick="closeModal()">✕</button></div>
+    <div class="member-detail-head">
+      <div class="av">${avatarInner(m)}</div>
+      <div><b style="font-size:15.5px;display:block;">${esc(m.name)}</b><span style="font-size:12px;color:var(--muted);">${m.id} · ${m.position}</span></div>
+    </div>
+    <div class="card">
+      <div class="list-item"><div class="ico">🩸</div><div class="meta"><b>ব্লাড গ্রুপ</b><span>${m.bloodGroup}</span></div></div>
+      <div class="list-item"><div class="ico">🕒</div><div class="meta"><b>শেষ রক্তদান</b><span>${donationLabel(m.lastDonationDate)}</span></div></div>
+      ${m.lastDonationDate ? `<div class="list-item"><div class="ico">📍</div><div class="meta"><b>স্থান</b><span>${esc(m.lastDonationPlace||'—')}</span></div></div>`:''}
+    </div>
+    <button class="btn btn-primary" style="margin-top:12px;" onclick="closeModal(); openPublicProfile('${m.id}')">👤 প্রোফাইল দেখুন</button>
+  `);
+}
+function openBloodRequestForm(){
+  openModal(`
+    <div class="modal-title"><h3>🆘 রক্তের অনুরোধ</h3><button onclick="closeModal()">✕</button></div>
+    <label class="field"><span>রোগীর নাম</span><input id="bqName" placeholder="রোগীর নাম লিখুন"></label>
+    <label class="field"><span>রক্তের গ্রুপ</span>
+      <select id="bqGroup"><option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>O+</option><option>O-</option><option>AB+</option><option>AB-</option></select>
+    </label>
+    <label class="field"><span>হাসপাতাল</span><input id="bqHosp" placeholder="হাসপাতালের নাম"></label>
+    <label class="field"><span>প্রয়োজনীয় ব্যাগ সংখ্যা</span><input id="bqUnits" type="number" value="1" min="1"></label>
+    <button class="btn btn-red" onclick="submitBloodRequest()">অনুরোধ জমা দিন</button>
+  `);
+}
+function submitBloodRequest(){
+  const name=document.getElementById('bqName').value.trim();
+  if(!name){ toast('রোগীর নাম দিন','⚠️'); return; }
+  const seq = db.nextBloodReqSeq++;
+  db.bloodRequests.unshift({id:`UA-BR-2026-${String(seq).padStart(3,'0')}`, patient:name, bg:document.getElementById('bqGroup').value, hospital:document.getElementById('bqHosp').value||'—', units:document.getElementById('bqUnits').value, urgency:'জরুরি', date:'আজ', status:'active'});
+  saveDB(); closeModal(); session.bloodTab='requests'; render();
+  toast('আপনার অনুরোধ জমা হয়েছে','🆘');
+}
+
+/* ---------------- PROFILE ---------------- */
+function screenProfile(){
+  const m = currentMember();
+  const history = db.pointHistory[m.id]||[];
+  return `<div class="screen">
+    <div class="mcard-wrap">
+      <div class="mcard" id="mcard" onclick="document.getElementById('mcard').classList.toggle('flipped')">
+        <div class="mcard-face">
+          <div class="mcard-top">
+            <div class="org">${db.org.nameBn}<br><span style="opacity:.7;">প্রতিষ্ঠিত ${db.org.established}</span></div>
+            <div class="mark2"><img src="${LOGO_DATA}" alt="logo" style="width:100%;height:100%;object-fit:contain;border-radius:50%;"></div>
+          </div>
+          <div class="mcard-mid">
+            <div class="photo">${avatarInner(m)}</div>
+            <div class="info"><b>${esc(m.name)}</b><span>${m.position}</span></div>
+          </div>
+          <div class="mcard-bot">
+            <div><span>মেম্বার আইডি</span><b>${m.id}</b></div>
+            <div style="text-align:right;"><span>ব্লাড গ্রুপ</span><b>${m.bloodGroup}</b></div>
+          </div>
+        </div>
+        <div class="mcard-face back">
+          <div class="qr-box"><svg width="76" height="76" viewBox="0 0 29 29">${qrPlaceholder(m.id)}</svg></div>
+          <div style="font-size:11px;opacity:.85;">যাচাইয়ের জন্য স্ক্যান করুন</div>
+        </div>
+      </div>
+    </div>
+    <p style="text-align:center;font-size:11px;color:var(--muted);margin:8px 0 4px;">কার্ডে ট্যাপ করে QR দেখুন</p>
+
+    <div class="section-title"><h3>🏅 কর্ম স্কোর</h3></div>
+    <div class="point-tri">
+      <div class="plus"><b>+${m.plus}</b><span>প্লাস</span></div>
+      <div class="minus"><b>-${m.minus}</b><span>নেগেটিভ</span></div>
+      <div class="final"><b>${m.plus-m.minus}</b><span>ফাইনাল</span></div>
+    </div>
+    ${history.length? `<div class="card">${history.map(h=>`
+      <div class="list-item">
+        <div class="ico" style="background:${h.type==='plus'?'#E7F6EE':'#FCEAEA'};color:${h.type==='plus'?'var(--success)':'#B4123A'};">${h.type==='plus'?'+':'−'}</div>
+        <div class="meta"><b>${h.type==='plus'?'+':'-'}${h.amount} — ${esc(h.reason)}</b><span>${h.by} · ${h.date}</span></div>
+      </div>
+    `).join('')}</div>` : ''}
+
+    <div id="contribSection" class="section-title"><h3>💳 কন্ট্রিবিউশন</h3></div>
+    <div class="card" style="margin-bottom:12px;">
+      <div style="display:flex;justify-content:space-between;">
+        <b style="font-size:13.5px;">বর্তমান অবস্থা</b>${statusPillContrib(m.contribution)}
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin-top:6px;">পরবর্তী পরিশোধের তারিখ: ${m.nextDue}</div>
+    </div>
+    ${db.offers.map(o=>`
+      <div class="offer-card ${o.best?'best':''}">
+        <div><b>${o.label} সদস্যপদ</b><span>৳${o.price} + ${o.points} পয়েন্ট</span></div>
+        <button class="btn btn-sm ${o.best?'btn-red':'btn-outline'}" onclick="openClaimOffer('${o.id}')">${o.best?'⭐ ':''}CLAIM</button>
+      </div>
+    `).join('')}
+
+    <div class="section-title"><h3>👤 ব্যক্তিগত তথ্য</h3></div>
+    <div class="card">
+      <div class="list-item"><div class="ico">📱</div><div class="meta"><b>মোবাইল</b><span>${m.mobile}</span></div></div>
+      <div class="list-item"><div class="ico">🩸</div><div class="meta"><b>ব্লাড গ্রুপ</b><span>${m.bloodGroup}</span></div></div>
+      <div class="list-item"><div class="ico">📅</div><div class="meta"><b>যোগদানের তারিখ</b><span>${m.joinDate}</span></div></div>
+    </div>
+
+    <div class="section-title"><h3>👥 সদস্য র‍্যাংকিং</h3><a onclick="openMemberRankingFull()">সব দেখুন</a></div>
+    <div class="card">
+      ${memberRanking().slice(0,5).map((mm,idx)=>memberRankRow(mm,idx)).join('')}
+    </div>
+
+    <button class="btn btn-ghost" style="margin-top:12px;" onclick="openEditProfile()">✏️ প্রোফাইল সম্পাদনা করুন</button>
+    <button class="btn btn-outline" style="margin-top:10px;" onclick="logout()">🚪 লগআউট</button>
+  </div>`;
+}
+function memberRanking(){
+  return db.members.filter(m=>m.status==='ACTIVE' && m.role==='member').slice().sort((a,b)=>(b.plus-b.minus)-(a.plus-a.minus));
+}
+function memberRankRow(mm, idx){
+  return `<div class="list-item" style="cursor:pointer;" onclick="openPublicProfile('${mm.id}')">
+    <div class="ico" style="background:var(--navy);color:#fff;">${idx<3?['🥇','🥈','🥉'][idx]:(idx+1)}</div>
+    <div class="meta"><b>${esc(mm.name)}</b><span>${mm.position}</span></div>
+    <div class="tail" style="font-weight:700;color:var(--navy);">${mm.plus-mm.minus}</div>
+  </div>`;
+}
+function openMemberRankingFull(){
+  openModal(`
+    <div class="modal-title"><h3>👥 সদস্য র‍্যাংকিং (পয়েন্ট অনুযায়ী)</h3><button onclick="closeModal()">✕</button></div>
+    <div class="card">${memberRanking().map((mm,idx)=>memberRankRow(mm,idx)).join('')}</div>
+  `);
+}
+function openPublicProfile(id){
+  const mm = getMember(id);
+  const isMemberRole = mm.role==='member';
+  const history = db.pointHistory[mm.id]||[];
+  openModal(`
+    <div class="modal-title"><h3>সদস্য প্রোফাইল</h3><button onclick="closeModal()">✕</button></div>
+    <div class="member-detail-head">
+      <div class="av">${avatarInner(mm)}</div>
+      <div><b style="font-size:15.5px;display:block;">${esc(mm.name)}</b><span style="font-size:12px;color:var(--muted);">${isMemberRole?mm.id+' · ':''}${mm.position}</span></div>
+    </div>
+    <div class="card">
+      <div class="list-item"><div class="ico">🩸</div><div class="meta"><b>ব্লাড গ্রুপ</b><span>${mm.bloodGroup}</span></div></div>
+      <div class="list-item"><div class="ico">📅</div><div class="meta"><b>যোগদানের তারিখ</b><span>${mm.joinDate}</span></div></div>
+      <div class="list-item"><div class="ico">🕒</div><div class="meta"><b>শেষ রক্তদান</b><span>${donationLabel(mm.lastDonationDate)}</span></div></div>
+    </div>
+    ${isMemberRole ? `
+    <div class="section-title" style="margin-top:18px;"><h3>🏅 কর্ম স্কোরের বিবরণ</h3></div>
+    <div class="point-tri" style="margin-bottom:14px;">
+      <div class="plus"><b>+${mm.plus}</b><span>প্লাস</span></div>
+      <div class="minus"><b>-${mm.minus}</b><span>নেগেটিভ</span></div>
+      <div class="final"><b>${mm.plus-mm.minus}</b><span>ফাইনাল</span></div>
+    </div>
+    ${history.length? `<div class="card">${history.map(h=>`
+      <div class="list-item">
+        <div class="ico" style="background:${h.type==='plus'?'#E7F6EE':'#FCEAEA'};color:${h.type==='plus'?'var(--success)':'#B4123A'};">${h.type==='plus'?'+':'−'}</div>
+        <div class="meta"><b>${h.type==='plus'?'+':'-'}${h.amount} — ${esc(h.reason)}</b><span>${h.by} · ${h.date}</span></div>
+      </div>
+    `).join('')}</div>` : emptyState('📊','এখনো কোনো পয়েন্ট হিস্টোরি নেই')}
+    ` : ''}
+  `);
+}
+function statusPillContrib(c){
+  const map={PAID:'pill-success',DUE:'pill-important',PENDING_VERIFICATION:'pill-urgent',REJECTED:'pill-danger'};
+  return `<span class="pill ${map[c]||'pill-normal'}">${contribLabel(c)}</span>`;
+}
+function qrPlaceholder(seed){
+  // simple deterministic pseudo-QR grid purely for visual demo purposes
+  let h=0; for(const c of seed) h=(h*31+c.charCodeAt(0))>>>0;
+  let cells='';
+  for(let y=0;y<11;y++)for(let x=0;x<11;x++){
+    h = (h*1103515245+12345)>>>0;
+    if((h>>16)%3===0 || (x<3&&y<3)||(x>7&&y<3)||(x<3&&y>7)) cells+=`<rect x="${x*2.6+1}" y="${y*2.6+1}" width="2.2" height="2.2" fill="#0F0F54"/>`;
+  }
+  return cells;
+}
+function openEditProfile(){
+  const m = currentMember();
+  openModal(`
+    <div class="modal-title"><h3>প্রোফাইল সম্পাদনা</h3><button onclick="closeModal()">✕</button></div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:10px;margin-bottom:16px;">
+      <div class="av" id="photoPreview" style="width:76px;height:76px;font-size:24px;">${avatarInner(m)}</div>
+      <label class="btn btn-sm btn-ghost" style="cursor:pointer;">
+        🖼️ গ্যালারি থেকে ছবি বাছাই করুন
+        <input type="file" accept="image/*" id="editPhotoFile" style="display:none;" onchange="handlePhotoSelect(this)">
+      </label>
+    </div>
+    <label class="field"><span>নাম</span><input id="editName" value="${esc(m.name)}"></label>
+    <label class="field"><span>ব্লাড গ্রুপ</span><input id="editBg" value="${m.bloodGroup}"></label>
+    <div class="reason-warn">⚠️ পদবি, মেম্বার আইডি ও অনুমোদন-সংক্রান্ত তথ্য শুধুমাত্র অ্যাডমিন সম্পাদনা করতে পারবেন।</div>
+    <button class="btn btn-primary" onclick="saveProfileEdit()">পরিবর্তন সংরক্ষণ করুন</button>
+  `);
+}
+let _pendingPhotoData = null;
+function handlePhotoSelect(input){
+  const file = input.files && input.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e){
+    const img = new Image();
+    img.onload = function(){
+      const size = 240;
+      const canvas = document.createElement('canvas');
+      canvas.width = size; canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      const scale = Math.max(size/img.width, size/img.height);
+      const w = img.width*scale, h = img.height*scale;
+      ctx.drawImage(img, (size-w)/2, (size-h)/2, w, h);
+      _pendingPhotoData = canvas.toDataURL('image/jpeg', 0.85);
+      const prev = document.getElementById('photoPreview');
+      if(prev) prev.innerHTML = `<img src="${_pendingPhotoData}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;">`;
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+function saveProfileEdit(){
+  const m=currentMember();
+  if(_pendingPhotoData){ m.photoData = _pendingPhotoData; _pendingPhotoData = null; }
+  m.name=document.getElementById('editName').value.trim()||m.name;
+  m.bloodGroup=document.getElementById('editBg').value.trim()||m.bloodGroup;
+  saveDB(); closeModal(); render(); toast('প্রোফাইল হালনাগাদ হয়েছে','✅');
+}
+function openClaimOffer(offerId){
+  const o = db.offers.find(x=>x.id===offerId);
+  openModal(`
+    <div class="modal-title"><h3>${o.label} সদস্যপদ পেমেন্ট</h3><button onclick="closeModal()">✕</button></div>
+    <div class="card" style="margin-bottom:14px;">
+      <div style="font-size:13px;">পরিমাণ: <b>৳${o.price}</b> · পুরস্কার: <b>+${o.points} পয়েন্ট</b></div>
+    </div>
+    <div class="section-title" style="margin-top:0;"><h3 style="font-size:14px;">পেমেন্ট পদ্ধতি</h3></div>
+    ${db.paymentMethods.filter(p=>p.active).map(p=>`<div class="list-item"><div class="ico">💰</div><div class="meta"><b>${p.name}</b><span>${p.number}</span></div></div>`).join('')}
+    <label class="field" style="margin-top:14px;"><span>ট্রানজেকশন আইডি (TxID)</span><input id="txid" placeholder="যেমন: 8YV3KP2201"></label>
+    <button class="btn btn-red" onclick="submitPayment('${o.id}')">পেমেন্ট জমা দিন</button>
+  `);
+}
+function submitPayment(offerId){
+  const o = db.offers.find(x=>x.id===offerId);
+  const txid = document.getElementById('txid').value.trim();
+  if(!txid){ toast('ট্রানজেকশন আইডি দিন','⚠️'); return; }
+  if(db.payments.some(p=>p.txid===txid)){ toast('এই TxID ইতিমধ্যে ব্যবহৃত হয়েছে','🚫'); return; }
+  const m = currentMember();
+  db.payments.unshift({id:`UA-PAY-2026-0${db.payments.length+12}`, member:m.id, memberName:m.name, offer:o.label, amount:o.price, txid, date:'আজ', status:'pending'});
+  m.contribution='PENDING_VERIFICATION';
+  saveDB(); closeModal(); render();
+  toast('পেমেন্ট জমা হয়েছে, যাচাইয়ের অপেক্ষায় আছে','⏳');
+}
+
+/* ---------------- ADMIN: DASHBOARD ---------------- */
+function screenAdminDashboard(){
+  const pendingApprovals = db.members.filter(m=>m.status==='PENDING').length;
+  const pendingPayments = db.payments.filter(p=>p.status==='pending').length;
+  const review = db.members.filter(m=>m.status==='MANUAL_REVIEW').length;
+  const bloodEmergency = db.bloodRequests.filter(r=>r.status==='active').length;
+  const upcoming = db.activities.filter(a=>a.status==='upcoming').length;
+  const active = db.members.filter(m=>m.status==='ACTIVE').length;
+  const banned = db.members.filter(m=>['TEMP_BANNED','PERMA_BANNED'].includes(m.status)).length;
+  const pwReq = db.passwordResetRequests.filter(r=>r.status==='pending').length;
+
+  return `<div class="screen">
+    <div class="section-title"><h3>⚡ অ্যাকশন সেন্টার</h3></div>
+    ${actionRow(pendingApprovals,'সদস্য অনুমোদনের অপেক্ষায়','members')}
+    ${actionRow(pendingPayments,'পেমেন্ট যাচাই বাকি','payments')}
+    ${actionRow(review,'সন্দেহজনক অ্যাকাউন্ট পর্যালোচনা','members')}
+    ${actionRow(bloodEmergency,'রক্তের জরুরি অনুরোধ','dashboard')}
+    ${actionRow(upcoming,'আসন্ন ইভেন্ট','dashboard')}
+    ${actionRow(pwReq,'পাসওয়ার্ড রিসেট অনুরোধ','more')}
+
+    <div class="section-title"><h3>📊 সংক্ষিপ্ত পরিসংখ্যান</h3></div>
+    <p style="font-size:11.5px;color:var(--muted);margin:-4px 0 10px;">যেকোনো বক্সে ট্যাপ করলে বিস্তারিত দেখা যাবে</p>
+    <div class="stat-grid">
+      <div class="stat-box accent" onclick="openStatDetail('total')"><b>${db.members.length}</b><span>মোট সদস্য</span></div>
+      <div class="stat-box" onclick="openStatDetail('active')"><b>${active}</b><span>সক্রিয় সদস্য</span></div>
+      <div class="stat-box" onclick="openStatDetail('pending')"><b>${pendingApprovals}</b><span>অনুমোদনের অপেক্ষায়</span></div>
+      <div class="stat-box" onclick="openStatDetail('banned')"><b>${banned}</b><span>নিষিদ্ধ/স্থগিত</span></div>
+      <div class="stat-box" onclick="openIncomeHistory()"><b>৳${totalContribution()}</b><span>মোট বার্ষিক চাঁদা আদায়</span></div>
+      <div class="stat-box" onclick="openStatDetail('activities')"><b>${db.activities.length}</b><span>মোট কার্যক্রম</span></div>
+    </div>
+
+    <div class="section-title"><h3>🩺 কারেন্ট ব্যালেন্স</h3></div>
+    <div class="card">
+      <div class="list-item" style="cursor:pointer;padding:8px 4px;" onclick="openIncomeHistory()">
+        <div class="ico" style="background:var(--success-bg);color:var(--success);">💰</div>
+        <div class="meta"><b>মোট তহবিল</b><span>বিস্তারিত হিস্টোরি দেখতে ট্যাপ করুন</span></div>
+        <div class="tail" style="font-weight:700;color:var(--navy);">৳${totalIncome()}</div>
+      </div>
+      <div class="list-item" style="cursor:pointer;padding:8px 4px;" onclick="openExpenseHistory()">
+        <div class="ico" style="background:var(--danger-bg);color:#B4123A;">📤</div>
+        <div class="meta"><b>ব্যয়</b><span>বিস্তারিত হিস্টোরি দেখতে ট্যাপ করুন</span></div>
+        <div class="tail" style="font-weight:700;color:var(--navy);">৳${totalExpense()}</div>
+      </div>
+      <div style="border-top:1px dashed var(--border);margin:10px 0;"></div>
+      <div style="display:flex;justify-content:space-between;font-size:14.5px;color:var(--navy);font-weight:700;padding:0 4px;"><span>বর্তমান স্থিতি</span><b>৳${currentBalance()}</b></div>
+    </div>
+  </div>`;
+}
+function totalIncome(){
+  const fromPayments = db.payments.filter(p=>p.status==='approved').reduce((s,p)=>s+Number(p.amount),0);
+  const fromDonations = db.donations.reduce((s,d)=>s+Number(d.amount),0);
+  return fromPayments + fromDonations;
+}
+function totalContribution(){
+  return db.payments.filter(p=>p.status==='approved').reduce((s,p)=>s+Number(p.amount),0);
+}
+function totalExpense(){ return db.expenses.reduce((s,e)=>s+Number(e.amount),0); }
+function currentBalance(){ return totalIncome() - totalExpense(); }
+function openIncomeHistory(){
+  const isSuper = session.role==='superadmin';
+  const paymentRows = db.payments.filter(p=>p.status==='approved').map(p=>({amount:p.amount, description:`কন্ট্রিবিউশন — ${p.memberName} (${p.offer})`, date:p.date, addedBy:'সিস্টেম'}));
+  const rows = [...db.donations, ...paymentRows];
+  openModal(`
+    <div class="modal-title">
+      <h3>💰 মোট তহবিল হিস্টোরি</h3>
+      <div style="display:flex;gap:8px;">
+        ${isSuper?`<button onclick="closeModal(); openAddIncome();" style="background:var(--navy);color:#fff;border:none;width:30px;height:30px;border-radius:50%;font-size:16px;cursor:pointer;">+</button>`:''}
+        <button onclick="closeModal()">✕</button>
+      </div>
+    </div>
+    <div class="card">
+      ${rows.map(r=>`<div class="list-item"><div class="ico">💵</div><div class="meta"><b>${esc(r.description)}</b><span>${r.addedBy} · ${r.date}</span></div><div class="tail" style="font-weight:700;color:var(--success);">+৳${r.amount}</div></div>`).join('') || emptyState('💰','কোনো আয় নথিভুক্ত নেই')}
+    </div>
+    <div style="display:flex;justify-content:space-between;font-weight:700;color:var(--navy);margin-top:12px;padding:0 4px;"><span>সর্বমোট</span><span>৳${totalIncome()}</span></div>
+  `);
+}
+function openAddIncome(){
+  openModal(`
+    <div class="modal-title"><h3>💰 নতুন আয়/অনুদান যোগ করুন</h3><button onclick="closeModal()">✕</button></div>
+    <label class="field"><span>টাকার পরিমাণ</span><input id="incAmt" type="number" min="1" placeholder="যেমন: ৫০০০"></label>
+    <label class="field"><span>বিবরণ</span><textarea id="incDesc" placeholder="যেমন: ঈদ উপলক্ষে স্পনসর অনুদান"></textarea></label>
+    <button class="btn btn-primary" onclick="submitIncome()">Submit</button>
+  `);
+}
+function submitIncome(){
+  const amt = Number(document.getElementById('incAmt').value);
+  const desc = document.getElementById('incDesc').value.trim();
+  if(!amt||amt<=0){ toast('সঠিক পরিমাণ দিন','⚠️'); return; }
+  if(!desc){ toast('বিবরণ লিখুন','⚠️'); return; }
+  const seq = db.nextDonationSeq++;
+  db.donations.unshift({id:seq, amount:amt, description:desc, date:'আজ', addedBy:currentMember().name});
+  addAudit('আয়/অনুদান যোগ করেছেন', `৳${amt} — ${desc}`);
+  saveDB(); toast('যোগ করা হয়েছে','✅');
+  openIncomeHistory();
+}
+function openExpenseHistory(){
+  const isSuper = session.role==='superadmin';
+  openModal(`
+    <div class="modal-title">
+      <h3>📤 ব্যয় হিস্টোরি</h3>
+      <div style="display:flex;gap:8px;">
+        ${isSuper?`<button onclick="closeModal(); openAddExpense();" style="background:var(--red);color:#fff;border:none;width:30px;height:30px;border-radius:50%;font-size:16px;cursor:pointer;">+</button>`:''}
+        <button onclick="closeModal()">✕</button>
+      </div>
+    </div>
+    <div class="card">
+      ${db.expenses.map(e=>`<div class="list-item"><div class="ico">📤</div><div class="meta"><b>${esc(e.description)}</b><span>${e.addedBy} · ${e.date}</span></div><div class="tail" style="font-weight:700;color:#B4123A;">-৳${e.amount}</div></div>`).join('') || emptyState('📤','কোনো ব্যয় নথিভুক্ত নেই')}
+    </div>
+    <div style="display:flex;justify-content:space-between;font-weight:700;color:var(--navy);margin-top:12px;padding:0 4px;"><span>সর্বমোট</span><span>৳${totalExpense()}</span></div>
+  `);
+}
+function openAddExpense(){
+  openModal(`
+    <div class="modal-title"><h3>📤 নতুন খরচ যোগ করুন</h3><button onclick="closeModal()">✕</button></div>
+    <label class="field"><span>টাকার পরিমাণ</span><input id="expAmt" type="number" min="1" placeholder="যেমন: ১২০০"></label>
+    <label class="field"><span>খরচের বিবরণ</span><textarea id="expDesc" placeholder="যেমন: কার্যক্রমের উপকরণ ক্রয়"></textarea></label>
+    <button class="btn btn-red" onclick="submitExpense()">Submit</button>
+  `);
+}
+function submitExpense(){
+  const amt = Number(document.getElementById('expAmt').value);
+  const desc = document.getElementById('expDesc').value.trim();
+  if(!amt||amt<=0){ toast('সঠিক পরিমাণ দিন','⚠️'); return; }
+  if(!desc){ toast('বিবরণ লিখুন','⚠️'); return; }
+  const seq = db.nextExpenseSeq++;
+  db.expenses.unshift({id:seq, amount:amt, description:desc, date:'আজ', addedBy:currentMember().name});
+  addAudit('খরচ যোগ করেছেন', `৳${amt} — ${desc}`);
+  saveDB(); toast('যোগ করা হয়েছে','✅');
+  openExpenseHistory();
+}
+function statDetailMemberRow(m){
+  return `<div class="list-item" style="cursor:pointer;" onclick="closeModal(); openMemberDetail('${m.id}')">
+    <div class="ico" style="background:var(--navy);color:#fff;">${avatarInner(m)}</div>
+    <div class="meta"><b>${esc(m.name)}</b><span>${m.id} · ${m.position}</span></div>
+    <div class="tail">${statusPill(m.status)}</div>
+  </div>`;
+}
+function openStatDetail(kind){
+  let title='', body='';
+  if(kind==='total'){
+    title='মোট সদস্য তালিকা';
+    body = db.members.map(statDetailMemberRow).join('');
+  } else if(kind==='active'){
+    title='সক্রিয় সদস্য তালিকা';
+    body = db.members.filter(m=>m.status==='ACTIVE').map(statDetailMemberRow).join('');
+  } else if(kind==='pending'){
+    title='অনুমোদনের অপেক্ষায় থাকা সদস্য';
+    body = db.members.filter(m=>m.status==='PENDING').map(statDetailMemberRow).join('') || emptyState('✅','অপেক্ষমান কেউ নেই');
+  } else if(kind==='banned'){
+    title='নিষিদ্ধ/স্থগিত সদস্য তালিকা';
+    body = db.members.filter(m=>['TEMP_BANNED','PERMA_BANNED','SUSPENDED'].includes(m.status)).map(statDetailMemberRow).join('') || emptyState('✅','কেউ নিষিদ্ধ নেই');
+  } else if(kind==='income'){
+    title='চাঁদা আদায়ের বিস্তারিত (অনুমোদিত)';
+    const approved = db.payments.filter(p=>p.status==='approved');
+    body = approved.map(p=>`
+      <div class="list-item"><div class="ico">💰</div><div class="meta"><b>${esc(p.memberName)}</b><span>${p.offer} · TxID ${p.txid} · ${p.date}</span></div><div class="tail">৳${p.amount}</div></div>
+    `).join('') || emptyState('💳','কোনো অনুমোদিত পেমেন্ট নেই');
+    body += `<div style="border-top:1px dashed var(--border);margin:10px 0;"></div><div style="display:flex;justify-content:space-between;font-weight:700;color:var(--navy);"><span>সর্বমোট</span><span>৳${totalContribution()}</span></div>`;
+  } else if(kind==='activities'){
+    title='সকল কার্যক্রম';
+    body = db.activities.map(activityRowHTML).join('');
+  }
+  openModal(`<div class="modal-title"><h3>${title}</h3><button onclick="closeModal()">✕</button></div><div class="card">${body}</div>`);
+}
+function actionRow(count,label,goTab){
+  if(!count) return '';
+  return `<div class="action-row" onclick="session.adminTab='${goTab}'; render();">
+    <div class="count">${count}</div><div class="txt">${label}</div><div class="arrow">›</div>
+  </div>`;
+}
+
+/* ---------------- ADMIN: MEMBERS ---------------- */
+function screenAdminMembers(){
+  const q = (session.memberSearch||'').toLowerCase();
+  const filter = session.memberFilter||'all';
+  let list = db.members;
+  if(filter!=='all') list = list.filter(m=>m.status===filter);
+  if(q) list = list.filter(m=>m.name.toLowerCase().includes(q)||m.id.toLowerCase().includes(q)||m.mobile.includes(q));
+  return `<div class="screen">
+    <input placeholder="🔎 নাম, আইডি বা মোবাইল দিয়ে খুঁজুন" value="${esc(session.memberSearch||'')}" oninput="session.memberSearch=this.value; renderInPlace();" style="margin-bottom:10px;">
+    <div class="chip-row">
+      ${memberChip('all','সব',filter)}
+      ${memberChip('PENDING','অপেক্ষমান',filter)}
+      ${memberChip('MANUAL_REVIEW','পর্যালোচনা',filter)}
+      ${memberChip('ACTIVE','সক্রিয়',filter)}
+      ${memberChip('TEMP_BANNED','নিষিদ্ধ',filter)}
+    </div>
+    <div class="card">
+      ${list.map(m=>`
+        <div class="list-item" style="cursor:pointer;" onclick="openMemberDetail('${m.id}')">
+          <div class="ico" style="background:var(--navy);color:#fff;">${avatarInner(m)}</div>
+          <div class="meta"><b>${esc(m.name)}</b><span>${m.id} · ${m.position}</span></div>
+          <div class="tail">${statusPill(m.status)}</div>
+        </div>
+      `).join('') || emptyState('🔍','কোনো সদস্য পাওয়া যায়নি')}
+    </div>
+  </div>`;
+}
+function memberChip(val,label,active){ return `<div class="chip ${active===val?'active':''}" onclick="session.memberFilter='${val}'; render();">${label}</div>`; }
+function renderInPlace(){ document.getElementById('content').innerHTML = renderScreen(); }
+
+function openMemberDetail(id){
+  const m = getMember(id);
+  session._detailId = id;
+  const isSuper = session.role==='superadmin';
+  const isMemberRole = m.role==='member';
+  openModal(`
+    <div class="modal-title"><h3>সদস্য বিস্তারিত</h3><button onclick="closeModal()">✕</button></div>
+    <div class="member-detail-head">
+      <div class="av">${avatarInner(m)}</div>
+      <div><b style="font-size:15.5px;display:block;">${esc(m.name)}</b><span style="font-size:12px;color:var(--muted);">${m.id} · ${m.mobile}</span></div>
+    </div>
+    <div style="margin-bottom:12px;">${statusPill(m.status)} <span class="pill pill-normal">${m.position}</span>${!isMemberRole?` <span class="pill pill-normal">${m.role==='superadmin'?'সুপার এডমিন':'এডমিন'}</span>`:''}</div>
+    ${m.status==='TEMP_BANNED' ? `<div class="reason-warn">🚫 সাময়িক নিষিদ্ধ, মেয়াদ শেষ: ${m.banUntil}<br>কারণ: ${m.banReason}</div>` : ''}
+
+    ${isMemberRole ? `
+    <div class="point-tri" style="margin-bottom:16px;">
+      <div class="plus"><b>+${m.plus}</b><span>প্লাস</span></div>
+      <div class="minus"><b>-${m.minus}</b><span>নেগেটিভ</span></div>
+      <div class="final"><b>${m.plus-m.minus}</b><span>ফাইনাল</span></div>
+    </div>` : `<div class="reason-warn">ℹ️ এডমিন/সুপার এডমিনের কোনো পয়েন্ট থাকে না — তাদের কাজ শুধু অ্যাপ নিয়ন্ত্রণ করা।</div>`}
+
+    ${m.status==='PENDING' ? `
+    <div class="btn-row" style="margin-bottom:10px;">
+      <button class="btn btn-primary" onclick="approveMember('${id}')">✅ অনুমোদন</button>
+      <button class="btn btn-danger-outline" onclick="rejectMember('${id}')">❌ প্রত্যাখ্যান</button>
+    </div>` : ''}
+
+    ${isMemberRole ? `
+    <div class="btn-row" style="margin-bottom:8px;">
+      <button class="btn btn-ghost" onclick="openAddPoint('${id}','plus')">➕ প্লাস পয়েন্ট</button>
+      <button class="btn btn-ghost" onclick="openAddPoint('${id}','minus')">➖ নেগেটিভ পয়েন্ট</button>
+    </div>` : ''}
+
+    ${m.status==='ACTIVE' ? `
+    <div class="btn-row" style="margin-bottom:8px;">
+      <button class="btn btn-outline" onclick="openBanForm('${id}','temp')">⏸️ সাময়িক নিষিদ্ধ</button>
+      ${isSuper?`<button class="btn btn-danger-outline" onclick="openBanForm('${id}','perma')">⛔ স্থায়ী নিষিদ্ধ</button>`:''}
+    </div>`:''}
+    ${['TEMP_BANNED','PERMA_BANNED','SUSPENDED'].includes(m.status) ? `<button class="btn btn-primary" style="margin-bottom:8px;" onclick="unbanMember('${id}')">🔓 আনব্যান করুন</button>`:''}
+
+    ${m.status==='ACTIVE' ? `<button class="btn btn-outline" style="margin-bottom:8px;" onclick="openBloodPointForm('${id}')">🩸 ${isMemberRole?'রক্তদান পয়েন্ট ও তারিখ':'রক্তদানের তারিখ সেট করুন'}</button>`:''}
+    ${isSuper ? `<button class="btn btn-outline" style="margin-bottom:8px;" onclick="openSuperEditMember('${id}')">🛠️ প্রোফাইল তথ্য সম্পাদনা (সুপার এডমিন)</button>`:''}
+
+    <button class="btn btn-ghost" style="margin-bottom:8px;" onclick="openResetPin('${id}')">🔑 পিন রিসেট</button>
+    ${isSuper ? `<button class="btn btn-danger-outline" onclick="deleteAccountConfirm('${id}')">🗑️ একাউন্ট মুছে ফেলুন</button>`:''}
+  `);
+}
+function approveMember(id){
+  const m=getMember(id); m.status='ACTIVE'; m.position='সাধারণ সদস্য';
+  addAudit(`সদস্য অনুমোদন করেছেন`, m.name);
+  saveDB(); closeModal(); render(); toast(`${m.name} অনুমোদিত হয়েছে`,'✅');
+}
+function rejectMember(id){
+  const m=getMember(id); m.status='REJECTED';
+  addAudit(`সদস্য আবেদন প্রত্যাখ্যান করেছেন`, m.name);
+  saveDB(); closeModal(); render(); toast(`আবেদন প্রত্যাখ্যাত হয়েছে`,'❌');
+}
+function openAddPoint(id,type){
+  openModal(`
+    <div class="modal-title"><h3>${type==='plus'?'➕ প্লাস পয়েন্ট যোগ করুন':'➖ নেগেটিভ পয়েন্ট যোগ করুন'}</h3><button onclick="closeModal()">✕</button></div>
+    <label class="field"><span>পরিমাণ</span><input id="ptAmt" type="number" min="1" value="10"></label>
+    <label class="field"><span>কারণ (আবশ্যক)</span><textarea id="ptReason" placeholder="যেমন: কার্যক্রমে অংশগ্রহণ"></textarea></label>
+    <button class="btn ${type==='plus'?'btn-primary':'btn-red'}" onclick="submitPoint('${id}','${type}')">নিশ্চিত করুন</button>
+  `);
+}
+function submitPoint(id,type){
+  const amt = Number(document.getElementById('ptAmt').value);
+  const reason = document.getElementById('ptReason').value.trim();
+  if(!amt || amt<=0){ toast('সঠিক পরিমাণ দিন','⚠️'); return; }
+  if(!reason){ toast('কারণ লেখা আবশ্যক','⚠️'); return; }
+  const m = getMember(id);
+  if(type==='plus') m.plus+=amt; else m.minus+=amt;
+  if(!db.pointHistory[id]) db.pointHistory[id]=[];
+  db.pointHistory[id].unshift({type, amount:amt, reason, date:'আজ', by: currentMember().name});
+  addAudit(`পয়েন্ট যোগ করেছেন (${type==='plus'?'+':'-'}${amt})`, m.name);
+  saveDB(); closeModal(); render(); toast('পয়েন্ট আপডেট হয়েছে','✅');
+}
+function openBanForm(id,kind){
+  const durations = ['১ ঘণ্টা','৬ ঘণ্টা','১২ ঘণ্টা','১ দিন','৩ দিন','৭ দিন','১৫ দিন','৩০ দিন'];
+  openModal(`
+    <div class="modal-title"><h3>${kind==='temp'?'সাময়িক নিষিদ্ধ করুন':'স্থায়ী নিষিদ্ধ করুন'}</h3><button onclick="closeModal()">✕</button></div>
+    ${kind==='temp' ? `<label class="field"><span>মেয়াদ</span><select id="banDur">${durations.map(d=>`<option>${d}</option>`).join('')}</select></label>` : `<div class="reason-warn">⚠️ এই কার্যক্রমটি অপরিবর্তনীয় এবং সংগঠনের নীতিমালা অনুযায়ী প্রয়োগ করা উচিত।</div>`}
+    <label class="field"><span>কারণ (আবশ্যক)</span><textarea id="banReason" placeholder="নিষিদ্ধ করার কারণ লিখুন"></textarea></label>
+    <button class="btn btn-red" onclick="submitBan('${id}','${kind}')">নিশ্চিত করুন</button>
+  `);
+}
+function submitBan(id,kind){
+  const reason = document.getElementById('banReason').value.trim();
+  if(!reason){ toast('কারণ লেখা আবশ্যক','⚠️'); return; }
+  const m = getMember(id);
+  if(kind==='temp'){ m.status='TEMP_BANNED'; m.banUntil='কনফিগার করা মেয়াদ অনুযায়ী'; m.banReason=reason; }
+  else { m.status='PERMA_BANNED'; m.banReason=reason; }
+  addAudit(`${kind==='temp'?'সাময়িক':'স্থায়ী'} নিষেধাজ্ঞা প্রয়োগ করেছেন`, m.name);
+  saveDB(); closeModal(); render(); toast('নিষেধাজ্ঞা প্রয়োগ হয়েছে','🚫');
+}
+function unbanMember(id){
+  const m=getMember(id); m.status='ACTIVE'; m.banReason=''; m.banUntil='';
+  addAudit(`আনব্যান করেছেন`, m.name);
+  saveDB(); closeModal(); render(); toast(`${m.name} পুনরায় সক্রিয় হয়েছে`,'🔓');
+}
+function deleteAccountConfirm(id){
+  const m = getMember(id);
+  if(id===currentMember().id){ toast('নিজের একাউন্ট নিজে মুছে ফেলা যাবে না','⚠️'); return; }
+  openModal(`
+    <div class="modal-title"><h3>🗑️ একাউন্ট মুছে ফেলুন</h3><button onclick="closeModal()">✕</button></div>
+    <div class="reason-warn">⚠️ "${esc(m.name)}" (${m.id}) এর একাউন্টটি স্থায়ীভাবে মুছে যাবে এবং এই কাজটি ফিরিয়ে আনা যাবে না।</div>
+    <button class="btn btn-red" onclick="deleteAccount('${id}')">হ্যাঁ, স্থায়ীভাবে মুছে ফেলুন</button>
+  `);
+}
+function deleteAccount(id){
+  const m = getMember(id);
+  db.members = db.members.filter(x=>x.id!==id);
+  delete db.pointHistory[id];
+  addAudit('একাউন্ট স্থায়ীভাবে মুছে ফেলেছেন', `${m.name} (${m.id})`);
+  saveDB(); closeModal(); render(); toast('একাউন্ট মুছে ফেলা হয়েছে','🗑️');
+}
+function openResetPin(id){
+  openModal(`
+    <div class="modal-title"><h3>🔑 পিন রিসেট</h3><button onclick="closeModal()">✕</button></div>
+    <label class="field"><span>নতুন ৬-সংখ্যার পিন</span><input id="newPin" maxlength="6" inputmode="numeric"></label>
+    <button class="btn btn-primary" onclick="submitResetPin('${id}')">রিসেট নিশ্চিত করুন</button>
+  `);
+}
+function submitResetPin(id){
+  const p = document.getElementById('newPin').value.trim();
+  if(p.length!==6){ toast('৬ সংখ্যার পিন দিন','⚠️'); return; }
+  const m=getMember(id); m.pin=p;
+  addAudit(`পিন রিসেট করেছেন`, m.name);
+  saveDB(); closeModal(); toast('পিন রিসেট হয়েছে','🔑');
+}
+function addAudit(action,target){
+  db.auditLog.unshift({who:`${currentMember().name} (${session.role==='superadmin'?'Super Admin':'Admin'})`, action, target, when:'এখন'});
+}
+function openBloodPointForm(id){
+  const m = getMember(id);
+  const isMemberRole = m.role==='member';
+  const today = new Date().toISOString().slice(0,10);
+  openModal(`
+    <div class="modal-title"><h3>🩸 ${isMemberRole?'রক্তদান পয়েন্ট ও তারিখ':'রক্তদানের তারিখ সেট করুন'}</h3><button onclick="closeModal()">✕</button></div>
+    <div class="reason-warn">ℹ️ এখানে যে তারিখ দেওয়া হবে সেটাই এই সদস্যের "শেষ রক্তদান" হিসেবে প্রোফাইলে দেখাবে।</div>
+    <label class="field"><span>রক্তদানের তারিখ</span><input id="bpDate" type="date" value="${today}"></label>
+    <label class="field"><span>স্থান (ঐচ্ছিক)</span><input id="bpPlace" placeholder="যেমন: সদর হাসপাতাল" value="${esc(m.lastDonationPlace||'')}"></label>
+    ${isMemberRole?`<label class="field"><span>পুরস্কার পয়েন্ট</span><input id="bpPoints" type="number" value="30" min="0"></label>`:''}
+    <button class="btn btn-red" onclick="submitBloodPoint('${id}')">নিশ্চিত করুন</button>
+  `);
+}
+function submitBloodPoint(id){
+  const date = document.getElementById('bpDate').value;
+  const place = document.getElementById('bpPlace').value.trim();
+  const ptsEl = document.getElementById('bpPoints');
+  const pts = ptsEl ? (Number(ptsEl.value)||0) : 0;
+  if(!date){ toast('তারিখ দিন','⚠️'); return; }
+  const m = getMember(id);
+  m.lastDonationDate = date; m.lastDonationPlace = place;
+  if(pts>0){
+    m.plus += pts;
+    if(!db.pointHistory[id]) db.pointHistory[id]=[];
+    db.pointHistory[id].unshift({type:'plus', amount:pts, reason:'রক্তদান', date:'আজ', by:currentMember().name});
+  }
+  addAudit('রক্তদানের তারিখ নিবন্ধন করেছেন', m.name);
+  saveDB(); closeModal(); render(); toast('রক্তদানের তথ্য হালনাগাদ হয়েছে','🩸');
+}
+function openSuperEditMember(id){
+  const m = getMember(id);
+  openModal(`
+    <div class="modal-title"><h3>🛠️ প্রোফাইল তথ্য সম্পাদনা</h3><button onclick="closeModal()">✕</button></div>
+    <div class="reason-warn">🔒 এই তথ্যগুলো শুধুমাত্র সুপার অ্যাডমিন পরিবর্তন করতে পারবে।</div>
+    <label class="field"><span>প্রোফাইল ছবি (সংক্ষিপ্ত অক্ষর/ইনিশিয়াল)</span><input id="supAvatar" value="${esc(m.avatarSeed)}" maxlength="2"></label>
+    <label class="field"><span>পদবি</span><input id="supPosition" value="${esc(m.position)}" placeholder="পদবি লিখুন"></label>
+    <label class="field"><span>যোগদানের তারিখ</span><input id="supJoinDate" value="${esc(m.joinDate)}"></label>
+    <button class="btn btn-primary" onclick="saveSuperEditMember('${id}')">সংরক্ষণ করুন</button>
+  `);
+}
+function saveSuperEditMember(id){
+  const m = getMember(id);
+  const avatar = document.getElementById('supAvatar').value.trim();
+  const position = document.getElementById('supPosition').value;
+  const joinDate = document.getElementById('supJoinDate').value.trim();
+  if(!avatar||!joinDate){ toast('সব ঘর পূরণ করুন','⚠️'); return; }
+  m.avatarSeed=avatar; m.position=position; m.joinDate=joinDate;
+  addAudit('সদস্যের প্রোফাইল তথ্য সম্পাদনা করেছেন (ছবি/পদবি/যোগদান)', m.name);
+  saveDB(); closeModal(); render(); toast('প্রোফাইল তথ্য হালনাগাদ হয়েছে','✅');
+}
+
+/* ---------------- ADMIN: PAYMENTS ---------------- */
+function screenAdminPayments(){
+  const sub = session.payTab||'pending';
+  const list = db.payments.filter(p=>sub==='pending'?p.status==='pending':p.status!=='pending');
+  return `<div class="screen">
+    <div class="tabs2">
+      <button class="${sub==='pending'?'active':''}" onclick="session.payTab='pending'; render();">যাচাইয়ের অপেক্ষায় (${db.payments.filter(p=>p.status==='pending').length})</button>
+      <button class="${sub==='done'?'active':''}" onclick="session.payTab='done'; render();">সম্পন্ন</button>
+    </div>
+    ${list.map(p=>`
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;">
+          <b style="font-size:14px;">${esc(p.memberName)}</b>
+          <span class="pill ${p.status==='approved'?'pill-success':p.status==='rejected'?'pill-danger':'pill-important'}">${p.status==='approved'?'অনুমোদিত':p.status==='rejected'?'প্রত্যাখ্যাত':'অপেক্ষমান'}</span>
+        </div>
+        <div style="font-size:12.5px;color:var(--muted);margin-top:8px;line-height:1.8;">
+          🧾 ${p.id} · ${p.offer}<br>💰 ৳${p.amount} · TxID: <b>${p.txid}</b><br>📅 ${p.date}
+        </div>
+        ${p.status==='pending' ? `
+        <div class="btn-row" style="margin-top:12px;">
+          <button class="btn btn-primary" onclick="approvePayment('${p.id}')">✅ অনুমোদন</button>
+          <button class="btn btn-danger-outline" onclick="rejectPaymentPrompt('${p.id}')">❌ প্রত্যাখ্যান</button>
+        </div>`:''}
+      </div>
+    `).join('') || emptyState('💳','এই তালিকায় কিছু নেই')}
+  </div>`;
+}
+function approvePayment(id){
+  const p = db.payments.find(x=>x.id===id);
+  p.status='approved';
+  const m = getMember(p.member);
+  if(m){
+    m.contribution='PAID';
+    const offer = db.offers.find(o=>o.label===p.offer);
+    if(offer){
+      m.plus += offer.points;
+      if(!db.pointHistory[m.id]) db.pointHistory[m.id]=[];
+      db.pointHistory[m.id].unshift({type:'plus',amount:offer.points,reason:`কন্ট্রিবিউশন পুরস্কার — ${p.offer}`,date:'আজ',by:'সিস্টেম'});
+    }
+  }
+  addAudit(`পেমেন্ট অনুমোদন করেছেন`, `${p.id} · ${p.memberName}`);
+  saveDB(); render(); toast('পেমেন্ট অনুমোদিত হয়েছে','✅');
+}
+function rejectPaymentPrompt(id){
+  openModal(`
+    <div class="modal-title"><h3>পেমেন্ট প্রত্যাখ্যান</h3><button onclick="closeModal()">✕</button></div>
+    <label class="field"><span>কারণ (আবশ্যক)</span><textarea id="rejReason" placeholder="প্রত্যাখ্যানের কারণ লিখুন"></textarea></label>
+    <button class="btn btn-red" onclick="rejectPayment('${id}')">প্রত্যাখ্যান নিশ্চিত করুন</button>
+  `);
+}
+function rejectPayment(id){
+  const reason = document.getElementById('rejReason').value.trim();
+  if(!reason){ toast('কারণ লেখা আবশ্যক','⚠️'); return; }
+  const p = db.payments.find(x=>x.id===id); p.status='rejected';
+  const m = getMember(p.member); if(m) m.contribution='REJECTED';
+  addAudit(`পেমেন্ট প্রত্যাখ্যান করেছেন`, `${p.id} · ${p.memberName}`);
+  saveDB(); closeModal(); render(); toast('পেমেন্ট প্রত্যাখ্যাত হয়েছে','❌');
+}
+
+/* ---------------- ADMIN: NOTICES ---------------- */
+function screenAdminNotices(){
+  const sub = session.adminNoticeTab||'notices';
+  return `<div class="screen">
+    <div class="tabs2">
+      <button class="${sub==='notices'?'active':''}" onclick="session.adminNoticeTab='notices'; render();">নোটিশ</button>
+      <button class="${sub==='activities'?'active':''}" onclick="session.adminNoticeTab='activities'; render();">কার্যক্রম</button>
+      <button class="${sub==='blood'?'active':''}" onclick="session.adminNoticeTab='blood'; render();">রক্তের প্রয়োজন</button>
+    </div>
+    ${sub==='notices'?adminNoticesListHTML():sub==='activities'?adminActivitiesListHTML():adminBloodNeedsListHTML()}
+  </div>`;
+}
+function adminNoticesListHTML(){
+  return `
+    <button class="btn btn-red" style="margin-bottom:14px;" onclick="openCreateNotice()">➕ নতুন নোটিশ তৈরি করুন</button>
+    ${db.notices.map(n=>`
+      <div class="notice-card">
+        <div class="top-row">
+          <span class="pill pill-${n.priority}">${{normal:'সাধারণ',important:'গুরুত্বপূর্ণ',urgent:'জরুরি',emergency:'ইমারজেন্সি'}[n.priority]}</span>
+          <span class="pill pill-normal">${n.status==='published'?'প্রকাশিত':'খসড়া'}</span>
+        </div>
+        <h4>${esc(n.title)}</h4>
+        <p>${esc(n.body)}</p>
+        <div class="foot"><span>${n.date}</span><span>${n.visibility==='public'?'পাবলিক':n.visibility==='members'?'সদস্য':'অ্যাডমিন'}</span></div>
+        <div class="btn-row" style="margin-top:10px;">
+          <button class="btn btn-sm btn-ghost" onclick="openEditNotice(${n.id})">✏️ সম্পাদনা</button>
+          <button class="btn btn-sm btn-danger-outline" onclick="deleteNoticeConfirm(${n.id})">🗑️ মুছুন</button>
+        </div>
+      </div>
+    `).join('') || emptyState('📭','কোনো নোটিশ নেই')}
+  `;
+}
+function openCreateNotice(){
+  openModal(`
+    <div class="modal-title"><h3>নতুন নোটিশ</h3><button onclick="closeModal()">✕</button></div>
+    <label class="field"><span>শিরোনাম</span><input id="ntTitle" placeholder="নোটিশের শিরোনাম"></label>
+    <label class="field"><span>বিস্তারিত</span><textarea id="ntBody" placeholder="বিস্তারিত লিখুন"></textarea></label>
+    <label class="field"><span>দৃশ্যমানতা</span>
+      <select id="ntVis"><option value="public">পাবলিক</option><option value="members">সদস্যদের জন্য</option><option value="admin">শুধু অ্যাডমিন</option></select>
+    </label>
+    <label class="field"><span>অগ্রাধিকার</span>
+      <select id="ntPr"><option value="normal">সাধারণ</option><option value="important">গুরুত্বপূর্ণ</option><option value="urgent">জরুরি</option><option value="emergency">ইমারজেন্সি</option></select>
+    </label>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="submitNotice(false)">খসড়া রাখুন</button>
+      <button class="btn btn-red" onclick="submitNotice(true)">প্রকাশ করুন</button>
+    </div>
+  `);
+}
+function submitNotice(publish){
+  const title = document.getElementById('ntTitle').value.trim();
+  const body = document.getElementById('ntBody').value.trim();
+  if(!title||!body){ toast('শিরোনাম ও বিস্তারিত দিন','⚠️'); return; }
+  db.notices.unshift({id:Date.now(), title, body, visibility:document.getElementById('ntVis').value, priority:document.getElementById('ntPr').value, date:'আজ', status: publish?'published':'draft'});
+  addAudit(publish?'নোটিশ প্রকাশ করেছেন':'নোটিশ খসড়া তৈরি করেছেন', title);
+  saveDB(); closeModal(); render(); toast(publish?'নোটিশ প্রকাশিত হয়েছে':'খসড়া সংরক্ষিত হয়েছে','📢');
+}
+function openEditNotice(id){
+  const n = db.notices.find(x=>x.id===id);
+  const visOpt = v => `<option value="${v}" ${n.visibility===v?'selected':''}>${v==='public'?'পাবলিক':v==='members'?'সদস্যদের জন্য':'শুধু অ্যাডমিন'}</option>`;
+  const prOpt = v => `<option value="${v}" ${n.priority===v?'selected':''}>${{normal:'সাধারণ',important:'গুরুত্বপূর্ণ',urgent:'জরুরি',emergency:'ইমারজেন্সি'}[v]}</option>`;
+  openModal(`
+    <div class="modal-title"><h3>নোটিশ সম্পাদনা</h3><button onclick="closeModal()">✕</button></div>
+    <label class="field"><span>শিরোনাম</span><input id="ntTitle" value="${esc(n.title)}"></label>
+    <label class="field"><span>বিস্তারিত</span><textarea id="ntBody">${esc(n.body)}</textarea></label>
+    <label class="field"><span>দৃশ্যমানতা</span><select id="ntVis">${visOpt('public')}${visOpt('members')}${visOpt('admin')}</select></label>
+    <label class="field"><span>অগ্রাধিকার</span><select id="ntPr">${prOpt('normal')}${prOpt('important')}${prOpt('urgent')}${prOpt('emergency')}</select></label>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="saveEditNotice(${id},false)">খসড়া করুন</button>
+      <button class="btn btn-primary" onclick="saveEditNotice(${id},true)">প্রকাশ করুন</button>
+    </div>
+  `);
+}
+function saveEditNotice(id, publish){
+  const title = document.getElementById('ntTitle').value.trim();
+  const body = document.getElementById('ntBody').value.trim();
+  if(!title||!body){ toast('শিরোনাম ও বিস্তারিত দিন','⚠️'); return; }
+  const n = db.notices.find(x=>x.id===id);
+  n.title=title; n.body=body; n.visibility=document.getElementById('ntVis').value; n.priority=document.getElementById('ntPr').value; n.status=publish?'published':'draft';
+  addAudit('নোটিশ সম্পাদনা করেছেন', title);
+  saveDB(); closeModal(); render(); toast('নোটিশ হালনাগাদ হয়েছে','✅');
+}
+function deleteNoticeConfirm(id){
+  const n = db.notices.find(x=>x.id===id);
+  openModal(`
+    <div class="modal-title"><h3>নোটিশ মুছে ফেলুন</h3><button onclick="closeModal()">✕</button></div>
+    <div class="reason-warn">⚠️ "${esc(n.title)}" নোটিশটি স্থায়ীভাবে মুছে যাবে। এই কাজটি ফিরিয়ে আনা যাবে না।</div>
+    <button class="btn btn-red" onclick="deleteNotice(${id})">হ্যাঁ, মুছে ফেলুন</button>
+  `);
+}
+function deleteNotice(id){
+  const n = db.notices.find(x=>x.id===id);
+  db.notices = db.notices.filter(x=>x.id!==id);
+  addAudit('নোটিশ মুছে ফেলেছেন', n?n.title:'');
+  saveDB(); closeModal(); render(); toast('নোটিশ মুছে ফেলা হয়েছে','🗑️');
+}
+
+/* ---- Admin: Activities CRUD (inside Notices tab) ---- */
+function adminActivitiesListHTML(){
+  return `
+    <button class="btn btn-red" style="margin-bottom:14px;" onclick="openCreateActivity()">➕ নতুন কার্যক্রম যোগ করুন</button>
+    ${db.activities.map(a=>`
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+          <div><b style="font-size:14.5px;">${esc(a.title)}</b><div style="font-size:12px;color:var(--muted);margin-top:4px;">${a.category}</div></div>
+          <span class="pill ${a.status==='upcoming'?'pill-important':'pill-success'}">${a.status==='upcoming'?'আসন্ন':'সম্পন্ন'}</span>
+        </div>
+        <div style="font-size:12.5px;color:var(--muted);margin-top:10px;line-height:1.9;">📅 ${a.date}<br>📍 ${a.location}<br>👥 ${a.participants} জন অংশগ্রহণকারী</div>
+        <div style="font-size:10.5px;color:var(--muted);margin-top:8px;">রেফারেন্স: ${a.id}</div>
+        <div class="btn-row" style="margin-top:12px;">
+          <button class="btn btn-sm btn-ghost" onclick="openEditActivity('${a.id}')">✏️ সম্পাদনা</button>
+          <button class="btn btn-sm btn-danger-outline" onclick="deleteActivityConfirm('${a.id}')">🗑️ মুছুন</button>
+        </div>
+      </div>
+    `).join('') || emptyState('🎯','কোনো কার্যক্রম নেই')}
+  `;
+}
+function openCreateActivity(){
+  openModal(`
+    <div class="modal-title"><h3>নতুন কার্যক্রম</h3><button onclick="closeModal()">✕</button></div>
+    <label class="field"><span>শিরোনাম</span><input id="acTitle" placeholder="কার্যক্রমের নাম"></label>
+    <label class="field"><span>ক্যাটাগরি</span><input id="acCat" placeholder="যেমন: সামাজিক সেবা"></label>
+    <label class="field"><span>তারিখ</span><input id="acDate" placeholder="যেমন: ৩০ সেপ্টেম্বর, ২০২৬"></label>
+    <label class="field"><span>স্থান</span><input id="acLoc" placeholder="স্থানের নাম"></label>
+    <label class="field"><span>অংশগ্রহণকারী সংখ্যা</span><input id="acPart" type="number" value="0" min="0"></label>
+    <label class="field"><span>অবস্থা</span><select id="acStatus"><option value="upcoming">আসন্ন</option><option value="completed">সম্পন্ন</option></select></label>
+    <button class="btn btn-red" onclick="submitActivity()">যোগ করুন</button>
+  `);
+}
+function submitActivity(){
+  const title=document.getElementById('acTitle').value.trim();
+  const date=document.getElementById('acDate').value.trim();
+  if(!title||!date){ toast('শিরোনাম ও তারিখ দিন','⚠️'); return; }
+  const seq = db.nextActivitySeq++;
+  db.activities.unshift({id:`UA-ACT-2026-${String(seq).padStart(3,'0')}`, title, category:document.getElementById('acCat').value.trim()||'সাধারণ', date, location:document.getElementById('acLoc').value.trim()||'—', participants:Number(document.getElementById('acPart').value)||0, status:document.getElementById('acStatus').value});
+  addAudit('নতুন কার্যক্রম যোগ করেছেন', title);
+  saveDB(); closeModal(); render(); toast('কার্যক্রম যোগ হয়েছে','🎯');
+}
+function openEditActivity(id){
+  const a = db.activities.find(x=>x.id===id);
+  openModal(`
+    <div class="modal-title"><h3>কার্যক্রম সম্পাদনা</h3><button onclick="closeModal()">✕</button></div>
+    <label class="field"><span>শিরোনাম</span><input id="acTitle" value="${esc(a.title)}"></label>
+    <label class="field"><span>ক্যাটাগরি</span><input id="acCat" value="${esc(a.category)}"></label>
+    <label class="field"><span>তারিখ</span><input id="acDate" value="${esc(a.date)}"></label>
+    <label class="field"><span>স্থান</span><input id="acLoc" value="${esc(a.location)}"></label>
+    <label class="field"><span>অংশগ্রহণকারী সংখ্যা</span><input id="acPart" type="number" value="${a.participants}" min="0"></label>
+    <label class="field"><span>অবস্থা</span><select id="acStatus"><option value="upcoming" ${a.status==='upcoming'?'selected':''}>আসন্ন</option><option value="completed" ${a.status==='completed'?'selected':''}>সম্পন্ন</option></select></label>
+    <button class="btn btn-primary" onclick="saveEditActivity('${id}')">সংরক্ষণ করুন</button>
+  `);
+}
+function saveEditActivity(id){
+  const a = db.activities.find(x=>x.id===id);
+  const title=document.getElementById('acTitle').value.trim();
+  const date=document.getElementById('acDate').value.trim();
+  if(!title||!date){ toast('শিরোনাম ও তারিখ দিন','⚠️'); return; }
+  a.title=title; a.category=document.getElementById('acCat').value.trim(); a.date=date; a.location=document.getElementById('acLoc').value.trim(); a.participants=Number(document.getElementById('acPart').value)||0; a.status=document.getElementById('acStatus').value;
+  addAudit('কার্যক্রম সম্পাদনা করেছেন', title);
+  saveDB(); closeModal(); render(); toast('কার্যক্রম হালনাগাদ হয়েছে','✅');
+}
+function deleteActivityConfirm(id){
+  const a = db.activities.find(x=>x.id===id);
+  openModal(`
+    <div class="modal-title"><h3>কার্যক্রম মুছে ফেলুন</h3><button onclick="closeModal()">✕</button></div>
+    <div class="reason-warn">⚠️ "${esc(a.title)}" কার্যক্রমটি স্থায়ীভাবে মুছে যাবে।</div>
+    <button class="btn btn-red" onclick="deleteActivity('${id}')">হ্যাঁ, মুছে ফেলুন</button>
+  `);
+}
+function deleteActivity(id){
+  const a = db.activities.find(x=>x.id===id);
+  db.activities = db.activities.filter(x=>x.id!==id);
+  addAudit('কার্যক্রম মুছে ফেলেছেন', a?a.title:'');
+  saveDB(); closeModal(); render(); toast('কার্যক্রম মুছে ফেলা হয়েছে','🗑️');
+}
+
+/* ---- Admin: Blood Needs CRUD (inside Notices tab) ---- */
+function adminBloodNeedsListHTML(){
+  return `
+    <button class="btn btn-red" style="margin-bottom:14px;" onclick="openCreateBloodNeed()">➕ নতুন রক্তের প্রয়োজন যোগ করুন</button>
+    ${db.bloodRequests.map(r=>`
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;">
+          <b style="font-size:14px;">${esc(r.patient)}</b>
+          <span class="pill ${r.status==='active'?'pill-emergency':'pill-success'}">${r.status==='active'?r.urgency:'সমাধান হয়েছে'}</span>
+        </div>
+        <div style="font-size:12.5px;color:var(--muted);margin-top:8px;line-height:1.9;">🩸 গ্রুপ: ${r.bg} · প্রয়োজন ${r.units} ব্যাগ<br>🏥 ${r.hospital}<br>📅 ${r.date}</div>
+        <div class="btn-row" style="margin-top:12px;">
+          <button class="btn btn-sm btn-ghost" onclick="openEditBloodNeed('${r.id}')">✏️ সম্পাদনা</button>
+          <button class="btn btn-sm btn-danger-outline" onclick="deleteBloodNeedConfirm('${r.id}')">🗑️ মুছুন</button>
+        </div>
+      </div>
+    `).join('') || emptyState('🩸','কোনো তথ্য নেই')}
+  `;
+}
+function openCreateBloodNeed(){
+  openModal(`
+    <div class="modal-title"><h3>নতুন রক্তের প্রয়োজন</h3><button onclick="closeModal()">✕</button></div>
+    <label class="field"><span>রোগীর নাম</span><input id="bnPatient" placeholder="রোগীর নাম"></label>
+    <label class="field"><span>রক্তের গ্রুপ</span><select id="bnGroup"><option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>O+</option><option>O-</option><option>AB+</option><option>AB-</option></select></label>
+    <label class="field"><span>হাসপাতাল</span><input id="bnHosp" placeholder="হাসপাতালের নাম"></label>
+    <label class="field"><span>ব্যাগ সংখ্যা</span><input id="bnUnits" type="number" value="1" min="1"></label>
+    <label class="field"><span>জরুরি মাত্রা</span><select id="bnUrgency"><option value="সাধারণ">সাধারণ</option><option value="জরুরি" selected>জরুরি</option><option value="ইমারজেন্সি">ইমারজেন্সি</option></select></label>
+    <label class="field"><span>তারিখ</span><input id="bnDate" placeholder="যেমন: আজ"></label>
+    <button class="btn btn-red" onclick="submitBloodNeed()">যোগ করুন</button>
+  `);
+}
+function submitBloodNeed(){
+  const patient=document.getElementById('bnPatient').value.trim();
+  if(!patient){ toast('রোগীর নাম দিন','⚠️'); return; }
+  const seq = db.nextBloodReqSeq++;
+  db.bloodRequests.unshift({id:`UA-BR-2026-${String(seq).padStart(3,'0')}`, patient, bg:document.getElementById('bnGroup').value, hospital:document.getElementById('bnHosp').value.trim()||'—', units:Number(document.getElementById('bnUnits').value)||1, urgency:document.getElementById('bnUrgency').value, date:document.getElementById('bnDate').value.trim()||'আজ', status:'active'});
+  addAudit('রক্তের প্রয়োজন যোগ করেছেন', patient);
+  saveDB(); closeModal(); render(); toast('যোগ করা হয়েছে','🩸');
+}
+function openEditBloodNeed(id){
+  const r = db.bloodRequests.find(x=>x.id===id);
+  const grpOpt = g => `<option ${r.bg===g?'selected':''}>${g}</option>`;
+  const urgOpt = u => `<option value="${u}" ${r.urgency===u?'selected':''}>${u}</option>`;
+  openModal(`
+    <div class="modal-title"><h3>রক্তের প্রয়োজন সম্পাদনা</h3><button onclick="closeModal()">✕</button></div>
+    <label class="field"><span>রোগীর নাম</span><input id="bnPatient" value="${esc(r.patient)}"></label>
+    <label class="field"><span>রক্তের গ্রুপ</span><select id="bnGroup">${['A+','A-','B+','B-','O+','O-','AB+','AB-'].map(grpOpt).join('')}</select></label>
+    <label class="field"><span>হাসপাতাল</span><input id="bnHosp" value="${esc(r.hospital)}"></label>
+    <label class="field"><span>ব্যাগ সংখ্যা</span><input id="bnUnits" type="number" value="${r.units}" min="1"></label>
+    <label class="field"><span>জরুরি মাত্রা</span><select id="bnUrgency">${urgOpt('সাধারণ')}${urgOpt('জরুরি')}${urgOpt('ইমারজেন্সি')}</select></label>
+    <label class="field"><span>তারিখ</span><input id="bnDate" value="${esc(r.date)}"></label>
+    <label class="field"><span>অবস্থা</span><select id="bnStatus"><option value="active" ${r.status==='active'?'selected':''}>সক্রিয়</option><option value="closed" ${r.status==='closed'?'selected':''}>সমাধান হয়েছে</option></select></label>
+    <button class="btn btn-primary" onclick="saveEditBloodNeed('${id}')">সংরক্ষণ করুন</button>
+  `);
+}
+function saveEditBloodNeed(id){
+  const r = db.bloodRequests.find(x=>x.id===id);
+  const patient=document.getElementById('bnPatient').value.trim();
+  if(!patient){ toast('রোগীর নাম দিন','⚠️'); return; }
+  r.patient=patient; r.bg=document.getElementById('bnGroup').value; r.hospital=document.getElementById('bnHosp').value.trim(); r.units=Number(document.getElementById('bnUnits').value)||1; r.urgency=document.getElementById('bnUrgency').value; r.date=document.getElementById('bnDate').value.trim(); r.status=document.getElementById('bnStatus').value;
+  addAudit('রক্তের প্রয়োজন সম্পাদনা করেছেন', patient);
+  saveDB(); closeModal(); render(); toast('হালনাগাদ হয়েছে','✅');
+}
+function deleteBloodNeedConfirm(id){
+  const r = db.bloodRequests.find(x=>x.id===id);
+  openModal(`
+    <div class="modal-title"><h3>মুছে ফেলুন</h3><button onclick="closeModal()">✕</button></div>
+    <div class="reason-warn">⚠️ "${esc(r.patient)}"-এর অনুরোধটি স্থায়ীভাবে মুছে যাবে।</div>
+    <button class="btn btn-red" onclick="deleteBloodNeed('${id}')">হ্যাঁ, মুছে ফেলুন</button>
+  `);
+}
+function deleteBloodNeed(id){
+  const r = db.bloodRequests.find(x=>x.id===id);
+  db.bloodRequests = db.bloodRequests.filter(x=>x.id!==id);
+  addAudit('রক্তের প্রয়োজন মুছে ফেলেছেন', r?r.patient:'');
+  saveDB(); closeModal(); render(); toast('মুছে ফেলা হয়েছে','🗑️');
+}
+
+/* ---------------- ADMIN: MORE ---------------- */
+function screenAdminMore(){
+  const isSuper = session.role==='superadmin';
+  const pendingPw = db.passwordResetRequests.filter(r=>r.status==='pending');
+  return `<div class="screen">
+    ${!isSuper ? `<div class="notice-banner">🔒 কিছু সেটিংস শুধুমাত্র সুপার অ্যাডমিন পরিবর্তন করতে পারবেন।</div>`:''}
+
+    <div class="section-title"><h3>🔑 পাসওয়ার্ড রিসেট অনুরোধ ${pendingPw.length?`(${pendingPw.length})`:''}</h3></div>
+    <div class="card">
+      ${pendingPw.map(r=>`
+        <div class="list-item">
+          <div class="ico">🔑</div>
+          <div class="meta"><b>${esc(r.memberName)}</b><span>${r.mobile} · ${r.date}</span></div>
+          ${isSuper ? `<button class="btn btn-sm btn-primary" onclick="openAcceptPwReset(${r.id})">গ্রহণ</button>` : `<span class="pill pill-normal">শুধু সুপার এডমিন</span>`}
+        </div>
+      `).join('') || emptyState('✅','কোনো অপেক্ষমান অনুরোধ নেই')}
+    </div>
+
+    <div class="section-title"><h3>🎛️ ফিচার সুইচ</h3></div>
+    <div class="card">
+      ${Object.entries(db.featureFlags).map(([k,v])=>`
+        <div class="switch-row">
+          <div><b>${featureLabel(k)}</b><span>অ্যাপে চালু/বন্ধ করুন</span></div>
+          <label class="switch"><input type="checkbox" ${v?'checked':''} ${isSuper?'':'disabled'} onchange="toggleFeature('${k}')"><div class="track"></div></label>
+        </div>`).join('')}
+    </div>
+
+    <div class="section-title"><h3>💳 অফার পেমেন্ট নাম্বার</h3></div>
+    <div class="card">
+      ${db.paymentMethods.map((p,i)=>`
+        <div class="list-item">
+          <div class="ico">💰</div>
+          <div class="meta"><b>${esc(p.name)}</b><span>${esc(p.number)} ${p.active?'':'· নিষ্ক্রিয়'}</span></div>
+          <button class="btn btn-sm btn-ghost" onclick="openEditPaymentMethod(${i})">✏️ সম্পাদনা</button>
+        </div>`).join('')}
+    </div>
+
+    <div class="section-title"><h3>📞 যোগাযোগ (সাংগঠনিক সম্পাদক)</h3></div>
+    <div class="card" style="display:flex;justify-content:space-between;align-items:center;">
+      <div><b style="font-size:13.5px;display:block;">${esc(db.org.secretaryName)}</b><span style="font-size:11.5px;color:var(--muted);">${db.org.secretaryMobile}</span></div>
+      ${isSuper?`<button class="btn btn-sm btn-outline" onclick="openEditSecretary()">✏️ সম্পাদনা</button>`:''}
+    </div>
+
+    <div class="section-title"><h3>🖼️ ব্র্যান্ডিং</h3></div>
+    <div class="card" style="display:flex;align-items:center;gap:14px;">
+      <div class="mark" style="width:52px;height:52px;"><img src="${LOGO_DATA}" alt="logo" style="width:100%;height:100%;object-fit:contain;border-radius:50%;"></div>
+      <div style="flex:1;"><b style="font-size:13.5px;display:block;">লোগো ভার্সন v${db.logoVersion}</b><span style="font-size:11.5px;color:var(--muted);">${isSuper?'সুপার অ্যাডমিন আপডেট করতে পারবেন':'শুধু সুপার অ্যাডমিন পরিবর্তন করতে পারবেন'}</span></div>
+      ${isSuper?`<button class="btn btn-sm btn-outline" onclick="bumpLogo()">আপডেট</button>`:''}
+    </div>
+
+    <div class="section-title"><h3>🏛️ পদবি তালিকা</h3></div>
+    <div class="card">
+      ${db.positions.map(p=>`<div class="list-item"><div class="ico">🎖️</div><div class="meta"><b>${p}</b></div></div>`).join('')}
+    </div>
+
+    <div class="section-title"><h3>🖼️ গ্যালারি</h3></div>
+    <div class="gallery-grid">
+      ${db.gallery.map(g=>`<div class="gallery-tile" style="background:${g.color};">${g.emoji}<span class="cap">${g.title}</span></div>`).join('')}
+    </div>
+
+    ${isSuper ? `
+    <div class="section-title"><h3>⚠️ পয়েন্ট ও চাঁদা রিসেট</h3></div>
+    <div class="card">
+      <div class="list-item">
+        <div class="ico">🔄</div>
+        <div class="meta"><b>সকল সদস্যের পয়েন্ট ও মোট বার্ষিক চাঁদা আদায় ০০ করুন</b><span>নিশ্চিত করলে সকল সদস্যের প্লাস/মাইনাস পয়েন্ট এবং মোট বার্ষিক চাঁদা আদায় শূন্য (০০) হয়ে যাবে। অনুদান (Donation) এর হিসাব অপরিবর্তিত থাকবে — মোট তহবিল থেকে বাদ যাবে না। এরপর নতুন করে চাঁদা বা পয়েন্ট যোগ করলে তা স্বাভাবিক নিয়মেই যোগ হবে।</span></div>
+      </div>
+      <button class="btn btn-danger-outline" style="margin-top:10px;" onclick="openConfirmResetLedger()">🔄 পয়েন্ট ও চাঁদা রিসেট করুন</button>
+    </div>` : ''}
+
+    <div class="section-title"><h3>📜 অডিট লগ (অপরিবর্তনীয়)</h3></div>
+    <div class="card">
+      ${db.auditLog.slice(0,8).map(a=>`
+        <div class="audit-row"><span class="who">${a.who}</span> — ${a.action} <b>${a.target}</b><div class="when">${a.when}</div></div>
+      `).join('')}
+    </div>
+
+    <div class="fine-print">
+      এটি একটি প্রোটোটাইপ ডেমো। প্রকৃত অ্যাপে অডিট লগ, নিরাপত্তা নিয়ম এবং সব সংবেদনশীল অপারেশন একটি প্রকৃত ব্যাকএন্ড (Firebase Security Rules + সার্ভার ভ্যালিডেশন) দ্বারা প্রয়োগ করা হবে — শুধু অ্যাপ UI দিয়ে নয়।
+      <br><br>
+      <span style="text-decoration:underline;cursor:pointer;" onclick="resetDemo()">ডেমো ডেটা রিসেট করুন</span>
+    </div>
+  </div>`;
+}
+function featureLabel(k){ return {messaging:'মেসেজিং',blood:'রক্তদান মডিউল',finance:'ফাইন্যান্স মডিউল',events:'ইভেন্ট মডিউল',registration:'নতুন রেজিস্ট্রেশন',gallery:'গ্যালারি'}[k]||k; }
+function openConfirmResetLedger(){
+  openModal(`
+    <div class="modal-title"><h3>⚠️ রিসেট নিশ্চিত করুন</h3><button onclick="closeModal()">✕</button></div>
+    <div class="reason-warn">⚠️ এই কাজটি করলে সকল সদস্যের প্লাস/মাইনাস পয়েন্ট এবং সংগঠনের মোট বার্ষিক চাঁদা আদায় (৳${totalContribution()}) স্থায়ীভাবে ০০ হয়ে যাবে। অনুদান (Donation) এর হিসাব অপরিবর্তিত থাকবে, রিসেট হবে না। এই কাজটি ফিরিয়ে আনা যাবে না। আপনি কি নিশ্চিত?</div>
+    <button class="btn btn-red" onclick="resetPointsAndFunds()">হ্যাঁ, সকল পয়েন্ট ও চাঁদা ০০ করুন</button>
+  `);
+}
+function resetPointsAndFunds(){
+  db.members.forEach(m=>{ m.plus=0; m.minus=0; });
+  db.pointHistory = {};
+  db.payments = db.payments.filter(p=>p.status!=='approved');
+  addAudit('সকল সদস্যের পয়েন্ট ও মোট বার্ষিক চাঁদা আদায় রিসেট করেছেন (০০) — অনুদান অপরিবর্তিত', 'সিস্টেম রিসেট');
+  saveDB(); closeModal(); render(); toast('পয়েন্ট ও চাঁদার হিসাব ০০ করা হয়েছে','🔄');
+}
+function toggleFeature(k){ db.featureFlags[k]=!db.featureFlags[k]; addAudit(`ফিচার ${featureLabel(k)} ${db.featureFlags[k]?'চালু':'বন্ধ'} করেছেন`,'সিস্টেম সেটিংস'); saveDB(); toast('সেটিংস আপডেট হয়েছে','⚙️'); }
+function bumpLogo(){ db.logoVersion++; addAudit('লোগো আপডেট করেছেন', `v${db.logoVersion}`); saveDB(); render(); toast('লোগো ভার্সন হালনাগাদ হয়েছে','🖼️'); }
+function openAcceptPwReset(reqId){
+  const r = db.passwordResetRequests.find(x=>x.id===reqId);
+  openModal(`
+    <div class="modal-title"><h3>🔑 পাসওয়ার্ড রিসেট গ্রহণ</h3><button onclick="closeModal()">✕</button></div>
+    <div class="card" style="margin-bottom:14px;"><div style="font-size:13px;"><b>${esc(r.memberName)}</b><br><span style="color:var(--muted);">${r.mobile}</span></div></div>
+    <label class="field"><span>নতুন ৬-সংখ্যার পাসওয়ার্ড দিন</span><input id="pwNewPass" maxlength="6" inputmode="numeric" placeholder="যেকোনো ৬ সংখ্যা"></label>
+    <div class="btn-row">
+      <button class="btn btn-danger-outline" onclick="rejectPwReset(${reqId})">প্রত্যাখ্যান</button>
+      <button class="btn btn-primary" onclick="acceptPwReset(${reqId})">গ্রহণ করুন</button>
+    </div>
+  `);
+}
+function acceptPwReset(reqId){
+  const p = document.getElementById('pwNewPass').value.trim();
+  if(p.length!==6){ toast('৬ সংখ্যার পাসওয়ার্ড দিন','⚠️'); return; }
+  const r = db.passwordResetRequests.find(x=>x.id===reqId);
+  const m = getMember(r.memberId);
+  if(m){ m.pin = p; }
+  r.status='approved';
+  addAudit('পাসওয়ার্ড রিসেট অনুমোদন করেছেন', r.memberName);
+  saveDB(); closeModal(); render(); toast('নতুন পাসওয়ার্ড সেট হয়েছে','🔑');
+}
+function rejectPwReset(reqId){
+  const r = db.passwordResetRequests.find(x=>x.id===reqId);
+  r.status='rejected';
+  addAudit('পাসওয়ার্ড রিসেট প্রত্যাখ্যান করেছেন', r.memberName);
+  saveDB(); closeModal(); render(); toast('অনুরোধ প্রত্যাখ্যাত হয়েছে','❌');
+}
+function openEditSecretary(){
+  openModal(`
+    <div class="modal-title"><h3>যোগাযোগ সম্পাদনা</h3><button onclick="closeModal()">✕</button></div>
+    <label class="field"><span>সাংগঠনিক সম্পাদকের নাম</span><input id="secName" value="${esc(db.org.secretaryName)}"></label>
+    <label class="field"><span>মোবাইল নম্বর</span><input id="secMobile" value="${esc(db.org.secretaryMobile)}"></label>
+    <button class="btn btn-primary" onclick="saveSecretary()">সংরক্ষণ করুন</button>
+  `);
+}
+function saveSecretary(){
+  const name=document.getElementById('secName').value.trim();
+  const mobile=document.getElementById('secMobile').value.trim();
+  if(!name||!mobile){ toast('নাম ও নম্বর দিন','⚠️'); return; }
+  db.org.secretaryName=name; db.org.secretaryMobile=mobile;
+  addAudit('সাংগঠনিক সম্পাদকের যোগাযোগ তথ্য আপডেট করেছেন', name);
+  saveDB(); closeModal(); render(); toast('যোগাযোগ তথ্য হালনাগাদ হয়েছে','✅');
+}
+function openEditPaymentMethod(i){
+  const p = db.paymentMethods[i];
+  openModal(`
+    <div class="modal-title"><h3>পেমেন্ট নাম্বার সম্পাদনা</h3><button onclick="closeModal()">✕</button></div>
+    <label class="field"><span>পদ্ধতির নাম</span><input id="pmName" value="${esc(p.name)}"></label>
+    <label class="field"><span>নাম্বার</span><input id="pmNumber" value="${esc(p.number)}"></label>
+    <div class="switch-row" style="padding:8px 2px;">
+      <div><b>সক্রিয় থাকবে</b><span>বন্ধ করলে অফার ক্লেইমে এই নাম্বার দেখানো হবে না</span></div>
+      <label class="switch"><input type="checkbox" id="pmActive" ${p.active?'checked':''}><div class="track"></div></label>
+    </div>
+    <button class="btn btn-primary" onclick="savePaymentMethod(${i})">সংরক্ষণ করুন</button>
+  `);
+}
+function savePaymentMethod(i){
+  const name=document.getElementById('pmName').value.trim();
+  const number=document.getElementById('pmNumber').value.trim();
+  if(!name||!number){ toast('নাম ও নাম্বার দিন','⚠️'); return; }
+  db.paymentMethods[i].name=name; db.paymentMethods[i].number=number; db.paymentMethods[i].active=document.getElementById('pmActive').checked;
+  addAudit('অফার পেমেন্ট নাম্বার আপডেট করেছেন', `${name} · ${number}`);
+  saveDB(); closeModal(); render(); toast('পেমেন্ট নাম্বার আপডেট হয়েছে','✅');
+}
+
+/* ---------------- NOTIFICATIONS PANEL ---------------- */
+function openNotifPanel(){
+  const items = [
+    {ic:'💳',t:'আপনার পেমেন্ট যাচাইয়ের অপেক্ষায় আছে'},
+    {ic:'📢',t:'নতুন নোটিশ প্রকাশিত হয়েছে'},
+    {ic:'🩸',t:'জরুরি রক্তের প্রয়োজন — B+ গ্রুপ'},
+  ];
+  openModal(`
+    <div class="modal-title"><h3>🔔 নোটিফিকেশন</h3><button onclick="closeModal()">✕</button></div>
+    <div class="card">${items.map(i=>`<div class="list-item"><div class="ico">${i.ic}</div><div class="meta"><b>${i.t}</b><span>এখন</span></div></div>`).join('')}</div>
+  `);
+}
+
+/* ---------------- INIT ---------------- */
+window.onload = async function(){
+  session = loadSession();
+  const cloudData = await loadDBFromCloud();
+  if(cloudData){
+    db = cloudData;
+    localStorage.setItem(LS_KEY, JSON.stringify(db));
+  } else {
+    db = loadDB();
+    saveDBToCloud();
+  }
+  setTimeout(()=>{
+    document.getElementById('splash').style.display='none';
+    document.getElementById('shell').style.display='flex';
+    document.getElementById('shell').style.flexDirection='column';
+    render();
+  }, 1300);
+};
+</script>
+</body>
+</html>
