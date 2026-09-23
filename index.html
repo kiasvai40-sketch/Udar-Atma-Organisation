@@ -72,18 +72,17 @@ img{max-width:100%;display:block;}
   padding-top:var(--safe-t);padding-bottom:var(--safe-b);
 }
 #splash .logo-ring{
-  width:104px;height:104px;border-radius:50%;
-  background:linear-gradient(135deg,#fff,#e9e9ff);
+  width:104px;height:104px;
+  background:none;
   display:flex;align-items:center;justify-content:center;
-  box-shadow:0 0 0 6px rgba(255,255,255,0.12), 0 20px 40px rgba(0,0,0,0.35);
   animation:splashPulse 1.8s ease-in-out infinite;
-  overflow:hidden;
+  overflow:visible;
 }
 #splash .logo-ring img{width:100%;height:100%;object-fit:contain;border-radius:50%;}
 #splash .logo-ring span{font-family:'Baloo Da 2';font-weight:800;font-size:30px;color:var(--navy);}
 @keyframes splashPulse{
-  0%,100%{transform:scale(1);box-shadow:0 0 0 6px rgba(255,255,255,0.12),0 20px 40px rgba(0,0,0,0.35);}
-  50%{transform:scale(1.05);box-shadow:0 0 0 12px rgba(255,255,255,0.06),0 20px 40px rgba(0,0,0,0.35);}
+  0%,100%{transform:scale(1);}
+  50%{transform:scale(1.05);}
 }
 #splash h1{margin:0;font-size:22px;letter-spacing:.3px;}
 #splash p{margin:0;opacity:.75;font-size:13px;letter-spacing:2px;}
@@ -99,7 +98,7 @@ img{max-width:100%;display:block;}
 }
 .topbar-row{display:flex;align-items:center;justify-content:space-between;gap:10px;}
 .brand-mini{display:flex;align-items:center;gap:10px;}
-.brand-mini .mark{width:38px;height:38px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.brand-mini .mark{width:38px;height:38px;background:none;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .brand-mini .mark span{font-family:'Baloo Da 2';font-weight:800;color:var(--navy);font-size:14px;}
 .brand-mini b{font-size:15px;font-weight:700;display:block;}
 .brand-mini small{font-size:10.5px;opacity:.75;letter-spacing:1px;}
@@ -219,7 +218,7 @@ textarea{resize:vertical;min-height:80px;}
 .mcard-face.back{transform:rotateY(180deg);background:linear-gradient(135deg,#1b1b78,var(--navy));display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;}
 .mcard-top{display:flex;justify-content:space-between;align-items:flex-start;position:relative;}
 .mcard-top .org{font-size:11px;opacity:.85;line-height:1.4;}
-.mcard-top .mark2{width:32px;height:32px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;}
+.mcard-top .mark2{width:32px;height:32px;background:none;display:flex;align-items:center;justify-content:center;}
 .mcard-top .mark2 span{font-family:'Baloo Da 2';font-weight:800;color:var(--navy);font-size:12px;}
 .mcard-mid{display:flex;gap:12px;align-items:center;margin-top:20px;position:relative;}
 .mcard-mid .photo{width:54px;height:54px;border-radius:14px;background:rgba(255,255,255,0.2);border:1.5px solid rgba(255,255,255,0.5);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;overflow:hidden;}
@@ -292,7 +291,7 @@ textarea{resize:vertical;min-height:80px;}
 .tabs2 button{flex:1;border:none;background:none;padding:9px;border-radius:9px;font-weight:700;font-size:13px;color:var(--muted);cursor:pointer;}
 .tabs2 button.active{background:#fff;color:var(--navy);box-shadow:0 2px 6px rgba(0,0,0,0.08);}
 .auth-wrap{padding:26px 22px calc(30px + var(--safe-b));min-height:100%;background:linear-gradient(180deg,var(--navy) 0%, var(--navy) 220px, var(--bg) 220px);}
-.auth-logo{width:76px;height:76px;border-radius:50%;background:#fff;margin:10px auto 14px;display:flex;align-items:center;justify-content:center;}
+.auth-logo{width:76px;height:76px;background:none;margin:10px auto 14px;display:flex;align-items:center;justify-content:center;}
 .auth-logo span{font-family:'Baloo Da 2';font-weight:800;color:var(--navy);font-size:24px;}
 .auth-head{text-align:center;color:#fff;margin-bottom:22px;}
 .auth-head h1{font-size:19px;margin:0 0 4px;}
@@ -318,6 +317,31 @@ textarea{resize:vertical;min-height:80px;}
 .audit-row .when{color:var(--muted);font-size:11px;margin-top:2px;}
 .fine-print{font-size:11px;color:var(--muted);text-align:center;line-height:1.7;margin-top:18px;padding:0 6px;}
 .notice-banner{background:linear-gradient(135deg,#FFF3E0,#FFE9D6);border:1px solid #F6D2A6;color:#8a4b06;font-size:11.5px;padding:10px 12px;border-radius:12px;margin-bottom:14px;line-height:1.6;}
+
+/* ============ GUEST HOMEPAGE: SWAP BLUE <-> WHITE ============ */
+/* Blue-filled surfaces become white with blue text; white surfaces become blue with white text. */
+#shell.gh-swap .topbar{background:#fff;color:var(--navy);box-shadow:0 2px 12px rgba(15,15,84,0.08);}
+#shell.gh-swap .topbar .brand-mini small{opacity:.72;}
+#shell.gh-swap .topbar .sub{opacity:.72;}
+#shell.gh-swap .icon-btn{background:rgba(15,15,84,0.10);color:var(--navy);}
+
+#shell.gh-swap .hero-card{background:#fff;color:var(--navy);border:1px solid var(--border);}
+#shell.gh-swap .hero-card p{color:var(--navy);opacity:.85;}
+
+#shell.gh-swap .card,
+#shell.gh-swap .notice-card{background:var(--navy);border-color:var(--navy);color:#fff;}
+#shell.gh-swap .card p,
+#shell.gh-swap .card .list-item .meta span,
+#shell.gh-swap .card .list-item .tail{color:rgba(255,255,255,0.82) !important;}
+#shell.gh-swap .card .list-item .meta b{color:#fff;}
+#shell.gh-swap .card .list-item{border-bottom-color:rgba(255,255,255,0.15);}
+#shell.gh-swap .notice-card h4{color:#fff;}
+#shell.gh-swap .notice-card p,
+#shell.gh-swap .notice-card .foot{color:rgba(255,255,255,0.78);}
+
+#shell.gh-swap .bottomnav{background:var(--navy);border-top-color:var(--navy);}
+#shell.gh-swap .navbtn{color:rgba(255,255,255,0.7);}
+#shell.gh-swap .navbtn.active{color:#fff;}
 </style>
 </head>
 <body>
@@ -392,7 +416,7 @@ function seedData(){
     org:{
       nameBn:'উদার আত্মা সংগঠন', nameEn:'UDAR ATMA ORGANIZATION', slogan:'FAITH BINDS US',
       established:'২০২৪',
-      about:'ছাতির চর, নিকলী, কিশোরগঞ্জভিত্তিক একটি স্বেচ্ছাসেবী সামাজিক সংগঠন। মানবিক সহায়তা, সামাজিক সচেতনতা, শিক্ষা, ক্রীড়া, পরিচ্ছন্নতা ও জনকল্যাণমূলক বিভিন্ন কার্যক্রমের মাধ্যমে একটি সুন্দর ও দায়িত্বশীল সমাজ গঠনে কাজ করে।',
+      about:'ছাতির চর, নিকলী, কিশোরগঞ্জভিত্তিক ��কটি স্বেচ্ছাসেবী সামাজিক সংগঠন। মানবিক সহায়তা, সামাজিক সচেতনতা, শিক্ষা, ক্রীড়া, পরিচ্ছন্নতা ও জনকল্যাণমূলক বিভিন্ন কার্যক্রমের মাধ্যমে একটি সুন্দর ও দায়িত্বশীল সমাজ গঠনে কাজ করে।',
       mission:'আল্লাহর সন্তুষ্টির উদ্দেশ্যে ন্যায়, ইনসাফ, ভ্রাতৃত্ব ও মানবিকতার ভিত্তিতে সমাজের অবহেলিত, অসহায় ও সুবিধাবঞ্চিত মানুষের পাশে দাঁড়ানো; অন্যায়, বৈষম্য, মাদক ও সামাজিক অনাচারের বিরুদ্ধে সচেতনতা সৃষ্টি করা এবং শিক্ষা, সেবা, পরিচ্ছন্নতা ও স্বেচ্ছাসেবামূলক কার্যক্রমের মাধ্যমে একটি সুন্দর, নিরাপদ ও কল্যাণমুখী সমাজ গঠনে কাজ করা।',
       vision:'আল্লাহভীতি, ন্যায়বোধ, মানবিকতা ও পারস্পরিক ভালোবাসায় গড়ে ওঠা এমন একটি আদর্শ সমাজ প্রতিষ্ঠা করা, যেখানে মানুষ অন্যায় ও বৈষম্য থেকে মুক্ত হয়ে মর্যাদা, নিরাপত্তা, ভ্রাতৃত্ব ও শান্তির সঙ্গে বসবাস করবে এবং প্রত্যেকে সমাজের কল্যাণে দায়িত্বশীল ভূমিকা পালন করবে।',
       secretaryName:'এডমিন ১', secretaryMobile:'01800000001'
@@ -405,7 +429,7 @@ function seedData(){
       {id:'UA-2026-004', name:'এডমিন ৩', mobile:'01800000003', pin:'222222', role:'admin', permissions:['member.approve','payment.verify','point.add','notice.publish'], status:'ACTIVE', position:'এডমিন', bloodGroup:'A-', joinDate:'03 জান, ২০২৪', plus:0, minus:0, avatarSeed:'এ৩', contribution:'PAID', nextDue:'১২ অক্টোবর, ২০২৬', lastDonationDate:null, lastDonationPlace:''},
       {id:'UA-2026-005', name:'এডমিন ৪', mobile:'01800000004', pin:'222222', role:'admin', permissions:['member.approve','payment.verify','point.add','notice.publish'], status:'ACTIVE', position:'এডমিন', bloodGroup:'B-', joinDate:'03 জান, ২০২৪', plus:0, minus:0, avatarSeed:'এ৪', contribution:'PAID', nextDue:'১২ অক্টোবর, ২০২৬', lastDonationDate:'2026-09-01', lastDonationPlace:'কমিউনিটি ব্লাড ব্যাংক'},
       {id:'UA-2026-006', name:'এডমিন ৫', mobile:'01800000005', pin:'222222', role:'admin', permissions:['member.approve','payment.verify','point.add','notice.publish'], status:'ACTIVE', position:'এডমিন', bloodGroup:'AB+', joinDate:'03 জান, ২০২৪', plus:0, minus:0, avatarSeed:'এ৫', contribution:'PAID', nextDue:'১২ অক্টোবর, ২০২৬', lastDonationDate:null, lastDonationPlace:''},
-      {id:'UA-2026-007', name:'সুমাইয়া আক্তার', mobile:'01733333333', pin:'123456', role:'member', status:'ACTIVE', position:'সাধারণ সদস্য', bloodGroup:'O+', joinDate:'১৫ মার্চ, ২০২৪', plus:0, minus:0, avatarSeed:'সু', contribution:'DUE', nextDue:'২৫ সেপ্টেম্বর, ২০২৬', lastDonationDate:'2026-07-10', lastDonationPlace:'সদর হাসপাতাল'},
+      {id:'UA-2026-007', name:'সুমা��য়া আক্তার', mobile:'01733333333', pin:'123456', role:'member', status:'ACTIVE', position:'সাধারণ সদস্য', bloodGroup:'O+', joinDate:'১৫ মার্চ, ২০২৪', plus:0, minus:0, avatarSeed:'সু', contribution:'DUE', nextDue:'২৫ সেপ্টেম্বর, ২০২৬', lastDonationDate:'2026-07-10', lastDonationPlace:'সদর হাসপাতাল'},
       {id:'UA-2026-008', name:'জাহিদ হাসান', mobile:'01744444444', pin:'123456', role:'member', status:'PENDING', position:'—', bloodGroup:'AB+', joinDate:'১৯ সেপ্টেম্বর, ২০২৬', plus:0, minus:0, avatarSeed:'জা', contribution:'DUE', nextDue:'—', lastDonationDate:null, lastDonationPlace:''},
       {id:'UA-2026-009', name:'নাসরিন সুলতানা', mobile:'01755555555', pin:'123456', role:'member', status:'MANUAL_REVIEW', position:'সাধারণ সদস্য', bloodGroup:'B-', joinDate:'১০ জুলাই, ২০২৫', plus:0, minus:0, avatarSeed:'না', contribution:'DUE', nextDue:'০১ অক্টোবর, ২০২৬', lastDonationDate:'2025-12-01', lastDonationPlace:'কমিউনিটি ব্লাড ব্যাংক'},
       {id:'UA-2026-010', name:'ফারুক আহমেদ', mobile:'01766666666', pin:'123456', role:'member', status:'TEMP_BANNED', banUntil:'২৬ সেপ্টেম্বর, ২০২৬', banReason:'বারবার মিথ্যা রিপোর্ট জমা দেওয়ার জন্য', position:'সাধারণ সদস্য', bloodGroup:'A-', joinDate:'২২ ফেব্রুয়ারি, ২০২৫', plus:0, minus:0, avatarSeed:'ফা', contribution:'DUE', nextDue:'—', lastDonationDate:null, lastDonationPlace:''},
@@ -516,6 +540,7 @@ function openModal(html){
 function render(){
   saveSession(); saveDB();
   const shell = document.getElementById('shell');
+  shell.classList.toggle('gh-swap', session.screen==='app' && session.role==='guest');
   if(session.screen==='auth'){
     shell.innerHTML = renderAuth();
     return;
@@ -688,7 +713,7 @@ function renderBottomNav(){
         <span class="ic">${t[1]}</span>${t[2]}
       </button>`).join('')}</div>`;
   }
-  const tabs=[['home','🏠','হোম'],['notice','📢','নোটিশ'],['activity','🎯','কার্যক্রম'],['blood','🩸','রক্ত'],['profile','🪪','প্রোফাইল']];
+  const tabs=[['home','🏠','হোম'],['notice','📢','নোটিশ'],['activity','🎯','ক��র্যক্রম'],['blood','🩸','রক্ত'],['profile','🪪','প্রোফাইল']];
   return `<div class="bottomnav">${tabs.map(t=>`
     <button class="navbtn ${session.tab===t[0]?'active':''}" onclick="session.tab='${t[0]}'; render();">
       <span class="ic">${t[1]}</span>${t[2]}
@@ -756,7 +781,7 @@ function screenMemberHome(){
   return `<div class="screen">
     <div class="hero-card">
       <h2>স্বাগতম, ${m.name} 👋</h2>
-      <p>মেম্বার আইডি ${m.id} · ${m.position}</p>
+      <p>মেম্বা�� আইডি ${m.id} · ${m.position}</p>
     </div>
 
     <div class="point-tri">
@@ -881,7 +906,7 @@ function screenBlood(){
   return `<div class="screen">
     <div class="tabs2">
       <button class="${sub==='donors'?'active':''}" onclick="session.bloodTab='donors'; render();">ডোনার তালিকা</button>
-      <button class="${sub==='requests'?'active':''}" onclick="session.bloodTab='requests'; render();">রক্তের অনুরোধ</button>
+      <button class="${sub==='requests'?'active':''}" onclick="session.bloodTab='requests'; render();">রক্তের ���নুরোধ</button>
     </div>
     ${sub==='donors' ? `
       <button class="btn btn-red" style="margin-bottom:14px;" onclick="openBloodRequestForm()">🆘 রক্তের জন্য অনুরোধ করুন</button>
@@ -1478,7 +1503,7 @@ function deleteAccount(id){
 function openResetPin(id){
   openModal(`
     <div class="modal-title"><h3>🔑 পিন রিসেট</h3><button onclick="closeModal()">✕</button></div>
-    <label class="field"><span>নতুন ৬-সংখ্যার পিন</span><input id="newPin" maxlength="6" inputmode="numeric"></label>
+    <label class="field"><span>��তুন ৬-সংখ্যার পিন</span><input id="newPin" maxlength="6" inputmode="numeric"></label>
     <button class="btn btn-primary" onclick="submitResetPin('${id}')">রিসেট নিশ্চিত করুন</button>
   `);
 }
