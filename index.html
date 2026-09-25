@@ -438,7 +438,7 @@ function seedData(){
     org:{
       nameBn:'উদার আত্মা সংগঠন', nameEn:'UDAR ATMA ORGANIZATION', slogan:'FAITH BINDS US',
       established:'২০২৪',
-      about:'ছাতির চর, নিকলী, কিশোরগঞ্জভিত্তিক একটি স্বেচ্ছাসেবী সামাজিক সংগঠন। মানবিক সহায়তা, সামাজিক সচেতনতা, শিক্ষা, ক্রীড়া, পরিচ্ছন্নতা ও জনকল্যাণমূলক বিভিন্ন কার্যক্রমের মাধ্যমে একটি সুন্দর ও দায়িত্বশীল সমাজ গঠনে কাজ করে।',
+      about:'একটি স্বেচ্ছাসেবী সামাজিক সংগঠন। মানবিক সহায়তা, শিক্ষা, সামাজিক সচেতনতা, ক্রীড়া ও জনকল্যাণমূলক কার্যক্রমের মাধ্যমে একটি সুন্দর, ন্যায়ভিত্তিক ও দায়িত্বশীল সমাজ গঠনে আমরা প্রতিশ্রুতিবদ্ধ।\n\nঠিকানা: ছাতির চর, নিকলী, কিশোরগঞ্জ।',
       mission:'আল্লাহর সন্তুষ্টির উদ্দেশ্যে ন্যায়, ইনসাফ, ভ্রাতৃত্ব ও মানবিকতার ভিত্তিতে সমাজের অবহেলিত, অসহায় ও সুবিধাবঞ্চিত মানুষের পাশে দাঁড়ানো; অন্যায়, বৈষম্য, মাদক ও সামাজিক অনাচারের বিরুদ্ধে সচেতনতা সৃষ্টি করা এবং শিক্ষা, সেবা, পরিচ্ছন্নতা ও স্বেচ্ছাসেবামূলক কার্যক্রমের মাধ্যমে একটি সুন্দর, নিরাপদ ও কল্যাণমুখী সমাজ গঠনে কাজ করা।',
       vision:'আল্লাহভীতি, ন্যায়বোধ, মানবিকতা ও পারস্পরিক ভালোবাসায় গড়ে ওঠা এমন একটি আদর্শ সমাজ প্রতিষ্ঠা করা, যেখানে মানুষ অন্যায় ও বৈষম্য থেকে মুক্ত হয়ে মর্যাদা, নিরাপত্তা, ভ্রাতৃত্ব ও শান্তির সঙ্গে বসবাস করবে এবং প্রত্যেকে সমাজের কল্যাণে দায়িত্বশীল ভূমিকা পালন করবে।',
       secretaryName:'এডমিন ১', secretaryMobile:'01800000001'
@@ -636,6 +636,7 @@ function renderRegisterForm(){
   return `
     <label class="field"><span>পূর্ণ নাম</span><input id="regName" placeholder="আপনার নাম লিখুন"></label>
     <label class="field"><span>মোবাইল নম্বর</span><input id="regMobile" type="tel" maxlength="11" placeholder="017XXXXXXXX" inputmode="numeric"></label>
+    <label class="field"><span>রক্তের গ্রুপ (বাধ্যতামূলক)</span><select id="regBg"><option value="">রক্তের গ্রুপ নির্বাচন করুন</option><option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>O+</option><option>O-</option><option>AB+</option><option>AB-</option><option value="জানা নেই">জানা নেই</option></select></label>
     <label class="field"><span>৬-সংখ্যার পিন সেট করুন</span><input id="regPin" type="password" maxlength="6" placeholder="••••••" inputmode="numeric"></label>
     <label class="field"><span>পিন নিশ্চিত করুন</span><input id="regPin2" type="password" maxlength="6" placeholder="••••••" inputmode="numeric"></label>
     <label style="display:flex;gap:9px;align-items:flex-start;font-size:12px;color:var(--muted);margin-bottom:16px;">
@@ -668,15 +669,17 @@ function doRegister(){
   const mobile=document.getElementById('regMobile').value.trim();
   const pin=document.getElementById('regPin').value.trim();
   const pin2=document.getElementById('regPin2').value.trim();
+  const bloodGroup=document.getElementById('regBg').value;
   const agree=document.getElementById('regAgree').checked;
   if(!name){ toast('নাম লিখুন','⚠️'); return; }
   if(!/^01[0-9]{9}$/.test(mobile)){ toast('সঠিক মোবাইল নম্বর দিন','⚠️'); return; }
+  if(!bloodGroup){ toast('রক্তের গ্রুপ নির্বাচন করুন','⚠️'); return; }
   if(db.members.some(m=>m.mobile===mobile)){ toast('এই মোবাইল নম্বরে ইতিমধ্যে একটি অ্যাকাউন্ট আছে','🚫'); return; }
   if(pin.length!==6){ toast('৬ সংখ্যার পিন দিন','⚠️'); return; }
   if(pin!==pin2){ toast('পিন দুটি মিলছে না','⚠️'); return; }
   if(!agree){ toast('শর্তাবলীতে সম্মত হতে হবে','⚠️'); return; }
   const seq = db.nextMemberSeq++;
-  db.members.push({id:`UA-2026-${String(seq).padStart(3,'0')}`,name,mobile,pin,role:'member',status:'PENDING',position:'—',bloodGroup:'—',joinDate:'১৯ সেপ্টেম্বর, ২০২৬',plus:0,minus:0,avatarSeed:name[0],contribution:'DUE',nextDue:'—',lastDonationDate:null,lastDonationPlace:''});
+  db.members.push({id:`UA-2026-${String(seq).padStart(3,'0')}`,name,mobile,pin,role:'member',status:'PENDING',position:'—',bloodGroup,joinDate:'১৯ সেপ্টেম্বর, ২০২৬',plus:0,minus:0,avatarSeed:name[0],contribution:'DUE',nextDue:'—',lastDonationDate:null,lastDonationPlace:''});
   session.regStep=2; saveDB(); render();
 }
 function logout(){ session={screen:'app', role:'guest', memberId:null, tab:'home', authView:'login', regStep:1, adminTab:'dashboard'}; render(); }
@@ -784,7 +787,7 @@ function screenGuestHome(){
   return `<div class="screen">
     <div class="hero-card">
       <h2>${db.org.nameBn}</h2>
-      <p>প্রতিষ্ঠিত: ${db.org.established}<br>${db.org.about}</p>
+      <p style="white-space:pre-line;">প্রতিষ্ঠিত: ${db.org.established}<br>${db.org.about}</p>
     </div>
 
     <div class="section-title" style="justify-content:center;"><h3>মিশন</h3></div>
@@ -828,10 +831,10 @@ function screenMemberHome(){
       <div class="final"><b>${m.plus-m.minus}</b><span>কর্ম স্কোর</span></div>
     </div>
 
-    <div class="section-title"><h3>💳 কন্ট্রিবিউশন অবস্থা</h3></div>
+    <div class="section-title"><h3>💳 আর্থিক হিসাব</h3></div>
     <div class="card" style="display:flex;justify-content:space-between;align-items:center;">
       <div>
-        <b style="font-size:14px;">${contribLabel(m.contribution)}</b>
+        <b style="font-size:14px;">${unpaidMonthList(m).length===0?'পরিশোধিত':`${unpaidMonthList(m).length} মাস বকেয়া`}</b>
         <div style="font-size:12px;color:var(--muted);margin-top:2px;">পরবর্তী তারিখ: ${m.nextDue}</div>
       </div>
       <button class="btn btn-sm btn-red" onclick="session.tab='profile'; render(); scrollToId('contribSection');">পেমেন্ট</button>
@@ -843,7 +846,7 @@ function screenMemberHome(){
         <div class="lcard" onclick="openPublicProfile('${mm.id}')" style="cursor:pointer;">
           <div class="rank">${['🥇','🥈','🥉'][i]||('#'+(i+1))}</div>
           <div class="av">${avatarInner(mm)}</div>
-          <b>${esc(mm.name.split(' ')[0])}${mm.contribution==='PAID'?' ✅':''}</b>
+          <b>${esc(mm.name.split(' ')[0])}${paidMonthList(mm).length>=12?' ✅':''}</b>
           <span>${mm.plus-mm.minus} পয়েন্ট</span>
         </div>
       `).join('') || ''}
@@ -1048,6 +1051,43 @@ function submitBloodRequest(){
   toast('আপনার অনুরোধ জমা হয়েছে','🆘');
 }
 
+/* ---------------- MONTHLY CONTRIBUTION ---------------- */
+const CONTRIBUTION_MONTHS = ['জানুয়ারি','ফেব্রুয়ারি','মার্চ','এপ্রিল','মে','জুন','জুলাই','আগস্ট','সেপ্টেম্বর','অক্টোবর','নভেম্বর','ডিসেম্বর'];
+function paidMonthList(member){ return Array.isArray(member.paidMonths) ? member.paidMonths : (member.contribution==='PAID' ? [...CONTRIBUTION_MONTHS] : []); }
+function unpaidMonthList(member){ const paid=paidMonthList(member); return CONTRIBUTION_MONTHS.filter(x=>!paid.includes(x)); }
+function contributionState(member){
+  const paid=paidMonthList(member).length;
+  if(paid>=12) return 'PAID';
+  if(db.payments.some(p=>p.member===member.id && p.status==='pending')) return 'PENDING_VERIFICATION';
+  return 'DUE';
+}
+function monthBoxesHTML(member){
+  const paid=paidMonthList(member);
+  return `<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px;">
+    ${CONTRIBUTION_MONTHS.map(month=>{const done=paid.includes(month);return `<div style="border:1px solid ${done?'#17834b':'var(--line,#e4e7ef)'};background:${done?'#e7f6ee':'#fff'};border-radius:9px;padding:10px 5px;text-align:center;font-size:12px;font-weight:700;color:${done?'#17834b':'var(--text)'};">${done?'✓ ':''}${month}<div style="font-size:10px;margin-top:3px;">${done?'পরিশোধিত':'বকেয়া'}</div></div>`}).join('')}
+  </div>`;
+}
+function openMonthlyPayment(){
+  const m=currentMember(); const unpaid=unpaidMonthList(m);
+  if(!unpaid.length){toast('আপনার ১২ মাসের চাঁদা পরিশোধিত','✅');return;}
+  openModal(`<div class="modal-title"><h3>মাসিক চাঁদা পরিশোধ</h3><button onclick="closeModal()">✕</button></div>
+    <p style="font-size:12px;color:var(--muted);">প্রতি মাসের চাঁদা ১০০ টাকা। যে মাসগুলোর চাঁদা দেবেন, সেগুলো নির্বাচন করুন।</p>
+    <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0;">${unpaid.map(month=>`<label style="border:1px solid var(--line,#ddd);border-radius:9px;padding:10px 5px;text-align:center;font-size:12px;"><input type="checkbox" class="pay-month-check" value="${month}" onchange="updateMonthlyTotal()"> ${month}</label>`).join('')}</div>
+    <div class="card" style="margin-bottom:12px;">মোট নির্বাচিত: <b id="selectedMonthCount">০ মাস</b><br>মোট টাকা: <b id="selectedMonthAmount">৳০</b></div>
+    <div class="section-title"><h3>পেমেন্ট নম্বর</h3></div>
+    ${db.paymentMethods.filter(p=>p.active).map(p=>`<div class="list-item"><div class="ico">💰</div><div class="meta"><b>${p.name}</b><span>${p.number}</span></div></div>`).join('')}
+    <label class="field" style="margin-top:12px;"><span>ট্রানজেকশন আইডি (TxID)</span><input id="monthlyTxid" placeholder="ট্রানজেকশন আইডি লিখুন"></label>
+    <button class="btn btn-red" onclick="submitMonthlyPayment()">পেমেন্ট যাচাইয়ের জন্য জমা দিন</button>`);
+}
+function updateMonthlyTotal(){const n=[...document.querySelectorAll('.pay-month-check:checked')].length;document.getElementById('selectedMonthCount').textContent=`${n} মাস`;document.getElementById('selectedMonthAmount').textContent=`৳${n*100}`;}
+function submitMonthlyPayment(){
+  const months=[...document.querySelectorAll('.pay-month-check:checked')].map(x=>x.value);const txid=document.getElementById('monthlyTxid').value.trim();
+  if(!months.length){toast('অন্তত একটি মাস নির্বাচন করুন','⚠️');return;} if(!txid){toast('ট্রানজেকশন আইডি দিন','⚠️');return;}
+  if(db.payments.some(p=>p.txid===txid)){toast('এই TxID ইতিমধ্যে ব্যবহৃত হয়েছে','🚫');return;}
+  const m=currentMember();db.payments.unshift({id:`UA-PAY-${Date.now()}`,member:m.id,memberName:m.name,offer:months.join(', '),months,amount:months.length*100,txid,date:new Date().toLocaleDateString('bn-BD'),status:'pending'});
+  saveDB();closeModal();render();toast('পেমেন্ট জমা হয়েছে, সুপার এডমিনের অনুমোদনের অপেক্ষায় আছে','⏳');
+}
+
 /* ---------------- PROFILE ---------------- */
 function screenProfile(){
   const m = currentMember();
@@ -1091,26 +1131,16 @@ function screenProfile(){
       </div>
     `).join('')}</div>` : ''}
 
-    <div id="contribSection" class="section-title"><h3>💳 কন্ট্রিবিউশন</h3></div>
+    <div id="contribSection" class="section-title"><h3>💳 আর্থিক হিসাব</h3></div>
     <div class="card" style="margin-bottom:12px;">
-      <div style="display:flex;justify-content:space-between;">
-        <b style="font-size:13.5px;">বর্তমান অবস্থা</b>${statusPillContrib(m.contribution)}
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+        <b style="font-size:13.5px;">বর্তমান অবস্থা</b>
+        <span class="pill ${unpaidMonthList(m).length===0?'pill-success':'pill-important'}">${unpaidMonthList(m).length===0?'পরিশোধিত':`${unpaidMonthList(m).length} মাস বকেয়া`}</span>
       </div>
-      ${m.contribution==='PAID' ? `
-      <div style="font-size:12.5px;color:var(--success);margin-top:6px;font-weight:700;">✅ ${m.paidOfferLabel==='১২ মাস'?'বার্ষিক চাঁদা ক্লিয়ার':(m.paidOfferLabel?m.paidOfferLabel+' চাঁদা ক্লিয়ার':'চাঁদা ক্লিয়ার')}</div>
-      <div style="font-size:12px;color:var(--muted);margin-top:4px;">পরবর্তী পরিশোধের তারিখ: ${m.nextDue}</div>
-      ` : m.contribution==='PENDING_VERIFICATION' ? `
-      <div style="font-size:12.5px;color:#8a6400;margin-top:6px;">⏳ আপনার পেমেন্ট অ্যাডমিন যাচাই করছেন, একটু অপেক্ষা করুন।</div>
-      ` : `
-      <div style="font-size:12px;color:var(--muted);margin-top:6px;">পরবর্তী পরিশোধের তারিখ: ${m.nextDue}</div>
-      `}
+      ${monthBoxesHTML(m)}
+      ${db.payments.some(p=>p.member===m.id&&p.status==='pending')?'<p style="font-size:12px;color:#8a6400;margin-top:10px;">আপনার পেমেন্ট যাচাইয়ের অপেক্ষায় আছে। অনুমোদনের পর সংশ্লিষ্ট মাসগুলো পরিশোধিত দেখাবে।</p>':''}
     </div>
-    ${(m.contribution==='DUE'||m.contribution==='REJECTED') ? db.offers.map(o=>`
-      <div class="offer-card ${o.best?'best':''}">
-        <div><b>${o.label} সদস্যপদ</b><span>৳${o.price} + ${o.points} পয়েন্ট</span></div>
-        <button class="btn btn-sm ${o.best?'btn-red':'btn-outline'}" onclick="openClaimOffer('${o.id}')">${o.best?'⭐ ':''}CLAIM</button>
-      </div>
-    `).join('') : ''}
+    ${unpaidMonthList(m).length?`<button class="btn btn-red" style="margin-bottom:14px;" onclick="openMonthlyPayment()">মাস নির্বাচন করে চাঁদা পরিশোধ করুন</button>`:''}
 
     <div class="section-title"><h3>👤 ব্যক্তিগত তথ্য</h3></div>
     <div class="card">
@@ -1134,7 +1164,7 @@ function memberRanking(){
 function memberRankRow(mm, idx){
   return `<div class="list-item" style="cursor:pointer;" onclick="openPublicProfile('${mm.id}')">
     <div class="ico" style="background:var(--navy);color:#fff;">${idx<3?['🥇','🥈','🥉'][idx]:(idx+1)}</div>
-    <div class="meta"><b>${esc(mm.name)}</b><span>${mm.position}${mm.contribution==='PAID'?' · <span style="color:var(--success);font-weight:700;">✅ উত্তীর্ণ</span>':''}</span></div>
+    <div class="meta"><b>${esc(mm.name)}</b><span>${mm.position} · <span style="font-weight:700;color:${paidMonthList(mm).length>=12?'var(--success)':'var(--muted)'};">${paidMonthList(mm).length>=12?'উত্তীর্ণ':`${unpaidMonthList(mm).length} মাস বকেয়া`}</span></span></div>
     <div class="tail" style="font-weight:700;color:var(--navy);">${mm.plus-mm.minus}</div>
   </div>`;
 }
@@ -1323,8 +1353,8 @@ function totalExpense(){ return db.expenses.reduce((s,e)=>s+Number(e.amount),0);
 function currentBalance(){ return totalIncome() - totalExpense(); }
 function openIncomeHistory(){
   const isSuper = session.role==='superadmin';
-  const paymentRows = db.payments.filter(p=>p.status==='approved').map(p=>({amount:p.amount, description:`কন্ট্রিবিউশন — ${p.memberName} (${p.offer})`, date:p.date, addedBy:'সিস্টেম'}));
-  const rows = [...db.donations, ...paymentRows];
+  const paymentRows = db.payments.filter(p=>p.status==='approved').map(p=>({id:p.id,type:'payment',amount:p.amount, description:`চাঁদা — ${p.memberName} (${p.offer})`, date:p.date, addedBy:'সিস্টেম'}));
+  const rows = [...db.donations.map(d=>({...d,type:'donation'})), ...paymentRows];
   openModal(`
     <div class="modal-title">
       <h3>💰 মোট তহবিল হিস্টোরি</h3>
@@ -1334,11 +1364,45 @@ function openIncomeHistory(){
       </div>
     </div>
     <div class="card">
-      ${rows.map(r=>`<div class="list-item"><div class="ico">💵</div><div class="meta"><b>${esc(r.description)}</b><span>${r.addedBy} · ${r.date}</span></div><div class="tail" style="font-weight:700;color:var(--success);">+৳${r.amount}</div></div>`).join('') || emptyState('💰','কোনো আয় নথিভুক্ত নেই')}
+      ${rows.map(r=>`<div class="list-item"><div class="ico">💵</div><div class="meta"><b>${esc(r.description)}</b><span>${r.addedBy} · ${r.date}</span>${isSuper?`<div style="display:flex;gap:6px;margin-top:6px;"><button class="btn btn-sm btn-ghost" onclick="openEditIncome('${r.id||''}','${r.type||'donation'}')">সম্পাদনা</button><button class="btn btn-sm btn-danger-outline" onclick="deleteIncomeRecord('${r.id||''}','${r.type||'donation'}')">মুছুন</button></div>`:''}</div><div class="tail" style="font-weight:700;color:var(--success);">+৳${r.amount}</div></div>`).join('') || emptyState('💰','কোনো আয় নথিভুক্ত নেই')}
     </div>
     <div style="display:flex;justify-content:space-between;font-weight:700;color:var(--navy);margin-top:12px;padding:0 4px;"><span>সর্বমোট</span><span>৳${totalIncome()}</span></div>
   `);
 }
+function openEditIncome(id,type){
+  if(session.role!=='superadmin')return;
+  const row=type==='payment'?db.payments.find(x=>String(x.id)===String(id)):db.donations.find(x=>String(x.id)===String(id));
+  if(!row)return;
+  openModal(`<div class="modal-title"><h3>তহবিল হিস্টোরি সম্পাদনা</h3><button onclick="closeModal()">✕</button></div>
+    <label class="field"><span>টাকার পরিমাণ</span><input id="editIncAmt" type="number" min="1" value="${Number(row.amount)||0}"></label>
+    <label class="field"><span>বিবরণ</span><textarea id="editIncDesc">${esc(type==='payment'?`চাঁদা — ${row.memberName} (${row.offer})`:row.description||'')}</textarea></label>
+    <button class="btn btn-primary" onclick="saveEditIncome('${id}','${type}')">সংরক্ষণ করুন</button>`);
+}
+function saveEditIncome(id,type){
+  if(session.role!=='superadmin')return;
+  const row=type==='payment'?db.payments.find(x=>String(x.id)===String(id)):db.donations.find(x=>String(x.id)===String(id));
+  const amount=Number(document.getElementById('editIncAmt').value), desc=document.getElementById('editIncDesc').value.trim();
+  if(!row||amount<=0||!desc){toast('সঠিক পরিমাণ ও বিবরণ দিন','⚠️');return;}
+  row.amount=amount;
+  if(type==='donation')row.description=desc; else row.offer=desc;
+  addAudit('তহবিল হিস্টোরি সম্পাদনা করেছেন',`${desc} · ৳${amount}`);saveDB();openIncomeHistory();toast('তহবিলের হিস্টোরি আপডেট হয়েছে','✅');
+}
+function deleteIncomeRecord(id,type){
+  if(session.role!=='superadmin')return;
+  if(!confirm('এই তহবিলের হিস্টোরি মুছে ফেলতে চান?'))return;
+  if(type==='payment'){
+    const p=db.payments.find(x=>String(x.id)===String(id));
+    if(p){const m=getMember(p.member);if(m&&Array.isArray(m.paidMonths)){m.paidMonths=m.paidMonths.filter(x=>!(p.months||[]).includes(x));m.contribution=m.paidMonths.length>=12?'PAID':'DUE';}db.payments=db.payments.filter(x=>String(x.id)!==String(id));}
+  } else db.donations=db.donations.filter(x=>String(x.id)!==String(id));
+  addAudit('তহবিল হিস্টোরি মুছে ফেলেছেন',String(id));saveDB();openIncomeHistory();toast('হিস্টোরি মুছে ফেলা হয়েছে','🗑️');
+}
+function openEditExpense(id){
+  if(session.role!=='superadmin')return;const e=db.expenses.find(x=>Number(x.id)===Number(id));if(!e)return;
+  openModal(`<div class="modal-title"><h3>ব্যয় হিস্টোরি সম্পাদনা</h3><button onclick="closeModal()">✕</button></div><label class="field"><span>টাকার পরিমাণ</span><input id="editExpAmt" type="number" min="1" value="${e.amount}"></label><label class="field"><span>বিবরণ</span><textarea id="editExpDesc">${esc(e.description)}</textarea></label><button class="btn btn-primary" onclick="saveEditExpense(${e.id})">সংরক্ষণ করুন</button>`);
+}
+function saveEditExpense(id){if(session.role!=='superadmin')return;const e=db.expenses.find(x=>Number(x.id)===Number(id));const amt=Number(document.getElementById('editExpAmt').value),desc=document.getElementById('editExpDesc').value.trim();if(!e||amt<=0||!desc){toast('সঠিক পরিমাণ ও বিবরণ দিন','⚠️');return;}e.amount=amt;e.description=desc;addAudit('ব্যয় হিস্টোরি সম্পাদনা করেছেন',`${desc} · ৳${amt}`);saveDB();openExpenseHistory();toast('ব্যয়ের হিস্টোরি আপডেট হয়েছে','✅');}
+function deleteExpenseRecord(id){if(session.role!=='superadmin')return;if(!confirm('এই ব্যয়ের হিস্টোরি মুছে ফেলতে চান?'))return;const e=db.expenses.find(x=>Number(x.id)===Number(id));db.expenses=db.expenses.filter(x=>Number(x.id)!==Number(id));addAudit('ব্যয় হিস্টোরি মুছে ফেলেছেন',e?e.description:String(id));saveDB();openExpenseHistory();toast('ব্যয়ের হিস্টোরি মুছে ফেলা হয়েছে','🗑️');}
+
 function openAddIncome(){
   openModal(`
     <div class="modal-title"><h3>💰 নতুন আয়/অনুদান যোগ করুন</h3><button onclick="closeModal()">✕</button></div>
@@ -1369,7 +1433,7 @@ function openExpenseHistory(){
       </div>
     </div>
     <div class="card">
-      ${db.expenses.map(e=>`<div class="list-item"><div class="ico">📤</div><div class="meta"><b>${esc(e.description)}</b><span>${e.addedBy} · ${e.date}</span></div><div class="tail" style="font-weight:700;color:#B4123A;">-৳${e.amount}</div></div>`).join('') || emptyState('📤','কোনো ব্যয় নথিভুক্ত নেই')}
+      ${db.expenses.map(e=>`<div class="list-item"><div class="ico">📤</div><div class="meta"><b>${esc(e.description)}</b><span>${e.addedBy} · ${e.date}</span>${isSuper?`<div style="display:flex;gap:6px;margin-top:6px;"><button class="btn btn-sm btn-ghost" onclick="openEditExpense(${e.id})">সম্পাদনা</button><button class="btn btn-sm btn-danger-outline" onclick="deleteExpenseRecord(${e.id})">মুছুন</button></div>`:''}</div><div class="tail" style="font-weight:700;color:#B4123A;">-৳${e.amount}</div></div>`).join('') || emptyState('📤','কোনো ব্যয় নথিভুক্ত নেই')}
     </div>
     <div style="display:flex;justify-content:space-between;font-weight:700;color:var(--navy);margin-top:12px;padding:0 4px;"><span>সর্বমোট</span><span>৳${totalExpense()}</span></div>
   `);
@@ -1536,12 +1600,35 @@ function openMemberDetail(id){
 
     ${m.status==='ACTIVE' ? `<button class="btn btn-outline" style="margin-bottom:8px;" onclick="openBloodPointForm('${id}')">🩸 ${isMemberRole?'রক্তদান পয়েন্ট ও তারিখ':'রক্তদানের তারিখ সেট করুন'}</button>`:''}
     ${isSuper ? `<button class="btn btn-outline" style="margin-bottom:8px;" onclick="openSuperEditMember('${id}')">🛠️ প্রোফাইল তথ্য সম্পাদনা (সুপার এডমিন)</button>`:''}
+    ${isSuper && isMemberRole ? `<button class="btn btn-outline" style="margin-bottom:8px;" onclick="openAdminAddPaidMonths('${id}')">➕ সদস্যের চাঁদার মাস যুক্ত করুন</button>`:''}
 
     ${isSuper && m.contribution==='PAID' ? `<button class="btn btn-outline" style="margin-bottom:8px;" onclick="resetContribution('${id}')">🔄 চাঁদা রিসেট করুন (পরবর্তী মেয়াদের জন্য)</button>`:''}
     <button class="btn btn-ghost" style="margin-bottom:8px;" onclick="openResetPin('${id}')">🔑 পিন রিসেট</button>
     ${isSuper ? `<button class="btn btn-danger-outline" onclick="deleteAccountConfirm('${id}')">🗑️ একাউন্ট মুছে ফেলুন</button>`:''}
   `);
 }
+function openAdminAddPaidMonths(id){
+  if(session.role!=='superadmin'){toast('শুধু সুপার এডমিন এই কাজ করতে পারবেন','🚫');return;}
+  const m=getMember(id); if(!m)return;
+  const unpaid=unpaidMonthList(m);
+  openModal(`<div class="modal-title"><h3>সদস্যের চাঁদার মাস যুক্ত করুন</h3><button onclick="closeModal()">✕</button></div>
+    <p style="font-size:12px;color:var(--muted);">${esc(m.name)} · যে মাসগুলো পরিশোধিত হিসেবে যুক্ত করবেন, সেগুলো নির্বাচন করুন।</p>
+    <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0;">${unpaid.map(month=>`<label style="border:1px solid var(--line,#ddd);border-radius:9px;padding:10px 5px;text-align:center;font-size:12px;"><input type="checkbox" class="admin-paid-month" value="${month}"> ${month}</label>`).join('')}</div>
+    ${unpaid.length?'':'<p>সব মাস ইতিমধ্যে পরিশোধিত।</p>'}
+    <button class="btn btn-primary" onclick="adminAddPaidMonths('${id}')">নির্বাচিত মাস যুক্ত করুন</button>`);
+}
+function adminAddPaidMonths(id){
+  if(session.role!=='superadmin'){toast('শুধু সুপার এডমিন এই কাজ করতে পারবেন','🚫');return;}
+  const m=getMember(id); if(!m)return;
+  const months=[...document.querySelectorAll('.admin-paid-month:checked')].map(x=>x.value);
+  if(!months.length){toast('অন্তত একটি মাস নির্বাচন করুন','⚠️');return;}
+  if(!Array.isArray(m.paidMonths))m.paidMonths=[];
+  months.forEach(month=>{if(!m.paidMonths.includes(month))m.paidMonths.push(month);});
+  m.contribution=m.paidMonths.length>=12?'PAID':'DUE';
+  addAudit('সদস্যের চাঁদার মাস যুক্ত করেছেন',`${m.name}: ${months.join(', ')}`);
+  saveDB();closeModal();openMemberDetail(id);toast('নির্বাচিত মাসগুলো পরিশোধিত হিসেবে যুক্ত হয়েছে','✅');
+}
+
 function approveMember(id){
   const m=getMember(id); m.status='ACTIVE'; m.position='সাধারণ সদস্য';
   addAudit(`সদস্য অনুমোদন করেছেন`, m.name);
@@ -1696,7 +1783,7 @@ function screenAdminPayments(){
           <span class="pill ${p.status==='approved'?'pill-success':p.status==='rejected'?'pill-danger':'pill-important'}">${p.status==='approved'?'অনুমোদিত':p.status==='rejected'?'প্রত্যাখ্যাত':'অপেক্ষমান'}</span>
         </div>
         <div style="font-size:12.5px;color:var(--muted);margin-top:8px;line-height:1.8;">
-          🧾 ${p.id} · ${p.offer}<br>💰 ৳${p.amount} · TxID: <b>${p.txid}</b><br>📅 ${p.date}
+          🧾 ${p.id} · ${p.months?p.months.join(', '):p.offer}<br>💰 ৳${p.amount} · TxID: <b>${p.txid}</b><br>📅 ${p.date}
         </div>
         ${p.status==='pending' ? `
         <div class="btn-row" style="margin-top:12px;">
@@ -1720,13 +1807,9 @@ function approvePayment(id){
   p.status='approved';
   const m = getMember(p.member);
   if(m){
-    m.contribution='PAID';
-    const offer = db.offers.find(o=>o.label===p.offer);
-    if(offer){
-      m.plus += offer.points;
-      if(!db.pointHistory[m.id]) db.pointHistory[m.id]=[];
-      db.pointHistory[m.id].unshift({type:'plus',amount:offer.points,reason:`কন্ট্রিবিউশন পুরস্কার — ${p.offer}`,date:'আজ',by:'সিস্টেম'});
-    }
+    if(!Array.isArray(m.paidMonths)) m.paidMonths=[];
+    (p.months||[]).forEach(month=>{if(!m.paidMonths.includes(month))m.paidMonths.push(month);});
+    m.contribution=m.paidMonths.length>=12?'PAID':'DUE';
   }
   addAudit(`পেমেন্ট অনুমোদন করেছেন`, `${p.id} · ${p.memberName}`);
   saveDB(); render(); toast('পেমেন্ট অনুমোদিত হয়েছে','✅');
