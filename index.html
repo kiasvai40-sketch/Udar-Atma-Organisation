@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>উদার আত্মা সংগঠন | UDAR ATMA</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0F0F54">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Baloo+Da+2:wght@500;600;700;800&family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -318,6 +322,48 @@ textarea{resize:vertical;min-height:80px;}
 .audit-row .when{color:var(--muted);font-size:11px;margin-top:2px;}
 .fine-print{font-size:11px;color:var(--muted);text-align:center;line-height:1.7;margin-top:18px;padding:0 6px;}
 .notice-banner{background:linear-gradient(135deg,#FFF3E0,#FFE9D6);border:1px solid #F6D2A6;color:#8a4b06;font-size:11.5px;padding:10px 12px;border-radius:12px;margin-bottom:14px;line-height:1.6;}
+
+/* ============ POLISH: MICRO-INTERACTIONS & ACCESSIBILITY ============ */
+*:focus-visible{outline:2.5px solid var(--navy-3);outline-offset:2px;border-radius:6px;}
+.chip-row{-ms-overflow-style:none;scrollbar-width:none;}
+.chip-row::-webkit-scrollbar{display:none;}
+.list-item,.action-row,.offer-card,.donor-row,.notice-card{transition:background-color .15s ease,transform .12s ease;}
+.list-item:active,.action-row:active,.offer-card:active,.donor-row:active{background-color:#F6F6FB;transform:scale(0.99);}
+.stat-box{transition:transform .15s ease,box-shadow .15s ease;}
+.stat-box:active{transform:scale(0.96);}
+.card{box-shadow:0 1px 3px rgba(15,15,84,0.05);transition:box-shadow .2s ease;}
+.icon-btn{transition:transform .15s ease,background-color .15s ease;}
+.icon-btn:active{transform:scale(0.9);background:rgba(255,255,255,0.28);}
+.chip{transition:transform .15s ease,background-color .15s ease;}
+.chip:active{transform:scale(0.95);}
+.pill-emergency{animation:pulseGlow 1.8s ease-in-out infinite;}
+@keyframes pulseGlow{0%,100%{box-shadow:0 0 0 0 rgba(227,28,36,0.35);}50%{box-shadow:0 0 0 5px rgba(227,28,36,0);}}
+.icon-btn .dot{animation:dotPulse 1.8s ease-in-out infinite;}
+@keyframes dotPulse{0%,100%{transform:scale(1);opacity:1;}50%{transform:scale(1.3);opacity:.7;}}
+.navbtn{transition:color .15s ease,transform .15s ease;}
+.navbtn:active{transform:scale(0.92);}
+.navbtn.active .ic{animation:navPop .25s ease;}
+@keyframes navPop{0%{transform:scale(1);}40%{transform:scale(1.25);}100%{transform:scale(1);}}
+.stat-box b{transition:opacity .2s ease;}
+.mark,.mark2{box-shadow:0 2px 6px rgba(0,0,0,0.12);}
+.auth-box{transition:box-shadow .2s ease;}
+.spin{animation:spinAnim .8s linear infinite;display:inline-block;}
+@keyframes spinAnim{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+.badge-row{display:flex;flex-wrap:wrap;gap:7px;margin:12px 0 4px;}
+.badge-chip{display:inline-flex;align-items:center;gap:4px;padding:6px 11px;border-radius:999px;font-size:11.5px;font-weight:700;white-space:nowrap;}
+.badge-gold{background:linear-gradient(135deg,#FFF3D6,#FDE4A8);color:#8a6400;}
+.badge-silver{background:linear-gradient(135deg,#F1F1F5,#DCDCE6);color:#54546b;}
+.badge-bronze{background:linear-gradient(135deg,#FBE6D8,#F2CBA8);color:#8a4b1a;}
+.badge-red{background:var(--danger-bg);color:#B4123A;}
+.badge-navy{background:#E9E9FB;color:var(--navy);}
+.badge-green{background:var(--success-bg);color:var(--success);}
+.leader-mini{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px;}
+.leader-mini::-webkit-scrollbar{display:none;}
+.leader-mini .lcard{flex-shrink:0;width:92px;background:#fff;border:1px solid var(--border);border-radius:var(--r-md);padding:12px 8px;text-align:center;}
+.leader-mini .lcard .rank{font-size:17px;margin-bottom:4px;}
+.leader-mini .lcard .av{width:38px;height:38px;border-radius:50%;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;margin:0 auto 6px;overflow:hidden;}
+.leader-mini .lcard b{display:block;font-size:11.5px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.leader-mini .lcard span{font-size:10.5px;color:var(--muted);}
 </style>
 </head>
 <body>
@@ -526,6 +572,23 @@ function render(){
     <div id="content">${renderScreen()}</div>
     ${renderBottomNav()}
   `;
+  animateStatCounters();
+}
+function animateStatCounters(){
+  document.querySelectorAll('.stat-box b').forEach(el=>{
+    const raw = el.textContent;
+    const m = raw.match(/^(\D*)(\d+)(\D*)$/);
+    if(!m) return;
+    const prefix=m[1], target=parseInt(m[2],10), suffix=m[3];
+    if(isNaN(target) || target===0){ return; }
+    let cur=0; const step=Math.max(1,Math.ceil(target/18));
+    el.textContent = prefix+'0'+suffix;
+    const t=setInterval(()=>{
+      cur+=step;
+      if(cur>=target){ cur=target; clearInterval(t); }
+      el.textContent = prefix+cur+suffix;
+    }, 18);
+  });
 }
 
 /* ---------------- AUTH SCREENS ---------------- */
@@ -648,9 +711,9 @@ function renderTopbar(){
         <div><b>${db.org.nameBn}</b><small>${db.org.slogan}</small></div>
       </div>
       <div style="display:flex;gap:8px;">
-        ${session.role!=='guest' ? `<button class="icon-btn" onclick="refreshFromCloud()" title="সবশেষ তথ্য আনুন">🔄</button>` : ''}
-        ${session.role!=='guest' ? `<button class="icon-btn" onclick="openNotifPanel()">🔔<span class="dot"></span></button>` : ''}
-        ${session.role!=='guest' ? `<button class="icon-btn" onclick="logout()">↩️</button>` : `<button class="icon-btn" onclick="goToLogin()">🔐</button>`}
+        ${session.role!=='guest' ? `<button class="icon-btn" onclick="refreshFromCloud()" title="সবশেষ তথ্য আনুন" aria-label="সবশেষ তথ্য আনুন">🔄</button>` : ''}
+        ${session.role!=='guest' ? `<button class="icon-btn" onclick="openNotifPanel()" aria-label="নোটিফিকেশন">🔔<span class="dot"></span></button>` : ''}
+        ${session.role!=='guest' ? `<button class="icon-btn" onclick="logout()" aria-label="লগআউট">↩️</button>` : `<button class="icon-btn" onclick="goToLogin()" aria-label="লগইন">🔐</button>`}
       </div>
     </div>
     <h2>${screenTitle()}</h2>
@@ -774,6 +837,18 @@ function screenMemberHome(){
       <button class="btn btn-sm btn-red" onclick="session.tab='profile'; render(); scrollToId('contribSection');">পেমেন্ট</button>
     </div>
 
+    <div class="section-title"><h3>🏆 শীর্ষ কন্ট্রিবিউটর</h3></div>
+    <div class="leader-mini">
+      ${memberRanking().slice(0,5).map((mm,i)=>`
+        <div class="lcard" onclick="openPublicProfile('${mm.id}')" style="cursor:pointer;">
+          <div class="rank">${['🥇','🥈','🥉'][i]||('#'+(i+1))}</div>
+          <div class="av">${avatarInner(mm)}</div>
+          <b>${esc(mm.name.split(' ')[0])}${mm.contribution==='PAID'?' ✅':''}</b>
+          <span>${mm.plus-mm.minus} পয়েন্ট</span>
+        </div>
+      `).join('') || ''}
+    </div>
+
     <div class="section-title"><h3>📢 সাম্প্রতিক নোটিশ</h3><a onclick="session.tab='notice'; render();">সব দেখুন</a></div>
     ${engagementNotices.map(noticeCardHTML).join('')}
 
@@ -782,6 +857,26 @@ function screenMemberHome(){
   </div>`;
 }
 function contribLabel(c){ return {PAID:'✅ পরিশোধিত',DUE:'⏳ বকেয়া',PENDING_VERIFICATION:'🔍 যাচাইয়ের অপেক্ষায়',REJECTED:'❌ প্রত্যাখ্যাত'}[c]||c; }
+function computeBadges(m){
+  const badges = [];
+  if(m.role==='superadmin') badges.push({icon:'👑',label:'সুপার এডমিন',cls:'gold'});
+  else if(m.role==='admin') badges.push({icon:'🛡️',label:'এডমিন',cls:'navy'});
+  if(m.lastDonationDate){
+    badges.push({icon:'🩸',label:'রক্তদাতা',cls:'red'});
+    if(daysBetween(m.lastDonationDate)<=90) badges.push({icon:'💪',label:'সক্রিয় দাতা',cls:'red'});
+  }
+  const score = (m.plus||0)-(m.minus||0);
+  if(score>=60) badges.push({icon:'🥇',label:'গোল্ড কন্ট্রিবিউটর',cls:'gold'});
+  else if(score>=30) badges.push({icon:'🥈',label:'সিলভার কন্ট্রিবিউটর',cls:'silver'});
+  else if(score>=10) badges.push({icon:'🥉',label:'ব্রোঞ্জ কন্ট্রিবিউটর',cls:'bronze'});
+  if(m.contribution==='PAID') badges.push({icon:'✅',label:'নিয়মিত চাঁদাদাতা',cls:'green'});
+  return badges;
+}
+function badgeRowHTML(m){
+  const badges = computeBadges(m);
+  if(!badges.length) return '';
+  return `<div class="badge-row">${badges.map(b=>`<span class="badge-chip badge-${b.cls}">${b.icon} ${b.label}</span>`).join('')}</div>`;
+}
 
 function noticeCardHTML(n){
   const visPill = n.visibility==='public'?'pill-public':n.visibility==='members'?'pill-members':'pill-admin';
@@ -869,7 +964,7 @@ function donationLabel(dateStr){
   return `প্রায় ${Math.floor(d/365)} বছর আগে`;
 }
 function donorList(){
-  return db.members.filter(m=>m.status==='ACTIVE');
+  return db.members.filter(m=>m.status==='ACTIVE' && m.role==='member');
 }
 function screenBlood(){
   const sub = session.bloodTab||'donors';
@@ -981,6 +1076,7 @@ function screenProfile(){
       </div>
     </div>
     <p style="text-align:center;font-size:11px;color:var(--muted);margin:8px 0 4px;">কার্ডে ট্যাপ করে QR দেখুন</p>
+    ${badgeRowHTML(m)}
 
     <div class="section-title"><h3>🏅 কর্ম স্কোর</h3></div>
     <div class="point-tri">
@@ -1000,14 +1096,21 @@ function screenProfile(){
       <div style="display:flex;justify-content:space-between;">
         <b style="font-size:13.5px;">বর্তমান অবস্থা</b>${statusPillContrib(m.contribution)}
       </div>
+      ${m.contribution==='PAID' ? `
+      <div style="font-size:12.5px;color:var(--success);margin-top:6px;font-weight:700;">✅ ${m.paidOfferLabel==='১২ মাস'?'বার্ষিক চাঁদা ক্লিয়ার':(m.paidOfferLabel?m.paidOfferLabel+' চাঁদা ক্লিয়ার':'চাঁদা ক্লিয়ার')}</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:4px;">পরবর্তী পরিশোধের তারিখ: ${m.nextDue}</div>
+      ` : m.contribution==='PENDING_VERIFICATION' ? `
+      <div style="font-size:12.5px;color:#8a6400;margin-top:6px;">⏳ আপনার পেমেন্ট অ্যাডমিন যাচাই করছেন, একটু অপেক্ষা করুন।</div>
+      ` : `
       <div style="font-size:12px;color:var(--muted);margin-top:6px;">পরবর্তী পরিশোধের তারিখ: ${m.nextDue}</div>
+      `}
     </div>
-    ${db.offers.map(o=>`
+    ${(m.contribution==='DUE'||m.contribution==='REJECTED') ? db.offers.map(o=>`
       <div class="offer-card ${o.best?'best':''}">
         <div><b>${o.label} সদস্যপদ</b><span>৳${o.price} + ${o.points} পয়েন্ট</span></div>
         <button class="btn btn-sm ${o.best?'btn-red':'btn-outline'}" onclick="openClaimOffer('${o.id}')">${o.best?'⭐ ':''}CLAIM</button>
       </div>
-    `).join('')}
+    `).join('') : ''}
 
     <div class="section-title"><h3>👤 ব্যক্তিগত তথ্য</h3></div>
     <div class="card">
@@ -1031,7 +1134,7 @@ function memberRanking(){
 function memberRankRow(mm, idx){
   return `<div class="list-item" style="cursor:pointer;" onclick="openPublicProfile('${mm.id}')">
     <div class="ico" style="background:var(--navy);color:#fff;">${idx<3?['🥇','🥈','🥉'][idx]:(idx+1)}</div>
-    <div class="meta"><b>${esc(mm.name)}</b><span>${mm.position}</span></div>
+    <div class="meta"><b>${esc(mm.name)}</b><span>${mm.position}${mm.contribution==='PAID'?' · <span style="color:var(--success);font-weight:700;">✅ উত্তীর্ণ</span>':''}</span></div>
     <div class="tail" style="font-weight:700;color:var(--navy);">${mm.plus-mm.minus}</div>
   </div>`;
 }
@@ -1051,6 +1154,7 @@ function openPublicProfile(id){
       <div class="av">${avatarInner(mm)}</div>
       <div><b style="font-size:15.5px;display:block;">${esc(mm.name)}</b><span style="font-size:12px;color:var(--muted);">${isMemberRole?mm.id+' · ':''}${mm.position}</span></div>
     </div>
+    ${badgeRowHTML(mm)}
     <div class="card">
       <div class="list-item"><div class="ico">🩸</div><div class="meta"><b>ব্লাড গ্রুপ</b><span>${mm.bloodGroup}</span></div></div>
       <div class="list-item"><div class="ico">📅</div><div class="meta"><b>যোগদানের তারিখ</b><span>${mm.joinDate}</span></div></div>
@@ -1154,19 +1258,20 @@ function submitPayment(offerId){
   const m = currentMember();
   db.payments.unshift({id:`UA-PAY-2026-0${db.payments.length+12}`, member:m.id, memberName:m.name, offer:o.label, amount:o.price, txid, date:'আজ', status:'pending'});
   m.contribution='PENDING_VERIFICATION';
+  m.paidOfferId = o.id; m.paidOfferLabel = o.label;
   saveDB(); closeModal(); render();
   toast('পেমেন্ট জমা হয়েছে, যাচাইয়ের অপেক্ষায় আছে','⏳');
 }
 
 /* ---------------- ADMIN: DASHBOARD ---------------- */
 function screenAdminDashboard(){
-  const pendingApprovals = db.members.filter(m=>m.status==='PENDING').length;
+  const pendingApprovals = db.members.filter(m=>m.status==='PENDING' && m.role==='member').length;
   const pendingPayments = db.payments.filter(p=>p.status==='pending').length;
-  const review = db.members.filter(m=>m.status==='MANUAL_REVIEW').length;
+  const review = db.members.filter(m=>m.status==='MANUAL_REVIEW' && m.role==='member').length;
   const bloodEmergency = db.bloodRequests.filter(r=>r.status==='active').length;
   const upcoming = db.activities.filter(a=>a.status==='upcoming').length;
-  const active = db.members.filter(m=>m.status==='ACTIVE').length;
-  const banned = db.members.filter(m=>['TEMP_BANNED','PERMA_BANNED'].includes(m.status)).length;
+  const active = db.members.filter(m=>m.status==='ACTIVE' && m.role==='member').length;
+  const banned = db.members.filter(m=>['TEMP_BANNED','PERMA_BANNED'].includes(m.status) && m.role==='member').length;
   const pwReq = db.passwordResetRequests.filter(r=>r.status==='pending').length;
 
   return `<div class="screen">
@@ -1181,7 +1286,7 @@ function screenAdminDashboard(){
     <div class="section-title"><h3>📊 সংক্ষিপ্ত পরিসংখ্যান</h3></div>
     <p style="font-size:11.5px;color:var(--muted);margin:-4px 0 10px;">যেকোনো বক্সে ট্যাপ করলে বিস্তারিত দেখা যাবে</p>
     <div class="stat-grid">
-      <div class="stat-box accent" onclick="openStatDetail('total')"><b>${db.members.length}</b><span>মোট সদস্য</span></div>
+      <div class="stat-box accent" onclick="openStatDetail('total')"><b>${db.members.filter(m=>m.role==='member').length}</b><span>মোট সদস্য</span></div>
       <div class="stat-box" onclick="openStatDetail('active')"><b>${active}</b><span>সক্রিয় সদস্য</span></div>
       <div class="stat-box" onclick="openStatDetail('pending')"><b>${pendingApprovals}</b><span>অনুমোদনের অপেক্ষায়</span></div>
       <div class="stat-box" onclick="openStatDetail('banned')"><b>${banned}</b><span>নিষিদ্ধ/স্থগিত</span></div>
@@ -1299,16 +1404,16 @@ function openStatDetail(kind){
   let title='', body='';
   if(kind==='total'){
     title='মোট সদস্য তালিকা';
-    body = db.members.map(statDetailMemberRow).join('');
+    body = db.members.filter(m=>m.role==='member').map(statDetailMemberRow).join('');
   } else if(kind==='active'){
     title='সক্রিয় সদস্য তালিকা';
-    body = db.members.filter(m=>m.status==='ACTIVE').map(statDetailMemberRow).join('');
+    body = db.members.filter(m=>m.status==='ACTIVE' && m.role==='member').map(statDetailMemberRow).join('');
   } else if(kind==='pending'){
     title='অনুমোদনের অপেক্ষায় থাকা সদস্য';
-    body = db.members.filter(m=>m.status==='PENDING').map(statDetailMemberRow).join('') || emptyState('✅','অপেক্ষমান কেউ নেই');
+    body = db.members.filter(m=>m.status==='PENDING' && m.role==='member').map(statDetailMemberRow).join('') || emptyState('✅','অপেক্ষমান কেউ নেই');
   } else if(kind==='banned'){
     title='নিষিদ্ধ/স্থগিত সদস্য তালিকা';
-    body = db.members.filter(m=>['TEMP_BANNED','PERMA_BANNED','SUSPENDED'].includes(m.status)).map(statDetailMemberRow).join('') || emptyState('✅','কেউ নিষিদ্ধ নেই');
+    body = db.members.filter(m=>['TEMP_BANNED','PERMA_BANNED','SUSPENDED'].includes(m.status) && m.role==='member').map(statDetailMemberRow).join('') || emptyState('✅','কেউ নিষিদ্ধ নেই');
   } else if(kind==='income'){
     title='চাঁদা আদায়ের বিস্তারিত (অনুমোদিত)';
     const approved = db.payments.filter(p=>p.status==='approved');
@@ -1333,10 +1438,11 @@ function actionRow(count,label,goTab){
 function screenAdminMembers(){
   const q = (session.memberSearch||'').toLowerCase();
   const filter = session.memberFilter||'all';
-  let list = db.members;
+  let list = db.members.filter(m=>m.role==='member');
   if(filter!=='all') list = list.filter(m=>m.status===filter);
   if(q) list = list.filter(m=>m.name.toLowerCase().includes(q)||m.id.toLowerCase().includes(q)||m.mobile.includes(q));
   return `<div class="screen">
+    <button class="btn btn-outline btn-sm" style="margin-bottom:10px;" onclick="exportMembersCSV()">⬇️ সদস্য তালিকা CSV এক্সপোর্ট</button>
     <input placeholder="🔎 নাম, আইডি বা মোবাইল দিয়ে খুঁজুন" value="${esc(session.memberSearch||'')}" oninput="session.memberSearch=this.value; renderInPlace();" style="margin-bottom:10px;">
     <div class="chip-row">
       ${memberChip('all','সব',filter)}
@@ -1357,6 +1463,34 @@ function screenAdminMembers(){
   </div>`;
 }
 function memberChip(val,label,active){ return `<div class="chip ${active===val?'active':''}" onclick="session.memberFilter='${val}'; render();">${label}</div>`; }
+function downloadCSV(filename, rows){
+  const csv = rows.map(r=>r.map(c=>{
+    const s = (c===null||c===undefined)?'':String(c);
+    return /[",\n]/.test(s) ? '"'+s.replace(/"/g,'""')+'"' : s;
+  }).join(',')).join('\r\n');
+  const blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+function exportMembersCSV(){
+  const rows = [['আইডি','নাম','মোবাইল','পদবি','স্ট্যাটাস','ব্লাড গ্রুপ','যোগদান','প্লাস','মাইনাস','কন্ট্রিবিউশন']];
+  db.members.filter(m=>m.role==='member').forEach(m=>{
+    rows.push([m.id,m.name,m.mobile,m.position,statusLabel(m.status),m.bloodGroup,m.joinDate,m.plus,m.minus,m.contribution]);
+  });
+  downloadCSV('সদস্য-তালিকা.csv', rows);
+  toast('CSV ডাউনলোড হয়েছে','⬇️');
+}
+function exportPaymentsCSV(){
+  const rows = [['পেমেন্ট আইডি','সদস্যের নাম','অফার','পরিমাণ','TxID','তারিখ','স্ট্যাটাস']];
+  db.payments.forEach(p=>{
+    rows.push([p.id,p.memberName,p.offer,p.amount,p.txid,p.date,p.status]);
+  });
+  downloadCSV('পেমেন্ট-হিস্ট্রি.csv', rows);
+  toast('CSV ডাউনলোড হয়েছে','⬇️');
+}
 function renderInPlace(){ document.getElementById('content').innerHTML = renderScreen(); }
 
 function openMemberDetail(id){
@@ -1371,6 +1505,7 @@ function openMemberDetail(id){
       <div><b style="font-size:15.5px;display:block;">${esc(m.name)}</b><span style="font-size:12px;color:var(--muted);">${m.id} · ${m.mobile}</span></div>
     </div>
     <div style="margin-bottom:12px;">${statusPill(m.status)} <span class="pill pill-normal">${m.position}</span>${!isMemberRole?` <span class="pill pill-normal">${m.role==='superadmin'?'সুপার এডমিন':'এডমিন'}</span>`:''}</div>
+    ${badgeRowHTML(m)}
     ${m.status==='TEMP_BANNED' ? `<div class="reason-warn">🚫 সাময়িক নিষিদ্ধ, মেয়াদ শেষ: ${m.banUntil}<br>কারণ: ${m.banReason}</div>` : ''}
 
     ${isMemberRole ? `
@@ -1402,6 +1537,7 @@ function openMemberDetail(id){
     ${m.status==='ACTIVE' ? `<button class="btn btn-outline" style="margin-bottom:8px;" onclick="openBloodPointForm('${id}')">🩸 ${isMemberRole?'রক্তদান পয়েন্ট ও তারিখ':'রক্তদানের তারিখ সেট করুন'}</button>`:''}
     ${isSuper ? `<button class="btn btn-outline" style="margin-bottom:8px;" onclick="openSuperEditMember('${id}')">🛠️ প্রোফাইল তথ্য সম্পাদনা (সুপার এডমিন)</button>`:''}
 
+    ${isSuper && m.contribution==='PAID' ? `<button class="btn btn-outline" style="margin-bottom:8px;" onclick="resetContribution('${id}')">🔄 চাঁদা রিসেট করুন (পরবর্তী মেয়াদের জন্য)</button>`:''}
     <button class="btn btn-ghost" style="margin-bottom:8px;" onclick="openResetPin('${id}')">🔑 পিন রিসেট</button>
     ${isSuper ? `<button class="btn btn-danger-outline" onclick="deleteAccountConfirm('${id}')">🗑️ একাউন্ট মুছে ফেলুন</button>`:''}
   `);
@@ -1548,6 +1684,7 @@ function screenAdminPayments(){
   const sub = session.payTab||'pending';
   const list = db.payments.filter(p=>sub==='pending'?p.status==='pending':p.status!=='pending');
   return `<div class="screen">
+    <button class="btn btn-outline btn-sm" style="margin-bottom:10px;" onclick="exportPaymentsCSV()">⬇️ পেমেন্ট হিস্ট্রি CSV এক্সপোর্ট</button>
     <div class="tabs2">
       <button class="${sub==='pending'?'active':''}" onclick="session.payTab='pending'; render();">যাচাইয়ের অপেক্ষায় (${db.payments.filter(p=>p.status==='pending').length})</button>
       <button class="${sub==='done'?'active':''}" onclick="session.payTab='done'; render();">সম্পন্ন</button>
@@ -1569,6 +1706,14 @@ function screenAdminPayments(){
       </div>
     `).join('') || emptyState('💳','এই তালিকায় কিছু নেই')}
   </div>`;
+}
+function resetContribution(id){
+  const m = getMember(id);
+  m.contribution='DUE';
+  m.paidOfferId=null; m.paidOfferLabel=null;
+  addAudit('সদস্যের চাঁদা রিসেট করেছেন (নতুন মেয়াদ)', `${m.id} · ${m.name}`);
+  saveDB(); closeModal(); render();
+  toast('চাঁদা রিসেট হয়েছে, সদস্য আবার পেমেন্ট করতে পারবেন','🔄');
 }
 function approvePayment(id){
   const p = db.payments.find(x=>x.id===id);
@@ -1597,7 +1742,7 @@ function rejectPayment(id){
   const reason = document.getElementById('rejReason').value.trim();
   if(!reason){ toast('কারণ লেখা আবশ্যক','⚠️'); return; }
   const p = db.payments.find(x=>x.id===id); p.status='rejected';
-  const m = getMember(p.member); if(m) m.contribution='REJECTED';
+  const m = getMember(p.member); if(m){ m.contribution='REJECTED'; m.paidOfferId=null; m.paidOfferLabel=null; }
   addAudit(`পেমেন্ট প্রত্যাখ্যান করেছেন`, `${p.id} · ${p.memberName}`);
   saveDB(); closeModal(); render(); toast('পেমেন্ট প্রত্যাখ্যাত হয়েছে','❌');
 }
@@ -1920,7 +2065,7 @@ function screenAdminMore(){
     <div class="card">
       <div class="list-item">
         <div class="ico">🔄</div>
-        <div class="meta"><b>সকল সদস্যের পয়েন্ট ও মোট বার্ষিক চাঁদা আদায় ০০ করুন</b><span>নিশ্চিত করলে সকল সদস্যের প্লাস/মাইনাস পয়েন্ট এবং মোট বার্ষিক চাঁদা আদায় শূন্য (০০) হয়ে যাবে। অনুদান (Donation) এর হিসাব অপরিবর্তিত থাকবে — মোট তহবিল থেকে বাদ যাবে না। এরপর নতুন করে চাঁদা বা পয়েন্ট যোগ করলে তা স্বাভাবিক নিয়মেই যোগ হবে।</span></div>
+        <div class="meta"><b>সকল সদস্যের পয়েন্ট ও মোট বার্ষিক চাঁদা আদায় ০০ করুন</b><span>নিশ্চিত করলে সকল সদস্যের প্লাস/মাইনাস পয়েন্ট শূন্য (০০) হবে, চাঁদার অবস্থা আবার "বকেয়া" হয়ে যাবে (সবাই নতুন করে চাঁদা দিতে পারবেন), এবং মোট বার্ষিক চাঁদা আদায় শূন্য হবে। অনুদান (Donation) এর হিসাব অপরিবর্তিত থাকবে — মোট তহবিল থেকে বাদ যাবে না।</span></div>
       </div>
       <button class="btn btn-danger-outline" style="margin-top:10px;" onclick="openConfirmResetLedger()">🔄 পয়েন্ট ও চাঁদা রিসেট করুন</button>
     </div>` : ''}
@@ -1943,16 +2088,16 @@ function featureLabel(k){ return {messaging:'মেসেজিং',blood:'র�
 function openConfirmResetLedger(){
   openModal(`
     <div class="modal-title"><h3>⚠️ রিসেট নিশ্চিত করুন</h3><button onclick="closeModal()">✕</button></div>
-    <div class="reason-warn">⚠️ এই কাজটি করলে সকল সদস্যের প্লাস/মাইনাস পয়েন্ট এবং সংগঠনের মোট বার্ষিক চাঁদা আদায় (৳${totalContribution()}) স্থায়ীভাবে ০০ হয়ে যাবে। অনুদান (Donation) এর হিসাব অপরিবর্তিত থাকবে, রিসেট হবে না। এই কাজটি ফিরিয়ে আনা যাবে না। আপনি কি নিশ্চিত?</div>
+    <div class="reason-warn">⚠️ এই কাজটি করলে সকল সদস্যের প্লাস/মাইনাস পয়েন্ট, চাঁদার অবস্থা (আবার "বকেয়া" হয়ে যাবে) এবং সংগঠনের মোট বার্ষিক চাঁদা আদায় (৳${totalContribution()}) স্থায়ীভাবে ০০ হয়ে যাবে। অনুদান (Donation) এর হিসাব অপরিবর্তিত থাকবে, রিসেট হবে না। এই কাজটি ফিরিয়ে আনা যাবে না। আপনি কি নিশ্চিত?</div>
     <button class="btn btn-red" onclick="resetPointsAndFunds()">হ্যাঁ, সকল পয়েন্ট ও চাঁদা ০০ করুন</button>
   `);
 }
 function resetPointsAndFunds(){
-  db.members.forEach(m=>{ m.plus=0; m.minus=0; });
+  db.members.forEach(m=>{ m.plus=0; m.minus=0; if(m.role==='member'){ m.contribution='DUE'; m.paidOfferId=null; m.paidOfferLabel=null; } });
   db.pointHistory = {};
   db.payments = db.payments.filter(p=>p.status!=='approved');
-  addAudit('সকল সদস্যের পয়েন্ট ও মোট বার্ষিক চাঁদা আদায় রিসেট করেছেন (০০) — অনুদান অপরিবর্তিত', 'সিস্টেম রিসেট');
-  saveDB(); closeModal(); render(); toast('পয়েন্ট ও চাঁদার হিসাব ০০ করা হয়েছে','🔄');
+  addAudit('সকল সদস্যের পয়েন্ট, চাঁদার অবস্থা ও মোট বার্ষিক চাঁদা আদায় রিসেট করেছেন (০০) — অনুদান অপরিবর্তিত', 'সিস্টেম রিসেট');
+  saveDB(); closeModal(); render(); toast('পয়েন্ট ও চাঁদার হিসাব ০০ করা হয়েছে, সবাই আবার চাঁদা দিতে পারবে','🔄');
 }
 function toggleFeature(k){ db.featureFlags[k]=!db.featureFlags[k]; addAudit(`ফিচার ${featureLabel(k)} ${db.featureFlags[k]?'চালু':'বন্ধ'} করেছেন`,'সিস্টেম সেটিংস'); saveDB(); toast('সেটিংস আপডেট হয়েছে','⚙️'); }
 function bumpLogo(){ db.logoVersion++; addAudit('লোগো আপডেট করেছেন', `v${db.logoVersion}`); saveDB(); render(); toast('লোগো ভার্সন হালনাগাদ হয়েছে','🖼️'); }
@@ -2053,6 +2198,12 @@ window.onload = async function(){
     render();
   }, 1300);
 };
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('sw.js').catch(e=>console.warn('SW register failed', e));
+  });
+}
 </script>
 </body>
 </html>
