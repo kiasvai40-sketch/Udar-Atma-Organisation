@@ -2322,10 +2322,6 @@ window.onload = async function(){
     db = loadDB();
     saveDBToCloud();
   }
-  if(db && db.org){
-    db.org = Object.assign({}, db.org, seedData().org);
-    saveDB();
-  }
   setTimeout(()=>{
     document.getElementById('splash').style.display='none';
     document.getElementById('shell').style.display='flex';
