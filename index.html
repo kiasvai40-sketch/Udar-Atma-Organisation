@@ -156,13 +156,13 @@ img{max-width:100%;display:block;}
 .pill{display:inline-flex;align-items:center;gap:5px;padding:4px 11px;border-radius:999px;font-size:11.5px;font-weight:600;}
 .pill-public{background:#E9F1FF;color:#1554C7;}
 .pill-members{background:#EFE8FF;color:#5B23C7;}
-.pill-admin{background:#FCE9EE;color:#B4123A;}
+.pill-admin{background:#FCE9EE;color:#E31C24;}
 .pill-normal{background:#EFEFF7;color:var(--muted);}
 .pill-important{background:var(--warning-bg);color:var(--warning);}
 .pill-urgent{background:#FFE3D6;color:#C2440A;}
 .pill-emergency{background:var(--red);color:#fff;}
 .pill-success{background:var(--success-bg);color:var(--success);}
-.pill-danger{background:var(--danger-bg);color:#B4123A;}
+.pill-danger{background:var(--danger-bg);color:#E31C24;}
 
 .list-item{display:flex;gap:12px;padding:13px 4px;border-bottom:1px solid var(--border);}
 .list-item:last-child{border-bottom:none;}
@@ -193,7 +193,7 @@ img{max-width:100%;display:block;}
 .btn-outline{background:#fff;color:var(--navy);border:1.5px solid var(--navy);}
 .btn-ghost{background:var(--navy-soft);color:var(--navy);}
 .btn-sm{width:auto;padding:8px 14px;font-size:12.5px;border-radius:10px;}
-.btn-danger-outline{background:#fff;color:#B4123A;border:1.5px solid #F1B9C4;}
+.btn-danger-outline{background:#fff;color:#E31C24;border:1.5px solid #F1B9C4;}
 .btn[disabled]{opacity:.5;pointer-events:none;}
 .btn-row{display:flex;gap:9px;}
 .btn-row .btn{flex:1;}
@@ -260,7 +260,7 @@ textarea{resize:vertical;min-height:80px;}
 .point-tri .final{background:var(--navy);color:#fff;}
 .point-tri b{display:block;font-size:19px;font-family:'Baloo Da 2';}
 .point-tri .plus b{color:var(--success);}
-.point-tri .minus b{color:#B4123A;}
+.point-tri .minus b{color:#E31C24;}
 .point-tri span{font-size:10.5px;color:var(--muted);}
 .point-tri .final span{color:rgba(255,255,255,.8);}
 
@@ -386,7 +386,7 @@ textarea{resize:vertical;min-height:80px;}
 .badge-gold{background:linear-gradient(135deg,#FFF3D6,#FDE4A8);color:#8a6400;}
 .badge-silver{background:linear-gradient(135deg,#F1F1F5,#DCDCE6);color:#54546b;}
 .badge-bronze{background:linear-gradient(135deg,#FBE6D8,#F2CBA8);color:#8a4b1a;}
-.badge-red{background:var(--danger-bg);color:#B4123A;}
+.badge-red{background:var(--danger-bg);color:#E31C24;}
 .badge-navy{background:#E9E9FB;color:var(--navy);}
 .badge-green{background:var(--success-bg);color:var(--success);}
 .leader-mini{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px;}
@@ -1173,7 +1173,7 @@ function screenProfile(){
     </div>
     ${history.length? `<div class="card">${history.map(h=>`
       <div class="list-item">
-        <div class="ico" style="background:${h.type==='plus'?'#E7F6EE':'#FCEAEA'};color:${h.type==='plus'?'var(--success)':'#B4123A'};">${h.type==='plus'?'+':'−'}</div>
+        <div class="ico" style="background:${h.type==='plus'?'#E7F6EE':'#FCEAEA'};color:${h.type==='plus'?'var(--success)':'#E31C24'};">${h.type==='plus'?'+':'−'}</div>
         <div class="meta"><b>${h.type==='plus'?'+':'-'}${h.amount} — ${esc(h.reason)}</b><span>${h.by} · ${h.date}</span></div>
       </div>
     `).join('')}</div>` : ''}
@@ -1246,7 +1246,7 @@ function openPublicProfile(id){
     </div>
     ${history.length? `<div class="card">${history.map(h=>`
       <div class="list-item">
-        <div class="ico" style="background:${h.type==='plus'?'#E7F6EE':'#FCEAEA'};color:${h.type==='plus'?'var(--success)':'#B4123A'};">${h.type==='plus'?'+':'−'}</div>
+        <div class="ico" style="background:${h.type==='plus'?'#E7F6EE':'#FCEAEA'};color:${h.type==='plus'?'var(--success)':'#E31C24'};">${h.type==='plus'?'+':'−'}</div>
         <div class="meta"><b>${h.type==='plus'?'+':'-'}${h.amount} — ${esc(h.reason)}</b><span>${h.by} · ${h.date}</span></div>
       </div>
     `).join('')}</div>` : emptyState('📊','এখনো কোনো পয়েন্ট হিস্টোরি নেই')}
@@ -1379,7 +1379,7 @@ function screenAdminDashboard(){
         <div class="tail" style="font-weight:700;color:var(--navy);">৳${totalIncome()}</div>
       </div>
       <div class="list-item" style="cursor:pointer;padding:8px 4px;" onclick="openExpenseHistory()">
-        <div class="ico" style="background:var(--danger-bg);color:#B4123A;">📤</div>
+        <div class="ico" style="background:var(--danger-bg);color:#E31C24;">📤</div>
         <div class="meta"><b>ব্যয়</b><span>বিস্তারিত হিস্টোরি দেখতে ট্যাপ করুন</span></div>
         <div class="tail" style="font-weight:700;color:var(--navy);">৳${totalExpense()}</div>
       </div>
@@ -1480,7 +1480,7 @@ function openExpenseHistory(){
       </div>
     </div>
     <div class="card">
-      ${db.expenses.map(e=>`<div class="list-item"><div class="ico">📤</div><div class="meta"><b>${esc(e.description)}</b><span>${e.addedBy} · ${e.date}</span>${isSuper?`<div style="display:flex;gap:6px;margin-top:6px;"><button class="btn btn-sm btn-ghost" onclick="openEditExpense(${e.id})">সম্পাদনা</button><button class="btn btn-sm btn-danger-outline" onclick="deleteExpenseRecord(${e.id})">মুছুন</button></div>`:''}</div><div class="tail" style="font-weight:700;color:#B4123A;">-৳${e.amount}</div></div>`).join('') || emptyState('📤','কোনো ব্যয় নথিভুক্ত নেই')}
+      ${db.expenses.map(e=>`<div class="list-item"><div class="ico">📤</div><div class="meta"><b>${esc(e.description)}</b><span>${e.addedBy} · ${e.date}</span>${isSuper?`<div style="display:flex;gap:6px;margin-top:6px;"><button class="btn btn-sm btn-ghost" onclick="openEditExpense(${e.id})">সম্পাদনা</button><button class="btn btn-sm btn-danger-outline" onclick="deleteExpenseRecord(${e.id})">মুছুন</button></div>`:''}</div><div class="tail" style="font-weight:700;color:#E31C24;">-৳${e.amount}</div></div>`).join('') || emptyState('📤','কোনো ব্যয় নথিভুক্ত নেই')}
     </div>
     <div style="display:flex;justify-content:space-between;font-weight:700;color:var(--navy);margin-top:12px;padding:0 4px;"><span>সর্বমোট</span><span>৳${totalExpense()}</span></div>
   `);
