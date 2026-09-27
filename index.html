@@ -334,6 +334,18 @@ textarea{resize:vertical;min-height:80px;}
 .gallery-tile span.cap{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(0deg,rgba(0,0,0,.55),transparent);color:#fff;font-size:10.5px;padding:16px 8px 6px;font-weight:600;}
 .donor-row{display:flex;align-items:center;gap:12px;padding:12px 2px;border-bottom:1px solid var(--border);}
 .donor-row .bg{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,var(--red-2),var(--red));color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
+.donor-card{background:#fff;border:1px solid var(--border);border-radius:var(--r-lg);padding:16px;margin-bottom:12px;box-shadow:var(--shadow-sm);}
+.donor-card-top{display:flex;align-items:center;gap:12px;cursor:pointer;padding-bottom:14px;margin-bottom:14px;border-bottom:1px dashed var(--border);}
+.donor-card-top .bg{width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg,var(--red-2),var(--red));color:#fff;font-weight:800;font-size:15px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 8px 16px rgba(227,28,36,0.25);}
+.donor-card-info{display:flex;flex-direction:column;gap:4px;min-width:0;}
+.donor-card-info b{font-size:15px;color:var(--navy);}
+.donor-card-info span{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.donor-card-actions{display:flex;gap:8px;}
+.action-pill{flex:1;min-width:0;text-align:center;padding:9px 4px;border-radius:999px;font-size:11px;font-weight:700;text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;}
+.action-pill.ready{background:#E7F8EE;color:#1C9A57;}
+.action-pill.ready.not-ready{background:#F1F1F6;color:var(--muted);}
+.action-pill.call{background:var(--navy-soft);color:var(--navy);}
+.action-pill.whatsapp{background:#E7F8EE;color:#1C9A57;}
 .reason-warn{background:var(--warning-bg);color:var(--warning);font-size:12px;padding:10px 12px;border-radius:10px;margin-bottom:12px;display:flex;gap:8px;}
 .member-detail-head{display:flex;gap:12px;align-items:center;margin-bottom:16px;}
 .member-detail-head .av{width:56px;height:56px;border-radius:16px;background:linear-gradient(135deg,var(--navy-3),var(--navy));color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;flex-shrink:0;overflow:hidden;}
@@ -1015,18 +1027,24 @@ function screenBlood(){
       <div class="chip-row">
         ${groups.map(g=>`<div class="chip ${groupFilter===g?'active':''}" onclick="session.bloodGroupFilter='${g}'; render();">${g==='all'?'সব গ্রুপ':g}</div>`).join('')}
       </div>
-      <div class="card">
-        ${donors.map(m=>`
-          <div class="donor-row" style="cursor:pointer;" onclick="openDonorDetail('${m.id}')">
+      ${donors.map(m=>{
+        const ready = daysBetween(m.lastDonationDate) >= 90;
+        return `
+        <div class="donor-card">
+          <div class="donor-card-top" onclick="openDonorDetail('${m.id}')">
             <div class="bg">${m.bloodGroup}</div>
-            <div class="meta" style="flex:1;">
-              <b style="font-size:13.5px;">${esc(m.name)}</b>
-              <div style="font-size:11.5px;color:var(--muted);">শেষ রক্তদান: ${donationLabel(m.lastDonationDate)}</div>
+            <div class="donor-card-info">
+              <b>${esc(m.name)}</b>
+              <span>🕒 শেষ রক্তদান: ${donationLabel(m.lastDonationDate)}</span>
             </div>
-            <span class="pill pill-normal">${m.id}</span>
           </div>
-        `).join('') || emptyState('🩸','এই গ্রুপে কোনো ডোনার পাওয়া যায়নি')}
-      </div>
+          <div class="donor-card-actions">
+            <span class="action-pill ready ${ready?'':'not-ready'}">${ready?'✅ রক্তদানে প্রস্তুত':'⏳ প্রস্তুত নয়'}</span>
+            <a class="action-pill call" href="tel:${m.mobile}" onclick="event.stopPropagation()">📞 কল করুন</a>
+            <a class="action-pill whatsapp" href="https://wa.me/88${m.mobile}" target="_blank" onclick="event.stopPropagation()">💬 WhatsApp</a>
+          </div>
+        </div>
+      `;}).join('') || emptyState('🩸','এই গ্রুপে কোনো ডোনার পাওয়া যায়নি')}
     ` : `
       ${db.bloodRequests.filter(r=>r.status==='active').map(r=>`
         <div class="card">
@@ -2303,6 +2321,10 @@ window.onload = async function(){
   } else {
     db = loadDB();
     saveDBToCloud();
+  }
+  if(db && db.org){
+    db.org = Object.assign({}, db.org, seedData().org);
+    saveDB();
   }
   setTimeout(()=>{
     document.getElementById('splash').style.display='none';
