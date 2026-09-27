@@ -455,8 +455,8 @@ async function loadDBFromCloud(){
   return null;
 }
 function saveDBToCloud(){
-  if(!firebaseOK) return;
-  fsDB.collection(FS_COLLECTION).doc(FS_DOC).set({ state: db, updatedAt: Date.now() })
+  if(!firebaseOK) return Promise.resolve();
+  return fsDB.collection(FS_COLLECTION).doc(FS_DOC).set({ state: db, updatedAt: Date.now() })
     .catch(e=>console.warn('Cloud save failed, kept locally only', e));
 }
 async function refreshFromCloud(){
@@ -554,7 +554,7 @@ function loadDB(){
   }catch(e){}
   return seedData();
 }
-function saveDB(){ localStorage.setItem(LS_KEY, JSON.stringify(db)); saveDBToCloud(); }
+function saveDB(){ localStorage.setItem(LS_KEY, JSON.stringify(db)); return saveDBToCloud(); }
 function resetDemo(){ localStorage.removeItem(LS_KEY); location.reload(); }
 
 /* ---------------- SESSION ---------------- */
@@ -1677,10 +1677,11 @@ function adminAddPaidMonths(id){
   saveDB();closeModal();openMemberDetail(id);toast('নির্বাচিত মাসগুলো পরিশোধিত হিসেবে যুক্ত হয়েছে','✅');
 }
 
-function approveMember(id){
+async function approveMember(id){
   const m=getMember(id); m.status='ACTIVE'; m.position='সাধারণ সদস্য';
   addAudit(`সদস্য অনুমোদন করেছেন`, m.name);
-  saveDB(); closeModal(); render(); toast(`${m.name} অনুমোদিত হয়েছে`,'✅');
+  closeModal(); render(); toast(`${m.name} অনুমোদিত হয়েছে`,'✅');
+  await saveDB();
 }
 function rejectMember(id){
   const m=getMember(id); m.status='REJECTED';
@@ -1695,7 +1696,7 @@ function openAddPoint(id,type){
     <button class="btn ${type==='plus'?'btn-primary':'btn-red'}" onclick="submitPoint('${id}','${type}')">নিশ্চিত করুন</button>
   `);
 }
-function submitPoint(id,type){
+async function submitPoint(id,type){
   const amt = Number(document.getElementById('ptAmt').value);
   const reason = document.getElementById('ptReason').value.trim();
   if(!amt || amt<=0){ toast('সঠিক পরিমাণ দিন','⚠️'); return; }
@@ -1705,7 +1706,8 @@ function submitPoint(id,type){
   if(!db.pointHistory[id]) db.pointHistory[id]=[];
   db.pointHistory[id].unshift({type, amount:amt, reason, date:'আজ', by: currentMember().name});
   addAudit(`পয়েন্ট যোগ করেছেন (${type==='plus'?'+':'-'}${amt})`, m.name);
-  saveDB(); closeModal(); render(); toast('পয়েন্ট আপডেট হয়েছে','✅');
+  closeModal(); render(); toast('পয়েন্ট আপডেট হয়েছে','✅');
+  await saveDB();
 }
 function openBanForm(id,kind){
   const durations = ['১ ঘণ্টা','৬ ঘণ্টা','১২ ঘণ্টা','১ দিন','৩ দিন','৭ দিন','১৫ দিন','৩০ দিন'];
