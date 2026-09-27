@@ -463,8 +463,11 @@ async function refreshFromCloud(){
   try{
     const snap = await fsDB.collection(FS_COLLECTION).doc(FS_DOC).get();
     if(snap.exists && snap.data().state){
-      db = snap.data().state;
-      localStorage.setItem(LS_KEY, JSON.stringify(db));
+      const cloudData = snap.data().state;
+      if((cloudData.updatedAt||0) >= (db.updatedAt||0)){
+        db = cloudData;
+        localStorage.setItem(LS_KEY, JSON.stringify(db));
+      }
       render();
       toast('সবশেষ তথ্য আনা হয়েছে','🔄');
     }
@@ -554,7 +557,7 @@ function loadDB(){
   }catch(e){}
   return seedData();
 }
-function saveDB(){ localStorage.setItem(LS_KEY, JSON.stringify(db)); return saveDBToCloud(); }
+function saveDB(){ db.updatedAt = Date.now(); localStorage.setItem(LS_KEY, JSON.stringify(db)); return saveDBToCloud(); }
 function resetDemo(){ localStorage.removeItem(LS_KEY); location.reload(); }
 
 /* ---------------- SESSION ---------------- */
@@ -2316,10 +2319,15 @@ function openNotifPanel(){
 /* ---------------- INIT ---------------- */
 window.onload = async function(){
   session = loadSession();
+  let localData = null;
+  try{ const raw = localStorage.getItem(LS_KEY); if(raw) localData = JSON.parse(raw); }catch(e){}
   const cloudData = await loadDBFromCloud();
-  if(cloudData){
+  if(cloudData && (!localData || (cloudData.updatedAt||0) >= (localData.updatedAt||0))){
     db = cloudData;
     localStorage.setItem(LS_KEY, JSON.stringify(db));
+  } else if(localData){
+    db = localData;
+    saveDBToCloud();
   } else {
     db = loadDB();
     saveDBToCloud();
