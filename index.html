@@ -1049,7 +1049,7 @@ function donationLabel(dateStr){
   return `প্রায় ${Math.floor(d/365)} বছর আগে`;
 }
 function donorList(){
-  return db.members.filter(m=>m.status==='ACTIVE' && m.role==='member' && m.bloodGroup);
+  return db.members.filter(m=>m.status==='ACTIVE' && m.role==='member' && m.bloodGroup && m.bloodGroup!=='—');
 }
 function screenBlood(){
   const sub = session.bloodTab||'donors';
