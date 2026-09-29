@@ -965,7 +965,7 @@ function noticeCardHTML(n){
     </div>
     <h4>${esc(n.title)}</h4>
     <p>${esc(n.body)}</p>
-    <div class="foot"><span>${n.date}</span><span>${n.status==='published'?'প্রকাশিত':'খসড়া'}</span></div>
+    <div class="foot"><span>${relDate(n.date)}</span><span>${n.status==='published'?'প্রকাশিত':'খসড়া'}</span></div>
   </div>`;
 }
 function activityRowHTML(a){
@@ -1023,6 +1023,16 @@ function screenActivities(){
   </div>`;
 }
 
+/* Shows a system-set timestamp as relative days (up to 7), then the actual date.
+   Only for dates the system sets automatically — never for dates an admin/superadmin types in manually. */
+function relDate(val){
+  if(typeof val !== 'number') return val; // legacy/manually-entered value: show as-is
+  const days = Math.max(0, Math.floor((Date.now()-val)/(1000*60*60*24)));
+  if(days===0) return 'আজ';
+  if(days<=7) return `${days} দিন আগে`;
+  return new Date(val).toLocaleDateString('bn-BD');
+}
+
 /* ---------------- BLOOD ---------------- */
 function daysBetween(dateStr){
   if(!dateStr) return Infinity;
@@ -1039,7 +1049,7 @@ function donationLabel(dateStr){
   return `প্রায় ${Math.floor(d/365)} বছর আগে`;
 }
 function donorList(){
-  return db.members.filter(m=>m.status==='ACTIVE' && m.role==='member');
+  return db.members.filter(m=>m.status==='ACTIVE' && m.role==='member' && m.bloodGroup);
 }
 function screenBlood(){
   const sub = session.bloodTab||'donors';
@@ -1205,7 +1215,7 @@ function screenProfile(){
     ${history.length? `<div class="card">${history.map(h=>`
       <div class="list-item">
         <div class="ico" style="background:${h.type==='plus'?'#E7F6EE':'#FCEAEA'};color:${h.type==='plus'?'var(--success)':'#E31C24'};">${h.type==='plus'?'+':'−'}</div>
-        <div class="meta"><b>${h.type==='plus'?'+':'-'}${h.amount} — ${esc(h.reason)}</b><span>${h.by} · ${h.date}</span></div>
+        <div class="meta"><b>${h.type==='plus'?'+':'-'}${h.amount} — ${esc(h.reason)}</b><span>${h.by} · ${relDate(h.date)}</span></div>
       </div>
     `).join('')}</div>` : ''}
 
@@ -1278,7 +1288,7 @@ function openPublicProfile(id){
     ${history.length? `<div class="card">${history.map(h=>`
       <div class="list-item">
         <div class="ico" style="background:${h.type==='plus'?'#E7F6EE':'#FCEAEA'};color:${h.type==='plus'?'var(--success)':'#E31C24'};">${h.type==='plus'?'+':'−'}</div>
-        <div class="meta"><b>${h.type==='plus'?'+':'-'}${h.amount} — ${esc(h.reason)}</b><span>${h.by} · ${h.date}</span></div>
+        <div class="meta"><b>${h.type==='plus'?'+':'-'}${h.amount} — ${esc(h.reason)}</b><span>${h.by} · ${relDate(h.date)}</span></div>
       </div>
     `).join('')}</div>` : emptyState('📊','এখনো কোনো পয়েন্ট হিস্টোরি নেই')}
     ` : ''}
@@ -1735,7 +1745,7 @@ async function submitPoint(id,type){
   const m = getMember(id);
   if(type==='plus') m.plus+=amt; else m.minus+=amt;
   if(!db.pointHistory[id]) db.pointHistory[id]=[];
-  db.pointHistory[id].unshift({type, amount:amt, reason, date:'আজ', by: currentMember().name});
+  db.pointHistory[id].unshift({type, amount:amt, reason, date:Date.now(), by: currentMember().name});
   addAudit(`পয়েন্ট যোগ করেছেন (${type==='plus'?'+':'-'}${amt})`, m.name);
   closeModal(); render(); toast('পয়েন্ট আপডেট হয়েছে','✅');
   await saveDB();
@@ -1820,7 +1830,7 @@ function submitBloodPoint(id){
   if(pts>0){
     m.plus += pts;
     if(!db.pointHistory[id]) db.pointHistory[id]=[];
-    db.pointHistory[id].unshift({type:'plus', amount:pts, reason:'রক্তদান', date:'আজ', by:currentMember().name});
+    db.pointHistory[id].unshift({type:'plus', amount:pts, reason:'রক্তদান', date:Date.now(), by:currentMember().name});
   }
   addAudit('রক্তদানের তারিখ নিবন্ধন করেছেন', m.name);
   saveDB(); closeModal(); render(); toast('রক্তদানের তথ্য হালনাগাদ হয়েছে','🩸');
@@ -1934,7 +1944,7 @@ function adminNoticesListHTML(){
         </div>
         <h4>${esc(n.title)}</h4>
         <p>${esc(n.body)}</p>
-        <div class="foot"><span>${n.date}</span><span>${n.visibility==='public'?'পাবলিক':n.visibility==='members'?'সদস্য':'অ্যাডমিন'}</span></div>
+        <div class="foot"><span>${relDate(n.date)}</span><span>${n.visibility==='public'?'পাবলিক':n.visibility==='members'?'সদস্য':'অ্যাডমিন'}</span></div>
         <div class="btn-row" style="margin-top:10px;">
           <button class="btn btn-sm btn-ghost" onclick="openEditNotice(${n.id})">✏️ সম্পাদনা</button>
           <button class="btn btn-sm btn-danger-outline" onclick="deleteNoticeConfirm(${n.id})">🗑️ মুছুন</button>
@@ -1964,7 +1974,7 @@ function submitNotice(publish){
   const title = document.getElementById('ntTitle').value.trim();
   const body = document.getElementById('ntBody').value.trim();
   if(!title||!body){ toast('শিরোনাম ও বিস্তারিত দিন','⚠️'); return; }
-  db.notices.unshift({id:Date.now(), title, body, visibility:document.getElementById('ntVis').value, priority:document.getElementById('ntPr').value, date:'আজ', status: publish?'published':'draft'});
+  db.notices.unshift({id:Date.now(), title, body, visibility:document.getElementById('ntVis').value, priority:document.getElementById('ntPr').value, date:Date.now(), status: publish?'published':'draft'});
   addAudit(publish?'নোটিশ প্রকাশ করেছেন':'নোটিশ খসড়া তৈরি করেছেন', title);
   saveDB(); closeModal(); render(); toast(publish?'নোটিশ প্রকাশিত হয়েছে':'খসড়া সংরক্ষিত হয়েছে','📢');
 }
