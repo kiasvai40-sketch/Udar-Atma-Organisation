@@ -344,6 +344,27 @@ textarea{resize:vertical;min-height:80px;}
 .tabs2 button{flex:1;border:none;background:none;padding:9px;border-radius:9px;font-weight:700;font-size:13px;color:var(--muted);cursor:pointer;transition:background-color .15s ease,color .15s ease;}
 .tabs2 button.active{background:#fff;color:var(--navy);box-shadow:0 2px 6px rgba(0,0,0,0.08);}
 .auth-wrap{padding:28px 22px calc(30px + var(--safe-b));min-height:100%;background:linear-gradient(165deg,var(--navy-deep) 0%, var(--navy) 55%, var(--navy-3) 230px, var(--bg) 230px);}
+.news-page{background:var(--bg);min-height:100%;}
+.news-masthead{background:linear-gradient(135deg,var(--navy) 0%,var(--navy-3) 65%,var(--navy-deep) 100%);color:#fff;padding:calc(12px + var(--safe-t)) 14px 12px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:5;box-shadow:0 2px 10px rgba(11,25,76,0.25);overflow:hidden;}
+.news-masthead::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 85% -20%, rgba(227,28,36,0.4), transparent 55%);pointer-events:none;}
+.news-masthead>*{position:relative;z-index:1;}
+.news-brand{display:flex;align-items:center;justify-content:center;gap:9px;flex:1;text-align:center;}
+.news-brand img{width:30px;height:30px;border-radius:50%;object-fit:contain;background:#fff;flex-shrink:0;}
+.news-brand b{display:block;font-family:'Baloo Da 2';font-size:14.5px;line-height:1.15;}
+.news-brand span{display:block;font-size:10px;opacity:.75;letter-spacing:1.5px;text-transform:uppercase;margin-top:1px;}
+.news-body{padding:20px 18px calc(34px + 78px + var(--safe-b));max-width:720px;margin:0 auto;}
+.news-share-btn{margin-top:12px;background:var(--navy-soft);color:var(--navy);border:none;padding:8px 15px;border-radius:999px;font-size:12.5px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
+.news-share-btn:active{transform:scale(0.96);}
+.news-hero{padding-bottom:20px;margin-bottom:20px;border-bottom:3px double var(--navy);}
+.news-hero .news-tag{display:inline-block;background:var(--red);color:#fff;font-size:10.5px;font-weight:800;letter-spacing:1px;padding:3px 10px;border-radius:4px;margin-bottom:10px;text-transform:uppercase;}
+.news-hero h1{font-family:'Baloo Da 2';font-size:22px;line-height:1.35;color:var(--navy);margin-bottom:9px;}
+.news-meta{font-size:11.5px;color:var(--muted);font-weight:600;margin-bottom:9px;}
+.news-hero p{font-size:14.5px;line-height:1.75;color:var(--ink);white-space:pre-line;}
+.news-list{display:flex;flex-direction:column;}
+.news-card{padding:16px 0;border-bottom:1px solid var(--border);}
+.news-card:last-child{border-bottom:none;}
+.news-card h3{font-family:'Baloo Da 2';font-size:16px;color:var(--navy);margin-bottom:6px;line-height:1.4;}
+.news-card p{font-size:13.5px;line-height:1.65;color:var(--ink);white-space:pre-line;}
 .auth-logo{width:78px;height:78px;border-radius:50%;background:#fff;margin:10px auto 16px;display:flex;align-items:center;justify-content:center;box-shadow:0 10px 26px rgba(0,0,0,0.28);}
 .auth-logo span{font-family:'Baloo Da 2';font-weight:800;color:var(--navy);font-size:24px;}
 .auth-head{text-align:center;color:#fff;margin-bottom:24px;}
@@ -561,6 +582,8 @@ function seedData(){
     ],
     pointHistory:{
     },
+    reports:[
+    ],
     auditLog:[
     ],
     donations:[
@@ -636,6 +659,10 @@ function render(){
   const shell = document.getElementById('shell');
   if(session.screen==='auth'){
     shell.innerHTML = renderAuth();
+    return;
+  }
+  if(session.screen==='reports'){
+    shell.innerHTML = renderReportsPage() + renderBottomNav();
     return;
   }
   const role = session.role;
@@ -786,7 +813,7 @@ function renderTopbar(){
         <div><b>${db.org.nameBn}</b><small>${db.org.slogan}</small></div>
       </div>
       <div style="display:flex;gap:8px;">
-        ${session.role!=='guest' ? `<button class="icon-btn" onclick="refreshFromCloud()" title="সবশেষ তথ্য আনুন" aria-label="সবশেষ তথ্য আনুন">🔄</button>` : ''}
+        ${session.role!=='guest' ? `<button class="icon-btn" onclick="openReports()" title="প্রতিবেদন" aria-label="প্রতিবেদন">📋</button>` : ''}
         ${session.role!=='guest' ? `<button class="icon-btn" onclick="openNotifPanel()" aria-label="নোটিফিকেশন">🔔<span class="dot"></span></button>` : ''}
         ${session.role!=='guest' ? `<button class="icon-btn" onclick="logout()" aria-label="লগআউট">↩️</button>` : `<button class="icon-btn" onclick="goToLogin()" aria-label="লগইন">🔐</button>`}
       </div>
@@ -812,23 +839,27 @@ const memberTabTitles = {home:'সদস্য হোম', notice:'নোটি�
 const adminTabTitles = {dashboard:'ড্যাশবোর্ড', members:'সদস্য ব্যবস্থাপনা', payments:'পেমেন্ট যাচাই', notices:'নোটিশ ব্যবস্থাপনা', more:'আরও'};
 
 /* ---------------- BOTTOM NAV ---------------- */
+function goHome(){ session.screen='app'; render(); }
+function goToTab(tab){ session.screen='app'; session.tab=tab; render(); }
+function goToAdminTab(tab){ session.screen='app'; session.adminTab=tab; render(); }
 function renderBottomNav(){
   if(session.role==='guest'){
     return `<div class="bottomnav">
-      <button class="navbtn active"><span class="ic">🏠</span>হোম</button>
+      <button class="navbtn ${session.screen!=='reports'?'active':''}" onclick="goHome()"><span class="ic">🏠</span>হোম</button>
+      <button class="navbtn ${session.screen==='reports'?'active':''}" onclick="openReports()"><span class="ic">📋</span>প্রতিবেদন</button>
       <button class="navbtn" onclick="goToLogin()"><span class="ic">🔐</span>লগইন</button>
     </div>`;
   }
   if(isAdminRole()){
     const tabs=[['dashboard','📊','ড্যাশবোর্ড'],['members','👥','সদস্য'],['payments','💳','পেমেন্ট'],['notices','📢','নোটিশ'],['more','⚙️','আরও']];
     return `<div class="bottomnav">${tabs.map(t=>`
-      <button class="navbtn ${session.adminTab===t[0]?'active':''}" onclick="session.adminTab='${t[0]}'; render();">
+      <button class="navbtn ${session.screen!=='reports'&&session.adminTab===t[0]?'active':''}" onclick="goToAdminTab('${t[0]}')">
         <span class="ic">${t[1]}</span>${t[2]}
       </button>`).join('')}</div>`;
   }
   const tabs=[['home','🏠','হোম'],['notice','📢','নোটিশ'],['activity','🎯','কার্যক্রম'],['blood','🩸','রক্ত'],['profile','🪪','প্রোফাইল']];
   return `<div class="bottomnav">${tabs.map(t=>`
-    <button class="navbtn ${session.tab===t[0]?'active':''}" onclick="session.tab='${t[0]}'; render();">
+    <button class="navbtn ${session.screen!=='reports'&&session.tab===t[0]?'active':''}" onclick="goToTab('${t[0]}')">
       <span class="ic">${t[1]}</span>${t[2]}
     </button>`).join('')}</div>`;
 }
@@ -2353,6 +2384,76 @@ function openNotifPanel(){
     <div class="card">${items.map(i=>`<div class="list-item"><div class="ico">${i.ic}</div><div class="meta"><b>${i.t}</b><span>এখন</span></div></div>`).join('')}</div>
   `);
 }
+function openReports(){
+  session.screen = 'reports';
+  render();
+}
+function renderReportsPage(){
+  const isSuper = session.role==='superadmin';
+  const list = db.reports||[];
+  const first = list[0];
+  const rest = list.slice(1);
+  return `<div class="news-page">
+    <div class="news-masthead">
+      <button class="icon-btn" style="background:rgba(255,255,255,0.16);color:#fff;" onclick="backToApp()">←</button>
+      <div class="news-brand">
+        <img src="${LOGO_DATA}" alt="logo">
+        <div><b>উদার আত্মা সংগঠন</b><span>প্রতিবেদন</span></div>
+      </div>
+      ${isSuper ? `<button class="icon-btn" style="background:rgba(255,255,255,0.16);color:#fff;" onclick="openCreateReport()">➕</button>` : `<span style="width:40px;"></span>`}
+    </div>
+    <div class="news-body">
+      ${list.length ? `
+        <article class="news-hero">
+          <span class="news-tag">প্রতিবেদন</span>
+          <h1>${esc(first.title)}</h1>
+          <div class="news-meta">🕒 ${relDate(first.date)}${first.by?' · '+esc(first.by):''}</div>
+          <p>${esc(first.body)}</p>
+          <button class="news-share-btn" onclick="shareReport(${first.id})">📤 শেয়ার করুন</button>
+        </article>
+        ${rest.length ? `<div class="news-list">${rest.map(r=>`
+          <article class="news-card">
+            <h3>${esc(r.title)}</h3>
+            <div class="news-meta">🕒 ${relDate(r.date)}${r.by?' · '+esc(r.by):''}</div>
+            <p>${esc(r.body)}</p>
+            <button class="news-share-btn" onclick="shareReport(${r.id})">📤 শেয়ার করুন</button>
+          </article>
+        `).join('')}</div>` : ''}
+      ` : emptyState('📋','কোনো প্রতিবেদন প্রকাশ করা হয়নি')}
+    </div>
+  </div>`;
+}
+function shareReport(id){
+  const r = (db.reports||[]).find(x=>x.id===id);
+  if(!r) return;
+  const text = `${r.title}\n\n${r.body}`;
+  if(navigator.share){
+    navigator.share({title:r.title, text}).catch(()=>{});
+  } else if(navigator.clipboard){
+    navigator.clipboard.writeText(text).then(()=>toast('কপি হয়েছে — এখন পেস্ট করে শেয়ার করুন','📋')).catch(()=>toast('শেয়ার করা যায়নি','⚠️'));
+  } else {
+    toast('এই ডিভাইসে শেয়ার সমর্থিত নয়','⚠️');
+  }
+}
+function openCreateReport(){
+  openModal(`
+    <div class="modal-title"><h3>➕ নতুন প্রতিবেদন</h3><button onclick="closeModal()">✕</button></div>
+    <label class="field"><span>শিরোনাম</span><input id="rpTitle" placeholder="প্রতিবেদনের শিরোনাম"></label>
+    <label class="field"><span>বিস্তারিত</span><textarea id="rpBody" placeholder="প্রতিবেদনের বিস্তারিত লিখুন"></textarea></label>
+    <button class="btn btn-red" onclick="submitReport()">প্রকাশ করুন</button>
+  `);
+}
+async function submitReport(){
+  if(session.role!=='superadmin') return;
+  const title = document.getElementById('rpTitle').value.trim();
+  const body = document.getElementById('rpBody').value.trim();
+  if(!title||!body){ toast('শিরোনাম ও বিস্তারিত দিন','⚠️'); return; }
+  if(!db.reports) db.reports=[];
+  db.reports.unshift({id:Date.now(), title, body, date:Date.now(), by: currentMember()?currentMember().name:'সুপার অ্যাডমিন'});
+  addAudit('নতুন প্রতিবেদন যোগ করেছেন', title);
+  closeModal(); render(); toast('প্রতিবেদন প্রকাশিত হয়েছে','✅');
+  await saveDB();
+}
 
 /* ---------------- INIT ---------------- */
 window.onload = async function(){
@@ -2370,6 +2471,7 @@ window.onload = async function(){
     db = loadDB();
     saveDBToCloud();
   }
+  if(!db.reports) db.reports = [];
   setTimeout(()=>{
     document.getElementById('splash').style.display='none';
     document.getElementById('shell').style.display='flex';
