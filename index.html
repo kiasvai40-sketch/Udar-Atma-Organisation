@@ -2423,12 +2423,14 @@ function renderReportsPage(){
         <article class="news-hero">
           <span class="news-tag">প্রতিবেদন</span>
           <h1>${esc(first.title)}</h1>
+          <div class="news-meta">🕒 ${relDate(first.date)}${first.by?' · '+esc(first.by):''}</div>
           <p>${esc(first.body)}</p>
           ${reportFooterHTML(first)}
         </article>
         ${rest.length ? `<div class="news-list">${rest.map(r=>`
           <article class="news-card">
             <h3>${esc(r.title)}</h3>
+            <div class="news-meta">🕒 ${relDate(r.date)}${r.by?' · '+esc(r.by):''}</div>
             <p>${esc(r.body)}</p>
             ${reportFooterHTML(r)}
           </article>
@@ -2440,10 +2442,10 @@ function renderReportsPage(){
 function reportFooterHTML(r){
   const liked = session.memberId && (r.likes||[]).includes(session.memberId);
   return `
-    <div class="news-meta">🕒 ${relDate(r.date)}${r.by?' · '+esc(r.by):''}</div>
     <div class="news-actions">
+      <button class="news-like-btn ${liked?'liked':''}" onclick="toggleLikeReport(${r.id})">${liked?'❤️':'🤍'} লাইক করুন</button>
+      <button class="news-share-btn" onclick="copyReportLink(${r.id})">🔗 কপি লিংক</button>
       <button class="news-share-btn" onclick="shareReport(${r.id})">📤 শেয়ার করুন</button>
-      <button class="news-like-btn ${liked?'liked':''}" onclick="toggleLikeReport(${r.id})">${liked?'❤️':'🤍'} লাইক</button>
     </div>
     ${likeAvatarsHTML(r)}
   `;
@@ -2490,8 +2492,19 @@ function showLikers(id){
     `).join('')}</div>
   `);
 }
+function reportLinkFor(id){
+  return `${location.origin}${location.pathname}?report=${id}`;
+}
+function copyReportLink(id){
+  const url = reportLinkFor(id);
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(url).then(()=>toast('লিংক কপি হয়েছে','🔗')).catch(()=>toast('কপি করা যায়নি','⚠️'));
+  } else {
+    toast('এই ডিভাইসে কপি সমর্থিত নয়','⚠️');
+  }
+}
 function shareReport(id){
-  const url = `${location.origin}${location.pathname}?report=${id}`;
+  const url = reportLinkFor(id);
   if(navigator.share){
     navigator.share({title:'উদার আত্মা সংগঠন — প্রতিবেদন', url}).catch(()=>{});
   } else if(navigator.clipboard){
