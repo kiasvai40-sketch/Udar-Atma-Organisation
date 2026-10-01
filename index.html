@@ -2493,7 +2493,7 @@ function showLikers(id){
   `);
 }
 function reportLinkFor(id){
-  return `${location.origin}${location.pathname}?report=${id}`;
+  return `${location.origin}/share/${id}`;
 }
 function copyReportLink(id){
   const url = reportLinkFor(id);
@@ -2556,6 +2556,15 @@ window.onload = async function(){
     if(rid){
       session.screen = 'reports';
       session.focusReportId = Number(rid);
+      const r = db.reports.find(x=>x.id===session.focusReportId);
+      if(r){
+        document.title = `${r.title} | উদার আত্মা সংগঠন`;
+        const setMeta = (sel, val)=>{ const el=document.querySelector(sel); if(el) el.setAttribute('content', val); };
+        setMeta('meta[property="og:title"]', r.title);
+        setMeta('meta[property="og:description"]', r.body.slice(0,160));
+        setMeta('meta[name="twitter:title"]', r.title);
+        setMeta('meta[name="twitter:description"]', r.body.slice(0,160));
+      }
     }
   }catch(e){}
   setTimeout(()=>{
