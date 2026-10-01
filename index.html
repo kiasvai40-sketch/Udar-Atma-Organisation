@@ -2493,7 +2493,7 @@ function showLikers(id){
   `);
 }
 function reportLinkFor(id){
-  return `${location.origin}/share/${id}`;
+  return `${location.origin}${location.pathname}#report=${id}`;
 }
 function copyReportLink(id){
   const url = reportLinkFor(id);
@@ -2551,8 +2551,12 @@ window.onload = async function(){
   }
   if(!db.reports) db.reports = [];
   try{
-    const params = new URLSearchParams(location.search);
-    const rid = params.get('report');
+    let rid = null;
+    if(location.hash && location.hash.indexOf('report=')>-1){
+      rid = location.hash.split('report=')[1];
+    } else {
+      rid = new URLSearchParams(location.search).get('report');
+    }
     if(rid){
       session.screen = 'reports';
       session.focusReportId = Number(rid);
