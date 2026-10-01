@@ -353,8 +353,16 @@ textarea{resize:vertical;min-height:80px;}
 .news-brand b{display:block;font-family:'Baloo Da 2';font-size:14.5px;line-height:1.15;}
 .news-brand span{display:block;font-size:10px;opacity:.75;letter-spacing:1.5px;text-transform:uppercase;margin-top:1px;}
 .news-body{padding:20px 18px calc(34px + 78px + var(--safe-b));max-width:720px;margin:0 auto;}
-.news-share-btn{margin-top:12px;background:var(--navy-soft);color:var(--navy);border:none;padding:8px 15px;border-radius:999px;font-size:12.5px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
+.news-actions{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;}
+.news-share-btn{background:var(--navy-soft);color:var(--navy);border:none;padding:8px 15px;border-radius:999px;font-size:12.5px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
 .news-share-btn:active{transform:scale(0.96);}
+.news-like-btn{background:var(--navy-soft);color:var(--navy);border:none;padding:8px 15px;border-radius:999px;font-size:12.5px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
+.news-like-btn.liked{background:#FCEAEA;color:#E31C24;}
+.news-like-btn:active{transform:scale(0.96);}
+.news-like-avatars{display:flex;align-items:center;gap:0;margin-top:10px;cursor:pointer;}
+.mini-av{width:26px;height:26px;border-radius:50%;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,0.15);margin-left:-8px;overflow:hidden;flex-shrink:0;}
+.mini-av:first-child{margin-left:0;}
+.news-like-avatars .cnt{font-size:12px;color:var(--muted);margin-left:8px;}
 .news-hero{padding-bottom:20px;margin-bottom:20px;border-bottom:3px double var(--navy);}
 .news-hero .news-tag{display:inline-block;background:var(--red);color:#fff;font-size:10.5px;font-weight:800;letter-spacing:1px;padding:3px 10px;border-radius:4px;margin-bottom:10px;text-transform:uppercase;}
 .news-hero h1{font-family:'Baloo Da 2';font-size:22px;line-height:1.35;color:var(--navy);margin-bottom:9px;}
@@ -1054,14 +1062,17 @@ function screenActivities(){
   </div>`;
 }
 
-/* Shows a system-set timestamp as relative days (up to 7), then the actual date.
+/* Shows a system-set timestamp as the actual date (today onward), relative days from day 1 to 7.
    Only for dates the system sets automatically — never for dates an admin/superadmin types in manually. */
+const bnMonths = ['জানুয়ারি','ফেব্রুয়ারি','মার্চ','এপ্রিল','মে','জুন','জুলাই','আগস্ট','সেপ্টেম্বর','অক্টোবর','নভেম্বর','ডিসেম্বর'];
+function bnDigits(n){ return String(n).replace(/[0-9]/g, d=>'০১২৩৪৫৬৭৮৯'[d]); }
+function bnDateStr(d){ return `${bnDigits(d.getDate())} ${bnMonths[d.getMonth()]}, ${bnDigits(d.getFullYear())}`; }
 function relDate(val){
   if(typeof val !== 'number') return val; // legacy/manually-entered value: show as-is
   const days = Math.max(0, Math.floor((Date.now()-val)/(1000*60*60*24)));
-  if(days===0) return 'আজ';
+  if(days===0) return bnDateStr(new Date(val));
   if(days<=7) return `${days} দিন আগে`;
-  return new Date(val).toLocaleDateString('bn-BD');
+  return bnDateStr(new Date(val));
 }
 
 /* ---------------- BLOOD ---------------- */
@@ -2386,11 +2397,16 @@ function openNotifPanel(){
 }
 function openReports(){
   session.screen = 'reports';
+  session.focusReportId = null;
   render();
 }
 function renderReportsPage(){
   const isSuper = session.role==='superadmin';
-  const list = db.reports||[];
+  let list = (db.reports||[]).slice();
+  if(session.focusReportId){
+    const idx = list.findIndex(r=>r.id===session.focusReportId);
+    if(idx>0){ const [f] = list.splice(idx,1); list.unshift(f); }
+  }
   const first = list[0];
   const rest = list.slice(1);
   return `<div class="news-page">
@@ -2407,30 +2423,79 @@ function renderReportsPage(){
         <article class="news-hero">
           <span class="news-tag">প্রতিবেদন</span>
           <h1>${esc(first.title)}</h1>
-          <div class="news-meta">🕒 ${relDate(first.date)}${first.by?' · '+esc(first.by):''}</div>
           <p>${esc(first.body)}</p>
-          <button class="news-share-btn" onclick="shareReport(${first.id})">📤 শেয়ার করুন</button>
+          ${reportFooterHTML(first)}
         </article>
         ${rest.length ? `<div class="news-list">${rest.map(r=>`
           <article class="news-card">
             <h3>${esc(r.title)}</h3>
-            <div class="news-meta">🕒 ${relDate(r.date)}${r.by?' · '+esc(r.by):''}</div>
             <p>${esc(r.body)}</p>
-            <button class="news-share-btn" onclick="shareReport(${r.id})">📤 শেয়ার করুন</button>
+            ${reportFooterHTML(r)}
           </article>
         `).join('')}</div>` : ''}
       ` : emptyState('📋','কোনো প্রতিবেদন প্রকাশ করা হয়নি')}
     </div>
   </div>`;
 }
-function shareReport(id){
+function reportFooterHTML(r){
+  const liked = session.memberId && (r.likes||[]).includes(session.memberId);
+  return `
+    <div class="news-meta">🕒 ${relDate(r.date)}${r.by?' · '+esc(r.by):''}</div>
+    <div class="news-actions">
+      <button class="news-share-btn" onclick="shareReport(${r.id})">📤 শেয়ার করুন</button>
+      <button class="news-like-btn ${liked?'liked':''}" onclick="toggleLikeReport(${r.id})">${liked?'❤️':'🤍'} লাইক</button>
+    </div>
+    ${likeAvatarsHTML(r)}
+  `;
+}
+function likeAvatarsHTML(r){
+  const likerIds = r.likes||[];
+  if(!likerIds.length) return '';
+  const likers = likerIds.map(mid=>getMember(mid)).filter(Boolean);
+  if(!likers.length) return '';
+  const sample = [...likers].sort(()=>Math.random()-0.5).slice(0, Math.min(3, likers.length));
+  return `<div class="news-like-avatars" onclick="showLikers(${r.id})">
+    ${sample.map(m=>`<div class="mini-av">${avatarInner(m)}</div>`).join('')}
+    <span class="cnt">${likers.length} জন লাইক করেছেন</span>
+  </div>`;
+}
+function toggleLikeReport(id){
+  if(session.role==='guest'){
+    openModal(`
+      <div class="modal-title"><h3>🔒 একাউন্ট প্রয়োজন</h3><button onclick="closeModal()">✕</button></div>
+      <p style="font-size:14px;color:var(--muted);margin-bottom:18px;">লাইক দিতে হলে আপনার একটি একাউন্ট থাকতে হবে।</p>
+      <button class="btn btn-red" onclick="closeModal(); goToLogin();">একাউন্ট খুলুন</button>
+    `);
+    return;
+  }
   const r = (db.reports||[]).find(x=>x.id===id);
   if(!r) return;
-  const text = `${r.title}\n\n${r.body}`;
+  if(!r.likes) r.likes=[];
+  const mid = session.memberId;
+  const i = r.likes.indexOf(mid);
+  if(i>=0) r.likes.splice(i,1); else r.likes.push(mid);
+  render(); saveDB();
+}
+function showLikers(id){
+  const r = (db.reports||[]).find(x=>x.id===id);
+  if(!r || !(r.likes||[]).length) return;
+  const likers = r.likes.map(mid=>getMember(mid)).filter(Boolean);
+  openModal(`
+    <div class="modal-title"><h3>❤️ যারা লাইক দিয়েছেন</h3><button onclick="closeModal()">✕</button></div>
+    <div class="card">${likers.map(m=>`
+      <div class="list-item">
+        <div class="av" style="width:38px;height:38px;border-radius:50%;">${avatarInner(m)}</div>
+        <div class="meta"><b>${esc(m.name)}</b></div>
+      </div>
+    `).join('')}</div>
+  `);
+}
+function shareReport(id){
+  const url = `${location.origin}${location.pathname}?report=${id}`;
   if(navigator.share){
-    navigator.share({title:r.title, text}).catch(()=>{});
+    navigator.share({title:'উদার আত্মা সংগঠন — প্রতিবেদন', url}).catch(()=>{});
   } else if(navigator.clipboard){
-    navigator.clipboard.writeText(text).then(()=>toast('কপি হয়েছে — এখন পেস্ট করে শেয়ার করুন','📋')).catch(()=>toast('শেয়ার করা যায়নি','⚠️'));
+    navigator.clipboard.writeText(url).then(()=>toast('লিংক কপি হয়েছে','📋')).catch(()=>toast('শেয়ার করা যায়নি','⚠️'));
   } else {
     toast('এই ডিভাইসে শেয়ার সমর্থিত নয়','⚠️');
   }
@@ -2449,7 +2514,7 @@ async function submitReport(){
   const body = document.getElementById('rpBody').value.trim();
   if(!title||!body){ toast('শিরোনাম ও বিস্তারিত দিন','⚠️'); return; }
   if(!db.reports) db.reports=[];
-  db.reports.unshift({id:Date.now(), title, body, date:Date.now(), by: currentMember()?currentMember().name:'সুপার অ্যাডমিন'});
+  db.reports.unshift({id:Date.now(), title, body, date:Date.now(), by: currentMember()?currentMember().name:'সুপার অ্যাডমিন', likes:[]});
   addAudit('নতুন প্রতিবেদন যোগ করেছেন', title);
   closeModal(); render(); toast('প্রতিবেদন প্রকাশিত হয়েছে','✅');
   await saveDB();
@@ -2472,6 +2537,14 @@ window.onload = async function(){
     saveDBToCloud();
   }
   if(!db.reports) db.reports = [];
+  try{
+    const params = new URLSearchParams(location.search);
+    const rid = params.get('report');
+    if(rid){
+      session.screen = 'reports';
+      session.focusReportId = Number(rid);
+    }
+  }catch(e){}
   setTimeout(()=>{
     document.getElementById('splash').style.display='none';
     document.getElementById('shell').style.display='flex';
