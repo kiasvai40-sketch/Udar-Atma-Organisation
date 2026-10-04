@@ -516,6 +516,20 @@ function saveDBToCloud(){
   return fsDB.collection(FS_COLLECTION).doc(FS_DOC).set({ state: db, updatedAt: Date.now() })
     .catch(e=>console.warn('Cloud save failed, kept locally only', e));
 }
+function startRealtimeSync(){
+  if(!firebaseOK) return;
+  fsDB.collection(FS_COLLECTION).doc(FS_DOC).onSnapshot(snap=>{
+    if(!snap.exists) return;
+    const data = snap.data();
+    if(!data || !data.state) return;
+    const incoming = data.state;
+    if((incoming.updatedAt||0) > (db.updatedAt||0)){
+      db = incoming;
+      localStorage.setItem(LS_KEY, JSON.stringify(db));
+      if(!document.getElementById('modalRoot')) render(); // don't wipe an open form
+    }
+  }, e=>console.warn('Realtime sync error', e));
+}
 async function refreshFromCloud(){
   try{
     const snap = await fsDB.collection(FS_COLLECTION).doc(FS_DOC).get();
@@ -663,7 +677,7 @@ function openModal(html){
 
 /* ---------------- ROUTER / RENDER ---------------- */
 function render(){
-  saveSession(); saveDB();
+  saveSession();
   const shell = document.getElementById('shell');
   if(session.screen==='auth'){
     shell.innerHTML = renderAuth();
@@ -2577,6 +2591,7 @@ window.onload = async function(){
     document.getElementById('shell').style.flexDirection='column';
     render();
   }, 1300);
+  startRealtimeSync();
 };
 
 if('serviceWorker' in navigator){
