@@ -469,6 +469,7 @@ textarea{resize:vertical;min-height:80px;}
 
 <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-messaging-compat.js"></script>
 <script>
 /* =========================================================
    NOTE (prototype disclaimer, kept in code for transparency)
@@ -783,7 +784,7 @@ function doLogin(){
   session.screen='app'; session.memberId=m.id;
   session.role = m.role==='superadmin'?'superadmin':m.role==='admin'?'admin':'member';
   session.tab='home'; session.adminTab='dashboard';
-  render(); toast(`স্বাগতম, ${m.name}`,'👋');
+  registerPush(m.mobile,true,m.role); render(); toast(`স্বাগতম, ${m.name}`,'👋');
 }
 function doRegister(){
   const name=document.getElementById('regName').value.trim();
@@ -801,7 +802,7 @@ function doRegister(){
   if(!agree){ toast('শর্তাবলীতে সম্মত হতে হবে','⚠️'); return; }
   const seq = db.nextMemberSeq++;
   db.members.push({id:`UA-2026-${String(seq).padStart(3,'0')}`,name,mobile,pin,role:'member',status:'PENDING',position:'—',bloodGroup,joinDate:'১৯ সেপ্টেম্বর, ২০২৬',plus:0,minus:0,avatarSeed:name[0],contribution:'DUE',nextDue:'—',lastDonationDate:null,lastDonationPlace:''});
-  session.regStep=2; saveDB(); render();
+  session.regStep=2; saveDB(); render(); registerPush(mobile,false,'member');
 }
 function logout(){ session={screen:'app', role:'guest', memberId:null, tab:'home', authView:'login', regStep:1, adminTab:'dashboard'}; render(); }
 function openForgotPassword(){
@@ -1776,6 +1777,7 @@ function adminAddPaidMonths(id){
 
 async function approveMember(id){
   const m=getMember(id); m.status='ACTIVE'; m.position='সাধারণ সদস্য';
+  sendPush({mobile:m.mobile}, '✅ অ্যাকাউন্ট অনুমোদিত', 'আপনার অ্যাকাউন্ট অনুমোদিত হয়েছে। এখন লগইন করতে পারবেন।');
   addAudit(`সদস্য অনুমোদন করেছেন`, m.name);
   closeModal(); render(); toast(`${m.name} অনুমোদিত হয়েছে`,'✅');
   await saveDB();
@@ -1802,6 +1804,7 @@ async function submitPoint(id,type){
   if(type==='plus') m.plus+=amt; else m.minus+=amt;
   if(!db.pointHistory[id]) db.pointHistory[id]=[];
   db.pointHistory[id].unshift({type, amount:amt, reason, date:Date.now(), by: currentMember().name});
+  if(type==='plus') sendPush({mobile:m.mobile}, '🎉 পয়েন্ট পেয়েছেন', `আপনাকে ${amt} পয়েন্ট দেওয়া হয়েছে — ${reason}`);
   addAudit(`পয়েন্ট যোগ করেছেন (${type==='plus'?'+':'-'}${amt})`, m.name);
   closeModal(); render(); toast('পয়েন্ট আপডেট হয়েছে','✅');
   await saveDB();
@@ -1888,6 +1891,7 @@ function submitBloodPoint(id){
     if(!db.pointHistory[id]) db.pointHistory[id]=[];
     db.pointHistory[id].unshift({type:'plus', amount:pts, reason:'রক্তদান', date:Date.now(), by:currentMember().name});
   }
+  if(pts>0) sendPush({mobile:m.mobile}, '🎉 পয়েন্ট পেয়েছেন', `রক্তদানের জন্য আপনাকে ${pts} পয়েন্ট দেওয়া হয়েছে`);
   addAudit('রক্তদানের তারিখ নিবন্ধন করেছেন', m.name);
   saveDB(); closeModal(); render(); toast('রক্তদানের তথ্য হালনাগাদ হয়েছে','🩸');
 }
@@ -2031,6 +2035,7 @@ function submitNotice(publish){
   const body = document.getElementById('ntBody').value.trim();
   if(!title||!body){ toast('শিরোনাম ও বিস্তারিত দিন','⚠️'); return; }
   db.notices.unshift({id:Date.now(), title, body, visibility:document.getElementById('ntVis').value, priority:document.getElementById('ntPr').value, date:Date.now(), status: publish?'published':'draft'});
+  if(publish) sendPush({audience: db.notices[0].visibility==='admin'?'admins':'all'}, title, body);
   addAudit(publish?'নোটিশ প্রকাশ করেছেন':'নোটিশ খসড়া তৈরি করেছেন', title);
   saveDB(); closeModal(); render(); toast(publish?'নোটিশ প্রকাশিত হয়েছে':'খসড়া সংরক্ষিত হয়েছে','📢');
 }
@@ -2055,7 +2060,9 @@ function saveEditNotice(id, publish){
   const body = document.getElementById('ntBody').value.trim();
   if(!title||!body){ toast('শিরোনাম ও বিস্তারিত দিন','⚠️'); return; }
   const n = db.notices.find(x=>x.id===id);
+  const wasPub = n.status==='published';
   n.title=title; n.body=body; n.visibility=document.getElementById('ntVis').value; n.priority=document.getElementById('ntPr').value; n.status=publish?'published':'draft';
+  if(publish && !wasPub) sendPush({audience: n.visibility==='admin'?'admins':'all'}, title, body);
   addAudit('নোটিশ সম্পাদনা করেছেন', title);
   saveDB(); closeModal(); render(); toast('নোটিশ হালনাগাদ হয়েছে','✅');
 }
@@ -2460,6 +2467,7 @@ function reportFooterHTML(r){
       <button class="news-like-btn ${liked?'liked':''}" onclick="toggleLikeReport(${r.id})">${liked?'❤️':'🤍'} লাইক করুন</button>
       <button class="news-share-btn" onclick="copyReportLink(${r.id})">🔗 কপি লিংক</button>
       <button class="news-share-btn" onclick="shareReport(${r.id})">📤 শেয়ার করুন</button>
+      ${session.role==='superadmin' ? `<button class="news-share-btn" onclick="openEditReport(${r.id})">✏️ সম্পাদনা</button><button class="news-share-btn" onclick="deleteReportConfirm(${r.id})">🗑️ মুছুন</button>` : ''}
     </div>
     ${likeAvatarsHTML(r)}
   `;
@@ -2544,6 +2552,79 @@ async function submitReport(){
   db.reports.unshift({id:Date.now(), title, body, date:Date.now(), by: currentMember()?currentMember().name:'সুপার অ্যাডমিন', likes:[]});
   addAudit('নতুন প্রতিবেদন যোগ করেছেন', title);
   closeModal(); render(); toast('প্রতিবেদন প্রকাশিত হয়েছে','✅');
+  await saveDB();
+}
+
+/* ---------------- PUSH NOTIFICATION (FCM) ---------------- */
+const VAPID_KEY = 'BECjQ7nU9uLHxRZGbkvZ8tCdGIyAG45UcndLMBPGy1lXTg9XnTf0_FLO1ejDaUbGxxvmGtcxieQEzDlvg0Ov0Ds'; // Firebase Console → Project settings → Cloud Messaging → Web Push certificates
+let fcmMessaging = null;
+try{ if(firebaseOK && firebase.messaging.isSupported()) fcmMessaging = firebase.messaging(); }catch(e){}
+if(fcmMessaging){
+  fcmMessaging.onMessage(p=>{ const n=p.notification||{}; toast(esc((n.title||'')+(n.body?' — '+n.body:'')),'🔔'); });
+}
+async function registerPush(mobile, active, role){
+  try{
+    if(!fcmMessaging || !('Notification' in window) || !mobile || VAPID_KEY.indexOf('PASTE')===0) return;
+    const perm = Notification.permission==='granted' ? 'granted' : await Notification.requestPermission();
+    if(perm!=='granted') return;
+    const reg = await navigator.serviceWorker.register('firebase-messaging-sw.js');
+    const token = await fcmMessaging.getToken({vapidKey:VAPID_KEY, serviceWorkerRegistration:reg});
+    if(!token) return;
+    await fsDB.collection('udaratma_tokens').doc(mobile).set({
+      tokens: firebase.firestore.FieldValue.arrayUnion(token),
+      role: role||'member', active: !!active, updatedAt: Date.now()
+    }, {merge:true});
+  }catch(e){ console.warn('Push register failed', e); }
+}
+/* to: {audience:'all'|'admins'} অথবা {mobile:'01XXXXXXXXX'} */
+function sendPush(to, title, body){
+  try{
+    if(!firebaseOK) return;
+    fsDB.collection('udaratma_push').add(Object.assign({}, to, {
+      title:String(title).slice(0,100), body:String(body).slice(0,200),
+      url: location.origin+location.pathname, createdAt:Date.now()
+    })).catch(e=>console.warn('Push queue failed', e));
+  }catch(e){ console.warn('Push queue failed', e); }
+}
+
+/* ---------------- REPORT EDIT / DELETE (SUPER ADMIN) ---------------- */
+function openEditReport(id){
+  if(session.role!=='superadmin') return;
+  const r = (db.reports||[]).find(x=>x.id===id); if(!r) return;
+  openModal(`
+    <div class="modal-title"><h3>✏️ প্রতিবেদন সম্পাদনা</h3><button onclick="closeModal()">✕</button></div>
+    <label class="field"><span>শিরোনাম</span><input id="rpTitle" value="${esc(r.title)}"></label>
+    <label class="field"><span>বিস্তারিত</span><textarea id="rpBody">${esc(r.body)}</textarea></label>
+    <button class="btn btn-red" onclick="saveEditReport(${id})">সংরক্ষণ করুন</button>
+  `);
+}
+async function saveEditReport(id){
+  if(session.role!=='superadmin') return;
+  const r = (db.reports||[]).find(x=>x.id===id); if(!r) return;
+  const title = document.getElementById('rpTitle').value.trim();
+  const body = document.getElementById('rpBody').value.trim();
+  if(!title||!body){ toast('শিরোনাম ও বিস্তারিত দিন','⚠️'); return; }
+  r.title = title; r.body = body;
+  addAudit('প্রতিবেদন সম্পাদনা করেছেন', title);
+  closeModal(); render(); toast('প্রতিবেদন হালনাগাদ হয়েছে','✅');
+  await saveDB();
+}
+function deleteReportConfirm(id){
+  if(session.role!=='superadmin') return;
+  const r = (db.reports||[]).find(x=>x.id===id); if(!r) return;
+  openModal(`
+    <div class="modal-title"><h3>প্রতিবেদন মুছে ফেলুন</h3><button onclick="closeModal()">✕</button></div>
+    <div class="reason-warn">⚠️ "${esc(r.title)}" প্রতিবেদনটি স্থায়ীভাবে মুছে যাবে। এই কাজটি ফিরিয়ে আনা যাবে না।</div>
+    <button class="btn btn-red" onclick="deleteReport(${id})">হ্যাঁ, মুছে ফেলুন</button>
+  `);
+}
+async function deleteReport(id){
+  if(session.role!=='superadmin') return;
+  const r = (db.reports||[]).find(x=>x.id===id);
+  db.reports = (db.reports||[]).filter(x=>x.id!==id);
+  addAudit('প্রতিবেদন মুছে ফেলেছেন', r?r.title:'');
+  session.focusReportId = null;
+  closeModal(); render(); toast('প্রতিবেদন মুছে ফেলা হয়েছে','🗑️');
   await saveDB();
 }
 
