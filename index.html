@@ -636,12 +636,12 @@ function resetDemo(){ localStorage.removeItem(LS_KEY); location.reload(); }
 
 /* ---------------- SESSION ---------------- */
 function loadSession(){
-  try{ const r = sessionStorage.getItem('udaratma_session'); if(r) return JSON.parse(r); }catch(e){}
+  try{ const r = localStorage.getItem('udaratma_session'); if(r) return JSON.parse(r); }catch(e){}
   return {screen:'app', role:'guest', memberId:null, tab:'home', authView:'login', regStep:1, adminTab:'dashboard'};
 }
 function goToLogin(){ session.screen='auth'; session.authView='login'; render(); }
 function backToApp(){ session.screen='app'; render(); }
-function saveSession(){ sessionStorage.setItem('udaratma_session', JSON.stringify(session)); }
+function saveSession(){ localStorage.setItem('udaratma_session', JSON.stringify(session)); }
 
 /* ---------------- HELPERS ---------------- */
 function toast(msg, icon){
