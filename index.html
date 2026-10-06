@@ -524,6 +524,7 @@ function startRealtimeSync(){
     if(!data || !data.state) return;
     const incoming = data.state;
     if((incoming.updatedAt||0) > (db.updatedAt||0)){
+      detectAndNotify(db, incoming);
       db = incoming;
       localStorage.setItem(LS_KEY, JSON.stringify(db));
       if(!document.getElementById('modalRoot')) render(); // don't wipe an open form
@@ -784,6 +785,50 @@ function doLogin(){
   session.role = m.role==='superadmin'?'superadmin':m.role==='admin'?'admin':'member';
   session.tab='home'; session.adminTab='dashboard';
   render(); toast(`স্বাগতম, ${m.name}`,'👋');
+  requestNotificationPermission();
+}
+function requestNotificationPermission(){
+  if(!('Notification' in window)) return;
+  if(Notification.permission==='default'){
+    Notification.requestPermission().catch(()=>{});
+  }
+}
+function showNotification(title, body){
+  if(!('Notification' in window) || Notification.permission!=='granted') return;
+  try{
+    if(navigator.serviceWorker && navigator.serviceWorker.getRegistration){
+      navigator.serviceWorker.getRegistration().then(reg=>{
+        if(reg && reg.showNotification) reg.showNotification(title, {body, icon:LOGO_DATA, badge:LOGO_DATA});
+        else new Notification(title, {body, icon:LOGO_DATA});
+      }).catch(()=>{ try{ new Notification(title, {body, icon:LOGO_DATA}); }catch(e){} });
+    } else {
+      new Notification(title, {body, icon:LOGO_DATA});
+    }
+  }catch(e){ console.warn('Notification failed', e); }
+}
+function detectAndNotify(oldDb, newDb){
+  if(!('Notification' in window) || Notification.permission!=='granted') return;
+  const myId = session.memberId;
+  const oldNoticeIds = new Set((oldDb.notices||[]).map(n=>n.id));
+  (newDb.notices||[]).forEach(n=>{
+    if(n.status==='published' && !oldNoticeIds.has(n.id)){
+      const relevant = n.visibility==='public' || (n.visibility==='members' && session.role!=='guest') || (n.visibility==='admin' && isAdminRole());
+      if(relevant) showNotification('📢 নতুন নোটিশ', n.title);
+    }
+  });
+  if(myId){
+    const oldHist = (oldDb.pointHistory && oldDb.pointHistory[myId]) || [];
+    const newHist = (newDb.pointHistory && newDb.pointHistory[myId]) || [];
+    if(newHist.length > oldHist.length){
+      const latest = newHist[0];
+      showNotification(latest.type==='plus'?'➕ পয়েন্ট পেয়েছেন':'➖ পয়েন্ট কাটা হয়েছে', `${latest.amount} পয়েন্ট — ${latest.reason}`);
+    }
+    const oldM = (oldDb.members||[]).find(m=>m.id===myId);
+    const newM = (newDb.members||[]).find(m=>m.id===myId);
+    if(oldM && newM && oldM.status==='PENDING' && newM.status==='ACTIVE'){
+      showNotification('✅ একাউন্ট অনুমোদিত হয়েছে', 'আপনি এখন লগইন করে সদস্য হিসেবে প্রবেশ করতে পারবেন।');
+    }
+  }
 }
 function doRegister(){
   const name=document.getElementById('regName').value.trim();
@@ -2592,6 +2637,7 @@ window.onload = async function(){
     render();
   }, 1300);
   startRealtimeSync();
+  if(session.memberId) requestNotificationPermission();
 };
 
 if('serviceWorker' in navigator){
