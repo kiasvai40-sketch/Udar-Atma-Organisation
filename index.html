@@ -526,7 +526,7 @@ function startRealtimeSync(){
     if((incoming.updatedAt||0) > (db.updatedAt||0)){
       detectAndNotify(db, incoming);
       db = incoming;
-      localStorage.setItem(LS_KEY, JSON.stringify(db));
+      try{ localStorage.setItem(LS_KEY, JSON.stringify(db)); }catch(e){}
       if(!document.getElementById('modalRoot')) render(); // don't wipe an open form
     }
   }, e=>console.warn('Realtime sync error', e));
@@ -631,7 +631,7 @@ function loadDB(){
   }catch(e){}
   return seedData();
 }
-function saveDB(){ db.updatedAt = Date.now(); localStorage.setItem(LS_KEY, JSON.stringify(db)); return saveDBToCloud(); }
+function saveDB(){ db.updatedAt = Date.now(); try{ localStorage.setItem(LS_KEY, JSON.stringify(db)); }catch(e){ console.warn('Local save failed', e); } return saveDBToCloud(); }
 function resetDemo(){ localStorage.removeItem(LS_KEY); location.reload(); }
 
 /* ---------------- SESSION ---------------- */
@@ -641,7 +641,7 @@ function loadSession(){
 }
 function goToLogin(){ session.screen='auth'; session.authView='login'; render(); }
 function backToApp(){ session.screen='app'; render(); }
-function saveSession(){ localStorage.setItem('udaratma_session', JSON.stringify(session)); }
+function saveSession(){ try{ localStorage.setItem('udaratma_session', JSON.stringify(session)); }catch(e){ console.warn('Session save failed', e); } }
 
 /* ---------------- HELPERS ---------------- */
 function toast(msg, icon){
@@ -2594,50 +2594,57 @@ async function submitReport(){
 
 /* ---------------- INIT ---------------- */
 window.onload = async function(){
-  session = loadSession();
-  let localData = null;
-  try{ const raw = localStorage.getItem(LS_KEY); if(raw) localData = JSON.parse(raw); }catch(e){}
-  const cloudData = await loadDBFromCloud();
-  if(cloudData && (!localData || (cloudData.updatedAt||0) >= (localData.updatedAt||0))){
-    db = cloudData;
-    localStorage.setItem(LS_KEY, JSON.stringify(db));
-  } else if(localData){
-    db = localData;
-    saveDBToCloud();
-  } else {
-    db = loadDB();
-    saveDBToCloud();
-  }
-  if(!db.reports) db.reports = [];
   try{
-    let rid = null;
-    if(location.hash && location.hash.indexOf('report=')>-1){
-      rid = location.hash.split('report=')[1];
+    session = loadSession();
+    let localData = null;
+    try{ const raw = localStorage.getItem(LS_KEY); if(raw) localData = JSON.parse(raw); }catch(e){}
+    const cloudData = await loadDBFromCloud();
+    if(cloudData && (!localData || (cloudData.updatedAt||0) >= (localData.updatedAt||0))){
+      db = cloudData;
+      try{ localStorage.setItem(LS_KEY, JSON.stringify(db)); }catch(e){}
+    } else if(localData){
+      db = localData;
+      saveDBToCloud();
     } else {
-      rid = new URLSearchParams(location.search).get('report');
+      db = loadDB();
+      saveDBToCloud();
     }
-    if(rid){
-      session.screen = 'reports';
-      session.focusReportId = Number(rid);
-      const r = db.reports.find(x=>x.id===session.focusReportId);
-      if(r){
-        document.title = `${r.title} | উদার আত্মা সংগঠন`;
-        const setMeta = (sel, val)=>{ const el=document.querySelector(sel); if(el) el.setAttribute('content', val); };
-        setMeta('meta[property="og:title"]', r.title);
-        setMeta('meta[property="og:description"]', r.body.slice(0,160));
-        setMeta('meta[name="twitter:title"]', r.title);
-        setMeta('meta[name="twitter:description"]', r.body.slice(0,160));
+    if(!db.reports) db.reports = [];
+    try{
+      let rid = null;
+      if(location.hash && location.hash.indexOf('report=')>-1){
+        rid = location.hash.split('report=')[1];
+      } else {
+        rid = new URLSearchParams(location.search).get('report');
       }
-    }
-  }catch(e){}
+      if(rid){
+        session.screen = 'reports';
+        session.focusReportId = Number(rid);
+        const r = db.reports.find(x=>x.id===session.focusReportId);
+        if(r){
+          document.title = `${r.title} | উদার আত্মা সংগঠন`;
+          const setMeta = (sel, val)=>{ const el=document.querySelector(sel); if(el) el.setAttribute('content', val); };
+          setMeta('meta[property="og:title"]', r.title);
+          setMeta('meta[property="og:description"]', r.body.slice(0,160));
+          setMeta('meta[name="twitter:title"]', r.title);
+          setMeta('meta[name="twitter:description"]', r.body.slice(0,160));
+        }
+      }
+    }catch(e){}
+    startRealtimeSync();
+    if(session.memberId) requestNotificationPermission();
+  }catch(e){
+    console.warn('Startup error, falling back to local/demo data', e);
+    try{ if(!session) session = loadSession(); }catch(e2){ session = {screen:'app', role:'guest', memberId:null, tab:'home', authView:'login', regStep:1, adminTab:'dashboard'}; }
+    if(!db) db = loadDB();
+    if(!db.reports) db.reports = [];
+  }
   setTimeout(()=>{
     document.getElementById('splash').style.display='none';
     document.getElementById('shell').style.display='flex';
     document.getElementById('shell').style.flexDirection='column';
     render();
   }, 1300);
-  startRealtimeSync();
-  if(session.memberId) requestNotificationPermission();
 };
 
 if('serviceWorker' in navigator){
