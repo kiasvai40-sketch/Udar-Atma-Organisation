@@ -5,7 +5,7 @@ importScripts('https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js
 importScripts('https://www.gstatic.com/firebasejs/10.13.2/firebase-messaging-compat.js');
 
 firebase.initializeApp({
-  apiKey: "AIzaSyB1_RC0GkpmIg7vpSrs86lFFgXk3v1Y2Y8",
+  apiKey: "AIzaSyB1_RCGGxgpnIg7vpSrx86lFfgXk3vlY2Y",
   authDomain: "udar-atma.firebaseapp.com",
   projectId: "udar-atma",
   storageBucket: "udar-atma.firebasestorage.app",
