@@ -871,13 +871,40 @@ function si(name, extraClass){
 }
 
 /* ---------------- SESSION ---------------- */
+const SESSION_KEY = 'udaratma_session';
+function guestSession(){ return {screen:'app', role:'guest', memberId:null, tab:'home', authView:'login', regStep:1, adminTab:'dashboard'}; }
 function loadSession(){
-  try{ const r = sessionStorage.getItem('udaratma_session'); if(r) return JSON.parse(r); }catch(e){}
-  return {screen:'app', role:'guest', memberId:null, tab:'home', authView:'login', regStep:1, adminTab:'dashboard'};
+  /* লগইন করা সদস্যের সেশন localStorage-এ থাকে (ব্রাউজার/অ্যাপ বন্ধ করলেও থাকবে) — শুধু Logout করলে মুছবে */
+  try{ const p = localStorage.getItem(SESSION_KEY); if(p){ const o = JSON.parse(p); if(o && o.memberId && o.role && o.role!=='guest') return o; } }catch(e){}
+  try{ const r = sessionStorage.getItem(SESSION_KEY); if(r) return JSON.parse(r); }catch(e){}
+  return guestSession();
 }
 function goToLogin(){ session.screen='auth'; session.authView='login'; render(); }
 function backToApp(){ session.screen='app'; render(); }
-function saveSession(){ sessionStorage.setItem('udaratma_session', JSON.stringify(session)); }
+function saveSession(){
+  let str; try{ str = JSON.stringify(session); }catch(e){ return; }
+  const loggedIn = session.role!=='guest' && !!session.memberId;
+  try{ sessionStorage.setItem(SESSION_KEY, str); }catch(e){}
+  try{
+    if(loggedIn) localStorage.setItem(SESSION_KEY, str);
+    else localStorage.removeItem(SESSION_KEY); /* Logout হলে স্থায়ী সেশন মুছে যায় */
+  }catch(e){}
+}
+/* পুনরায় অ্যাপ খোলার সময় সংরক্ষিত সেশন এখনো বৈধ কি না যাচাই (ব্যান/সাসপেন্ড/মুছে ফেলা হলে লগইন থাকবে না; রোল সবসময় বর্তমান ডাটা থেকে) */
+function validatePersistedSession(){
+  if(!session || session.role==='guest' || !session.memberId) return;
+  const m = db && db.members ? db.members.find(x=>x.id===session.memberId) : null;
+  if(!m || ['TEMP_BANNED','PERMA_BANNED','SUSPENDED','PENDING'].includes(m.status)){
+    session = guestSession(); saveSession(); return;
+  }
+  session.role = m.role==='superadmin'?'superadmin':m.role==='admin'?'admin':'member';
+}
+/* এক ট্যাবে Logout করলে অন্য খোলা ট্যাবেও লগআউট হবে */
+window.addEventListener('storage', function(e){
+  if(e.key===SESSION_KEY && !e.newValue && session && session.role!=='guest'){
+    session = guestSession(); try{ render(); }catch(err){}
+  }
+});
 
 /* ---------------- HELPERS ---------------- */
 function toast(msg, icon){
@@ -2512,6 +2539,8 @@ function adminBloodNeedsListHTML(){
           <span class="pill ${r.status==='active'?'pill-emergency':'pill-success'}">${r.status==='active'?r.urgency:'সমাধান হয়েছে'}</span>
         </div>
         <div style="font-size:12.5px;color:var(--muted);margin-top:8px;line-height:1.9;"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5c0 0 7 7.2 7 12.2A7 7 0 1112 2.5z"/></svg> গ্রুপ: ${r.bg} · প্রয়োজন ${r.units} ব্যাগ<br><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 21V5a1 1 0 011-1h16a1 1 0 011 1v16M3 21h18M10 8v8M8 12h4M3 21V11h4v10M17 21V11h4v10"/></svg> ${r.hospital}<br><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5a1 1 0 011-1h14a1 1 0 011 1v16a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 10h16M8 3v4M16 3v4M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg> ${r.date}</div>
+        ${r.completion ? bloodCompletionSummaryHTML(r) : ''}
+        ${(session.role==='superadmin' && r.status==='active' && !r.completion) ? `<div class="btn-row" style="margin-top:12px;"><button class="btn btn-sm btn-primary" onclick="openBloodCompletion('${r.id}')"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 13l5 5L20 7"/></svg> সম্পন্ন করুন</button></div>` : ''}
         <div class="btn-row" style="margin-top:12px;">
           <button class="btn btn-sm btn-ghost" onclick="openEditBloodNeed('${r.id}')"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> সম্পাদনা</button>
           <button class="btn btn-sm btn-danger-outline" onclick="deleteBloodNeedConfirm('${r.id}')"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14zM10 11v6M14 11v6"/></svg> মুছুন</button>
@@ -2593,6 +2622,104 @@ function deleteBloodNeed(id){
   if(r && r.status==='active') notifyBloodGroup(r.bg,'রক্তের অনুরোধ বাতিল',`${r.patient} — অনুরোধটি বাতিল করা হয়েছে`);
   if(r) notifyAdmins('রক্তের অনুরোধ মুছে ফেলা হয়েছে', `${r.patient} (${r.bg})`, 'blood');
   saveDB(); closeModal(); render(); toast('মুছে ফেলা হয়েছে','<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14zM10 11v6M14 11v6"/></svg>');
+}
+
+/* ---- Super Admin: Blood request completion (নতুন) ---- */
+function bnDigitsToEn(v){ return (v+'').replace(/[০-৯]/g, d=>'০১২৩৪৫৬৭৮৯'.indexOf(d)); }
+function bnNum(n){ return (n+'').replace(/[0-9]/g, d=>'০১২৩৪৫৬৭৮৯'[d]); }
+function bloodCompletionSummaryHTML(r){
+  const c = r.completion; if(!c) return '';
+  const rows = [];
+  (c.donors||[]).forEach(d=>rows.push(`<div>• ${esc(d.name)} <span style="opacity:.75;">(সদস্য)</span> — <b>${bnNum(d.bags)} ব্যাগ</b></div>`));
+  (c.outsideDonors||[]).forEach(d=>rows.push(`<div>• ${esc(d.name)} <span style="opacity:.75;">(সংগঠনের বাইরের)</span> — <b>${bnNum(d.bags)} ব্যাগ</b></div>`));
+  return `<div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(128,128,128,.25);font-size:12.5px;color:var(--muted);line-height:1.9;"><b>রক্তদাতা (মোট ${bnNum(c.totalBags||0)} ব্যাগ):</b>${rows.join('')}</div>`;
+}
+function bloodCompletionMemberOptions(){
+  return `<option value="">সদস্য নির্বাচন করুন</option>` + db.members.filter(m=>m.status==='ACTIVE').map(m=>`<option value="${esc(m.id)}">${esc(m.name)}${m.bloodGroup?' · '+esc(m.bloodGroup):''}</option>`).join('');
+}
+function bloodCompletionRowHTML(removable){
+  return `<div class="bc-row card" style="margin-bottom:12px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+      <b class="bc-title" style="font-size:13px;"></b>
+      ${removable?`<button type="button" class="btn btn-sm btn-danger-outline" style="flex:none;" onclick="removeBloodCompletionRow(this)">বাদ দিন</button>`:''}
+    </div>
+    <label class="field"><span>রক্তদাতা সদস্য নির্বাচন করুন</span><select class="bc-member">${bloodCompletionMemberOptions()}</select></label>
+    <label class="field" style="margin-bottom:0;"><span>কত ব্যাগ রক্ত দিয়েছেন?</span><select class="bc-bags"><option value="">নির্বাচন করুন</option><option value="1">১ ব্যাগ</option><option value="2">২ ব্যাগ</option><option value="3">৩ ব্যাগ</option></select></label>
+  </div>`;
+}
+function refreshBloodCompletionRows(){
+  const rows = document.querySelectorAll('#bcRows .bc-row');
+  rows.forEach((row,i)=>{ const t=row.querySelector('.bc-title'); if(t) t.textContent = 'রক্তদাতা '+bnNum(i+1); });
+  const btn = document.getElementById('bcAddBtn'); if(btn) btn.style.display = rows.length>=3 ? 'none' : '';
+}
+function addBloodCompletionRow(){
+  const wrap = document.getElementById('bcRows'); if(!wrap) return;
+  if(wrap.querySelectorAll('.bc-row').length>=3) return;
+  wrap.insertAdjacentHTML('beforeend', bloodCompletionRowHTML(true));
+  refreshBloodCompletionRows();
+}
+function removeBloodCompletionRow(btn){
+  const row = btn.closest('.bc-row'); if(row) row.remove();
+  refreshBloodCompletionRows();
+}
+function openBloodCompletion(id){
+  if(session.role!=='superadmin') return;
+  const r = db.bloodRequests.find(x=>x.id===id);
+  if(!r || r.status!=='active' || r.completion) return;
+  openModal(`
+    <div class="modal-title"><h3>রক্তদান সম্পন্ন করুন</h3><button onclick="closeModal()"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
+    <div style="font-size:12.5px;color:var(--muted);margin-bottom:14px;line-height:1.8;">${esc(r.patient)} · গ্রুপ ${esc(r.bg)} · ${esc(r.hospital||'—')}</div>
+    <div id="bcRows">${bloodCompletionRowHTML(false)}</div>
+    <button type="button" id="bcAddBtn" class="btn btn-outline btn-sm" style="margin-bottom:16px;" onclick="addBloodCompletionRow()">+ আরেকজন রক্তদাতা যোগ করুন</button>
+    <div class="card" style="margin-bottom:14px;">
+      <b style="font-size:13px;display:block;margin-bottom:10px;"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5c0 0 7 7.2 7 12.2A7 7 0 1112 2.5z"/></svg> সংগঠনের বাইরের রক্তদাতা</b>
+      <label class="field"><span>রক্তদাতার নাম</span><input id="bcOutName" placeholder="রক্তদাতার নাম"></label>
+      <label class="field" style="margin-bottom:0;"><span>কত ব্যাগ রক্ত দিয়েছেন</span><input id="bcOutBags" type="text" inputmode="numeric" placeholder="যেমন: ১"></label>
+    </div>
+    <button class="btn btn-red" onclick="submitBloodCompletion('${id}')">সম্পন্ন করুন</button>
+  `);
+  refreshBloodCompletionRows();
+}
+function submitBloodCompletion(id){
+  const warn = '<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M10.3 3.9L1.8 18.1A2 2 0 003.5 21h17a2 2 0 001.7-2.9L13.7 3.9a2 2 0 00-3.4 0zM12 9v4M12 17h.01"/></svg>';
+  if(session.role!=='superadmin'){ toast('শুধু সুপার এডমিন এটি করতে পারবেন', warn); return; }
+  const r = db.bloodRequests.find(x=>x.id===id);
+  if(!r || r.status!=='active' || r.completion){ toast('এই অনুরোধটি সম্পন্ন করা যাবে না', warn); return; }
+  const donors = []; const seen = new Set();
+  const rows = Array.from(document.querySelectorAll('#bcRows .bc-row'));
+  for(const row of rows){
+    const mid = row.querySelector('.bc-member').value;
+    const bagsRaw = row.querySelector('.bc-bags').value;
+    if(!mid){
+      if(bagsRaw){ toast('রক্তদাতা সদস্য নির্বাচন করুন', warn); return; }
+      continue; /* খালি সারি উপেক্ষা */
+    }
+    const bags = Number(bagsRaw);
+    if(![1,2,3].includes(bags)){ toast('কত ব্যাগ রক্ত দিয়েছেন তা নির্বাচন করুন', warn); return; }
+    if(seen.has(mid)){ toast('একই সদস্যকে দুইবার নির্বাচন করা যাবে না', warn); return; }
+    const m = getMember(mid);
+    if(!m){ toast('সদস্য পাওয়া যায়নি', warn); return; }
+    seen.add(mid);
+    donors.push({memberId:mid, name:m.name, bags});
+  }
+  if(donors.length>3){ toast('সর্বোচ্চ ৩ জন সদস্য নির্বাচন করা যাবে', warn); return; }
+  const outName = document.getElementById('bcOutName').value.trim();
+  const outBagsRaw = bnDigitsToEn(document.getElementById('bcOutBags').value.trim());
+  const outsideDonors = [];
+  if(outName || outBagsRaw){
+    if(!outName){ toast('বাইরের রক্তদাতার নাম লিখুন', warn); return; }
+    if(!/^[0-9]+$/.test(outBagsRaw) || Number(outBagsRaw)<1){ toast('কত ব্যাগ রক্ত দিয়েছেন তা সংখ্যায় লিখুন', warn); return; }
+    outsideDonors.push({name:outName, bags:Number(outBagsRaw)});
+  }
+  if(!donors.length && !outsideDonors.length){ toast('কমপক্ষে একজন রক্তদাতার তথ্য দিন', warn); return; }
+  const totalBags = donors.reduce((a,d)=>a+d.bags,0) + outsideDonors.reduce((a,d)=>a+d.bags,0);
+  const me = currentMember();
+  r.completion = {completedAt:Date.now(), completedBy:{id:me?me.id:null, name:me?me.name:''}, donors, outsideDonors, totalBags};
+  r.status = 'closed';
+  addAudit('রক্তদানের অনুরোধ সম্পন্ন করেছেন', r.patient);
+  notifyBloodGroup(r.bg,'রক্তের প্রয়োজন পূরণ হয়েছে',`${r.patient} — আর রক্তের প্রয়োজন নেই`);
+  notifyAdmins('রক্তের অনুরোধ সম্পন্ন', `${r.patient} (${r.bg}) — মোট ${totalBags} ব্যাগ`, 'blood');
+  saveDB(); closeModal(); render(); toast('রক্তদানের অনুরোধ সম্পন্ন হয়েছে','<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5c0 0 7 7.2 7 12.2A7 7 0 1112 2.5z"/></svg>');
 }
 
 /* ---------------- ADMIN: MORE ---------------- */
@@ -2959,6 +3086,8 @@ window.onload = async function(){
   }
   if(!db.reports) db.reports = [];
   if(!db.notifications) db.notifications = [];
+  validatePersistedSession();
+  try{ if(navigator.storage && navigator.storage.persist) navigator.storage.persist(); }catch(e){}
   try{
     let rid = null;
     if(location.hash && location.hash.indexOf('report=')>-1){
