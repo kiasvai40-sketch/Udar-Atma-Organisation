@@ -1932,8 +1932,7 @@ function screenAdminMembers(){
   if(filter!=='all') list = list.filter(m=>m.status===filter);
   if(q) list = list.filter(m=>m.name.toLowerCase().includes(q)||m.id.toLowerCase().includes(q)||m.mobile.includes(q));
   return `<div class="screen">
-    <button class="btn btn-outline btn-sm" style="margin-bottom:10px;" onclick="exportMembersCSV()"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M4 19h16"/></svg> সদস্য তালিকা CSV এক্সপোর্ট</button>
-    <input placeholder="<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 19a8 8 0 100-16 8 8 0 000 16zM21 21l-4.3-4.3"/></svg> নাম, আইডি বা মোবাইল দিয়ে খুঁজুন" value="${esc(session.memberSearch||'')}" oninput="session.memberSearch=this.value; renderInPlace();" style="margin-bottom:10px;">
+    <input placeholder="নাম, আইডি বা মোবাইল দিয়ে খুঁজুন" value="${esc(session.memberSearch||'')}" oninput="session.memberSearch=this.value; renderInPlace();" style="margin-bottom:10px;">
     <div class="chip-row">
       ${memberChip('all','সব',filter)}
       ${memberChip('PENDING','অপেক্ষমান',filter)}
@@ -2283,7 +2282,6 @@ function screenAdminPayments(){
   const sub = session.payTab||'pending';
   const list = db.payments.filter(p=>sub==='pending'?p.status==='pending':p.status!=='pending');
   return `<div class="screen">
-    <button class="btn btn-outline btn-sm" style="margin-bottom:10px;" onclick="exportPaymentsCSV()"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M4 19h16"/></svg> পেমেন্ট হিস্ট্রি CSV এক্সপোর্ট</button>
     <div class="tabs2">
       <button class="${sub==='pending'?'active':''}" onclick="session.payTab='pending'; render();">যাচাইয়ের অপেক্ষায় (${db.payments.filter(p=>p.status==='pending').length})</button>
       <button class="${sub==='done'?'active':''}" onclick="session.payTab='done'; render();">সম্পন্ন</button>
