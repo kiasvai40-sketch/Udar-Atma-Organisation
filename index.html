@@ -566,8 +566,6 @@ function startRealtimeSync(){
     const incoming = data.state;
     if((incoming.updatedAt||0) > (db.updatedAt||0)){
       db = incoming;
-      if(!db.notifications) db.notifications = [];
-      if(!db.reports) db.reports = [];
       localStorage.setItem(LS_KEY, JSON.stringify(db));
       if(!document.getElementById('modalRoot')) render(); // don't wipe an open form
     }
@@ -602,7 +600,6 @@ function seedData(){
       secretaryName:'এডমিন ১', secretaryMobile:'01800000001'
     },
     featureFlags:{messaging:true, blood:true, finance:true, events:true, registration:true, gallery:true},
-    notifications:[],
     members:[
       {id:'UA-2026-001', name:'সুপার এডমিন', mobile:'01700000001', pin:'111111', role:'superadmin', status:'ACTIVE', position:'সুপার এডমিন', bloodGroup:'B+', joinDate:'01 জান, ২০২৪', plus:0, minus:0, avatarSeed:'সু', contribution:'PAID', nextDue:'০৫ অক্টোবর, ২০২৬', lastDonationDate:'2026-03-10', lastDonationPlace:'সদর হাসপাতাল'},
       {id:'UA-2026-002', name:'এডমিন ১', mobile:'01800000001', pin:'222222', role:'admin', permissions:['member.approve','payment.verify','point.add','notice.publish'], status:'ACTIVE', position:'এডমিন', bloodGroup:'A+', joinDate:'03 জান, ২০২৪', plus:0, minus:0, avatarSeed:'এ১', contribution:'PAID', nextDue:'১২ অক্টোবর, ২০২৬', lastDonationDate:'2026-08-01', lastDonationPlace:'কমিউনিটি ব্লাড ব্যাংক'},
@@ -2002,6 +1999,51 @@ function submitResetPin(id){
 function addAudit(action,target){
   db.auditLog.unshift({who:`${currentMember().name} (${session.role==='superadmin'?'Super Admin':'Admin'})`, action, target, when:'এখন'});
 }
+
+/* ---------------- NOTIFICATIONS HELPERS ---------------- */
+function addNotification({to, title, body, type, refId}){
+  if(!db.notifications) db.notifications = [];
+  db.notifications.unshift({
+    id: Date.now() + Math.floor(Math.random()*1000),
+    to: to,                 // memberId | 'admin' | 'superadmin' | 'all'
+    title: title || '',
+    body: body || '',
+    type: type || 'general',
+    refId: refId || null,
+    read: false,
+    createdAt: Date.now()
+  });
+  // keep last 300 only
+  if(db.notifications.length > 300) db.notifications = db.notifications.slice(0, 300);
+}
+function notifyMember(memberId, title, body, type, refId){
+  addNotification({to: memberId, title, body, type, refId});
+}
+function notifyAdmins(title, body, type, refId){
+  addNotification({to: 'admin', title, body, type, refId});
+}
+function notifySuperAdmins(title, body, type, refId){
+  addNotification({to: 'superadmin', title, body, type, refId});
+}
+function notifyAll(title, body, type, refId){
+  addNotification({to: 'all', title, body, type, refId});
+}
+function myNotifications(){
+  if(!db.notifications) return [];
+  const mid = session.memberId;
+  const role = session.role;
+  return db.notifications.filter(n=>{
+    if(n.to === 'all') return true;
+    if(mid && n.to === mid) return true;
+    if(n.to === 'admin' && (role === 'admin' || role === 'superadmin')) return true;
+    if(n.to === 'superadmin' && role === 'superadmin') return true;
+    return false;
+  });
+}
+function unreadCount(){
+  return myNotifications().filter(n=>!n.read).length;
+}
+
 function openBloodPointForm(id){
   const m = getMember(id);
   const isMemberRole = m.role==='member';
@@ -2709,7 +2751,6 @@ window.onload = async function(){
     saveDBToCloud();
   }
   if(!db.reports) db.reports = [];
-  if(!db.notifications) db.notifications = [];
   try{
     let rid = null;
     if(location.hash && location.hash.indexOf('report=')>-1){
