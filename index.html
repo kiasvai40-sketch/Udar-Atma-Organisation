@@ -561,7 +561,6 @@ function initFCM() {
     return;
   }
 
-  // অ্যাপ খোলা থাকলে (foreground) মেসেজ আসলে
   messaging.onMessage(function(payload) {
     console.log('[FCM Foreground]', payload);
     var title = (payload.notification && payload.notification.title) || (payload.data && payload.data.title) || 'উদার আত্মা সংগঠন';
@@ -570,7 +569,6 @@ function initFCM() {
       toast((title + (body ? ': ' + body : '')).slice(0, 100),
         '<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8a6 6 0 0112 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.7 1.7 0 003.4 0"/></svg>');
     }
-    // foreground-এও সিস্টেম নোটিফিকেশন দেখানো (ঐচ্ছিক)
     if (Notification.permission === 'granted' && navigator.serviceWorker) {
       navigator.serviceWorker.ready.then(function(reg) {
         reg.showNotification(title, { body: body, tag: 'fcm-fg', icon: '/icon-192.png' });
@@ -580,25 +578,48 @@ function initFCM() {
 }
 
 async function requestFCMPermissionAndToken() {
-  if (!messaging) return null;
+  if (!messaging) {
+    console.warn('messaging not ready');
+    return null;
+  }
+  if (!('Notification' in window)) {
+    console.warn('Notification API not supported');
+    return null;
+  }
   try {
-    var permission = await Notification.requestPermission();
+    var permission = Notification.permission;
+    if (permission === 'default') {
+      permission = await Notification.requestPermission();
+    }
     if (permission !== 'granted') {
       console.log('Notification permission denied');
+      if (typeof toast === 'function') toast('নোটিফিকেশন বন্ধ আছে — সেটিংস থেকে চালু করুন','');
       return null;
     }
-    // FCM service worker রেজিস্টার
-    var swReg = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+
+    // শুধু FCM service worker ব্যবহার করুন
+    var swReg = await navigator.serviceWorker.register('/firebase-messaging-sw.js', { scope: '/' });
+    await navigator.serviceWorker.ready;
+
     var token = await messaging.getToken({
       vapidKey: VAPID_KEY,
       serviceWorkerRegistration: swReg
     });
+
+    if (!token) {
+      console.warn('getToken returned empty');
+      if (typeof toast === 'function') toast('টোকেন পাওয়া যায়নি','');
+      return null;
+    }
+
     console.log('FCM Token:', token);
     currentFcmToken = token;
     await saveFcmTokenToFirestore(token);
+    if (typeof toast === 'function') toast('পুশ নোটিফিকেশন চালু হয়েছে ✓','');
     return token;
   } catch (err) {
-    console.error('FCM token error:', err);
+    console.error('FCM token error:', err && err.message ? err.message : err);
+    if (typeof toast === 'function') toast('FCM এরর: ' + (err && err.message ? err.message.slice(0,60) : 'unknown'),'');
     return null;
   }
 }
@@ -608,7 +629,7 @@ async function saveFcmTokenToFirestore(token) {
   try {
     var memberId = (session && session.memberId) ? session.memberId : ('guest_' + (localStorage.getItem('fcm_guest_id') || Date.now()));
     if (!session || !session.memberId) localStorage.setItem('fcm_guest_id', memberId);
-    await fsDB.collection('fcm_tokens').doc(token).set({
+    await fsDB.collection('fcm_tokens').doc(token.substring(0, 40)).set({
       token: token,
       memberId: memberId,
       role: (session && session.role) ? session.role : 'guest',
@@ -620,6 +641,7 @@ async function saveFcmTokenToFirestore(token) {
     console.warn('Token save failed', e);
   }
 }
+
 
 async function loadDBFromCloud(){
   if(!firebaseOK){ cloudReady = true; return null; }
@@ -2972,7 +2994,9 @@ window.onload = async function(){
 
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('sw.js').catch(e=>console.warn('SW register failed', e));
+    // FCM service worker প্রাধান্য — sw.js আর আলাদা রেজিস্টার করা হচ্ছে না
+    navigator.serviceWorker.register('/firebase-messaging-sw.js', { scope: '/' })
+      .catch(e=>console.warn('FCM SW register failed', e));
   });
 }
 </script>
