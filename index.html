@@ -933,6 +933,7 @@ function doRegister(){
   if(!agree){ toast('শর্তাবলীতে সম্মত হতে হবে','<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M10.3 3.9L1.8 18.1A2 2 0 003.5 21h17a2 2 0 001.7-2.9L13.7 3.9a2 2 0 00-3.4 0zM12 9v4M12 17h.01"/></svg>'); return; }
   const seq = db.nextMemberSeq++;
   db.members.push({id:`UA-2026-${String(seq).padStart(3,'0')}`,name,mobile,pin,role:'member',status:'PENDING',position:'—',bloodGroup,joinDate:'১৯ সেপ্টেম্বর, ২০২৬',plus:0,minus:0,avatarSeed:name[0],contribution:'DUE',nextDue:'—',lastDonationDate:null,lastDonationPlace:''});
+  notifyAdmins('নতুন সদস্য আবেদন', `${name} (${mobile}) অনুমোদনের অপেক্ষায়`, 'registration');
   session.regStep=2; saveDB(); render();
 }
 function logout(){ session={screen:'app', role:'guest', memberId:null, tab:'home', authView:'login', regStep:1, adminTab:'dashboard'}; render(); }
@@ -952,6 +953,7 @@ function submitForgotPassword(){
   if(db.passwordResetRequests.some(r=>r.mobile===mobile && r.status==='pending')){ toast('এই নম্বরের অনুরোধ ইতিমধ্যে অপেক্ষমান আছে','<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22a10 10 0 100-20 10 10 0 000 20zM12 16v-4M12 8h.01"/></svg>'); return; }
   const seq = db.nextPwReqSeq++;
   db.passwordResetRequests.unshift({id:seq, mobile, memberId:m.id, memberName:m.name, date:'আজ', status:'pending'});
+  notifySuperAdmins('পাসওয়ার্ড রিসেট অনুরোধ', `${m.name} (${mobile}) নতুন পাসওয়ার্ড চেয়েছেন`, 'password');
   saveDB(); closeModal();
   toast('অনুরোধ সুপার অ্যাডমিনের কাছে পাঠানো হয়েছে','<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16a1 1 0 011 1v12a1 1 0 01-1 1H4a1 1 0 01-1-1V6a1 1 0 011-1zM3 7l9 6 9-6"/></svg>');
 }
@@ -971,7 +973,7 @@ function renderTopbar(){
       </div>
       <div style="display:flex;gap:8px;">
         ${session.role!=='guest' ? `<button class="icon-btn" onclick="openReports()" title="প্রতিবেদন" aria-label="প্রতিবেদন"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2M9 12h6M9 16h4"/></svg></button>` : ''}
-        ${session.role!=='guest' ? `<button class="icon-btn" onclick="openNotifPanel()" aria-label="নোটিফিকেশন"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8a6 6 0 0112 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.7 1.7 0 003.4 0"/></svg>${unreadCount()?`<span class="dot"></span>`:''}</button>` : ''}
+        ${session.role!=='guest' ? `<button class="icon-btn" onclick="openNotifPanel()" aria-label="নোটিফিকেশন"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8a6 6 0 0112 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.7 1.7 0 003.4 0"/></svg><span class="dot"></span></button>` : ''}
         ${session.role!=='guest' ? `<button class="icon-btn" onclick="logout()" aria-label="লগআউট"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg></button>` : `<button class="icon-btn" onclick="goToLogin()" aria-label="লগইন"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 11V8a5 5 0 0110 0v3M6 11h12v10H6V11zM12 15v2"/></svg></button>`}
       </div>
     </div>
@@ -1327,7 +1329,12 @@ function submitBloodRequest(){
   if(!name){ toast('রোগীর নাম দিন','<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M10.3 3.9L1.8 18.1A2 2 0 003.5 21h17a2 2 0 001.7-2.9L13.7 3.9a2 2 0 00-3.4 0zM12 9v4M12 17h.01"/></svg>'); return; }
   if(!mobile || mobile.length<10){ toast('সঠিক মোবাইল নম্বর দিন','<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M10.3 3.9L1.8 18.1A2 2 0 003.5 21h17a2 2 0 001.7-2.9L13.7 3.9a2 2 0 00-3.4 0zM12 9v4M12 17h.01"/></svg>'); return; }
   const seq = db.nextBloodReqSeq++;
-  db.bloodRequests.unshift({id:`UA-BR-2026-${String(seq).padStart(3,'0')}`, patient:name, mobile, bg:document.getElementById('bqGroup').value, hospital:document.getElementById('bqHosp').value||'—', units:document.getElementById('bqUnits').value, urgency:'জরুরি', date:'আজ', status:'active'});
+  const bg = document.getElementById('bqGroup').value;
+  db.bloodRequests.unshift({id:`UA-BR-2026-${String(seq).padStart(3,'0')}`, patient:name, mobile, bg, hospital:document.getElementById('bqHosp').value||'—', units:document.getElementById('bqUnits').value, urgency:'জরুরি', date:'আজ', status:'active'});
+  notifyAdmins('রক্তের প্রয়োজন', `${bg} — ${name} (${document.getElementById('bqHosp').value||'—'})`, 'blood');
+  db.members.filter(x=>x.status==='ACTIVE' && x.bloodGroup===bg).forEach(x=>{
+    notifyMember(x.id, 'জরুরি রক্তের প্রয়োজন', `${bg} গ্রুপের রক্ত প্রয়োজন — ${name}`, 'blood');
+  });
   saveDB(); closeModal(); session.bloodTab='requests'; render();
   toast('আপনার অনুরোধ জমা হয়েছে','<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22a10 10 0 100-20 10 10 0 000 20zM12 8v5M12 16h.01"/></svg>');
 }
@@ -1366,6 +1373,7 @@ function submitMonthlyPayment(){
   if(!months.length){toast('অন্তত একটি মাস নির্বাচন করুন','<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M10.3 3.9L1.8 18.1A2 2 0 003.5 21h17a2 2 0 001.7-2.9L13.7 3.9a2 2 0 00-3.4 0zM12 9v4M12 17h.01"/></svg>');return;} if(!txid){toast('ট্রানজেকশন আইডি দিন','<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M10.3 3.9L1.8 18.1A2 2 0 003.5 21h17a2 2 0 001.7-2.9L13.7 3.9a2 2 0 00-3.4 0zM12 9v4M12 17h.01"/></svg>');return;}
   if(db.payments.some(p=>p.txid===txid)){toast('এই TxID ইতিমধ্যে ব্যবহৃত হয়েছে','<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22a10 10 0 100-20 10 10 0 000 20zM4.9 4.9l14.2 14.2"/></svg>');return;}
   const m=currentMember();db.payments.unshift({id:`UA-PAY-${Date.now()}`,member:m.id,memberName:m.name,offer:months.join(', '),months,amount:months.length*100,txid,date:new Date().toLocaleDateString('bn-BD'),status:'pending'});
+  notifyAdmins('নতুন চাঁদা পেমেন্ট', `${m.name} — ${months.join(', ')} (৳${months.length*100})`, 'payment');
   saveDB();closeModal();render();toast('পেমেন্ট জমা হয়েছে, সুপার এডমিনের অনুমোদনের অপেক্ষায় আছে','<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h12M6 22h12M6 2c0 5.5 4 7.5 6 9.5S18 16.5 18 22M18 2c0 5.5-4 7.5-6 9.5S6 16.5 6 22"/></svg>');
 }
 
@@ -1570,6 +1578,7 @@ function submitPayment(offerId){
   db.payments.unshift({id:`UA-PAY-2026-0${db.payments.length+12}`, member:m.id, memberName:m.name, offer:o.label, amount:o.price, txid, date:'আজ', status:'pending'});
   m.contribution='PENDING_VERIFICATION';
   m.paidOfferId = o.id; m.paidOfferLabel = o.label;
+  notifyAdmins('নতুন পেমেন্ট', `${m.name} — ${o.label} (৳${o.price})`, 'payment');
   saveDB(); closeModal(); render();
   toast('পেমেন্ট জমা হয়েছে, যাচাইয়ের অপেক্ষায় আছে','<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h12M6 22h12M6 2c0 5.5 4 7.5 6 9.5S18 16.5 18 22M18 2c0 5.5-4 7.5-6 9.5S6 16.5 6 22"/></svg>');
 }
@@ -1914,12 +1923,14 @@ function adminAddPaidMonths(id){
 async function approveMember(id){
   const m=getMember(id); m.status='ACTIVE'; m.position='সাধারণ সদস্য';
   addAudit(`সদস্য অনুমোদন করেছেন`, m.name);
+  notifyMember(m.id, 'অ্যাকাউন্ট অনুমোদিত', 'আপনার সদস্যপদ অনুমোদিত হয়েছে। এখন লগইন করতে পারবেন।', 'registration');
   closeModal(); render(); toast(`${m.name} অনুমোদিত হয়েছে`,'<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 13l5 5L20 7"/></svg>');
   await saveDB();
 }
 function rejectMember(id){
   const m=getMember(id); m.status='REJECTED';
   addAudit(`সদস্য আবেদন প্রত্যাখ্যান করেছেন`, m.name);
+  notifyMember(m.id, 'আবেদন প্রত্যাখ্যাত', 'আপনার সদস্যপদ আবেদন প্রত্যাখ্যাত হয়েছে। বিস্তারিত জানতে সংগঠনের সাথে যোগাযোগ করুন।', 'registration');
   saveDB(); closeModal(); render(); toast(`আবেদন প্রত্যাখ্যাত হয়েছে`,'<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg>');
 }
 function openAddPoint(id,type){
@@ -1940,6 +1951,7 @@ async function submitPoint(id,type){
   if(!db.pointHistory[id]) db.pointHistory[id]=[];
   db.pointHistory[id].unshift({type, amount:amt, reason, date:Date.now(), by: currentMember().name});
   addAudit(`পয়েন্ট যোগ করেছেন (${type==='plus'?'+':'-'}${amt})`, m.name);
+  notifyMember(m.id, type==='plus'?'প্লাস পয়েন্ট পেয়েছেন':'নেগেটিভ পয়েন্ট পেয়েছেন', `${type==='plus'?'+':'-'}${amt} পয়েন্ট — ${reason}`, 'point');
   closeModal(); render(); toast('পয়েন্ট আপডেট হয়েছে','<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 13l5 5L20 7"/></svg>');
   await saveDB();
 }
@@ -1959,11 +1971,14 @@ function submitBan(id,kind){
   if(kind==='temp'){ m.status='TEMP_BANNED'; m.banUntil='কনফিগার করা মেয়াদ অনুযায়ী'; m.banReason=reason; }
   else { m.status='PERMA_BANNED'; m.banReason=reason; }
   addAudit(`${kind==='temp'?'সাময়িক':'স্থায়ী'} নিষেধাজ্ঞা প্রয়োগ করেছেন`, m.name);
+  notifyMember(m.id, kind==='temp'?'সাময়িক নিষেধাজ্ঞা':'স্থায়ী নিষেধাজ্ঞা', `কারণ: ${reason}`, 'ban');
+  notifySuperAdmins('সদস্য নিষিদ্ধ', `${m.name}-কে ${kind==='temp'?'সাময়িক':'স্থায়ী'} নিষেধাজ্ঞা দেওয়া হয়েছে`, 'ban');
   saveDB(); closeModal(); render(); toast('নিষেধাজ্ঞা প্রয়োগ হয়েছে','<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22a10 10 0 100-20 10 10 0 000 20zM4.9 4.9l14.2 14.2"/></svg>');
 }
 function unbanMember(id){
   const m=getMember(id); m.status='ACTIVE'; m.banReason=''; m.banUntil='';
   addAudit(`আনব্যান করেছেন`, m.name);
+  notifyMember(m.id, 'নিষেধাজ্ঞা তুলে নেওয়া হয়েছে', 'আপনার অ্যাকাউন্ট আবার সক্রিয় হয়েছে।', 'ban');
   saveDB(); closeModal(); render(); toast(`${m.name} পুনরায় সক্রিয় হয়েছে`,'<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 11V8a5 5 0 019.9-1M6 11h12v10H6V11zM12 15v2"/></svg>');
 }
 function deleteAccountConfirm(id){
@@ -2096,6 +2111,7 @@ function approvePayment(id){
     m.contribution=m.paidMonths.length>=12?'PAID':'DUE';
   }
   addAudit(`পেমেন্ট অনুমোদন করেছেন`, `${p.id} · ${p.memberName}`);
+  if(m) notifyMember(m.id, 'পেমেন্ট অনুমোদিত', `আপনার পেমেন্ট (${p.offer||''}) অনুমোদিত হয়েছে।`, 'payment');
   saveDB(); render(); toast('পেমেন্ট অনুমোদিত হয়েছে','<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 13l5 5L20 7"/></svg>');
 }
 function rejectPaymentPrompt(id){
@@ -2111,6 +2127,7 @@ function rejectPayment(id){
   const p = db.payments.find(x=>x.id===id); p.status='rejected';
   const m = getMember(p.member); if(m){ m.contribution='REJECTED'; m.paidOfferId=null; m.paidOfferLabel=null; }
   addAudit(`পেমেন্ট প্রত্যাখ্যান করেছেন`, `${p.id} · ${p.memberName}`);
+  if(m) notifyMember(m.id, 'পেমেন্ট প্রত্যাখ্যাত', `কারণ: ${reason}`, 'payment');
   saveDB(); closeModal(); render(); toast('পেমেন্ট প্রত্যাখ্যাত হয়েছে','<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg>');
 }
 
@@ -2169,6 +2186,7 @@ function submitNotice(publish){
   if(!title||!body){ toast('শিরোনাম ও বিস্তারিত দিন','<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M10.3 3.9L1.8 18.1A2 2 0 003.5 21h17a2 2 0 001.7-2.9L13.7 3.9a2 2 0 00-3.4 0zM12 9v4M12 17h.01"/></svg>'); return; }
   db.notices.unshift({id:Date.now(), title, body, visibility:document.getElementById('ntVis').value, priority:document.getElementById('ntPr').value, date:Date.now(), status: publish?'published':'draft'});
   addAudit(publish?'নোটিশ প্রকাশ করেছেন':'নোটিশ খসড়া তৈরি করেছেন', title);
+  if(publish) notifyAll('নতুন নোটিশ', title, 'notice');
   saveDB(); closeModal(); render(); toast(publish?'নোটিশ প্রকাশিত হয়েছে':'খসড়া সংরক্ষিত হয়েছে','<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11v2a1 1 0 001 1h2l6 4V6L6 10H4a1 1 0 00-1 1zM16 8.5a4.5 4.5 0 010 7M18.5 6a8 8 0 010 12"/></svg>');
 }
 function openEditNotice(id){
@@ -2194,6 +2212,7 @@ function saveEditNotice(id, publish){
   const n = db.notices.find(x=>x.id===id);
   n.title=title; n.body=body; n.visibility=document.getElementById('ntVis').value; n.priority=document.getElementById('ntPr').value; n.status=publish?'published':'draft';
   addAudit('নোটিশ সম্পাদনা করেছেন', title);
+  if(publish) notifyAll('নোটিশ হালনাগাদ', title, 'notice');
   saveDB(); closeModal(); render(); toast('নোটিশ হালনাগাদ হয়েছে','<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 13l5 5L20 7"/></svg>');
 }
 function deleteNoticeConfirm(id){
@@ -2250,6 +2269,7 @@ function submitActivity(){
   const seq = db.nextActivitySeq++;
   db.activities.unshift({id:`UA-ACT-2026-${String(seq).padStart(3,'0')}`, title, category:document.getElementById('acCat').value.trim()||'সাধারণ', date, location:document.getElementById('acLoc').value.trim()||'—', participants:Number(document.getElementById('acPart').value)||0, status:document.getElementById('acStatus').value});
   addAudit('নতুন কার্যক্রম যোগ করেছেন', title);
+  notifyAll('নতুন কার্যক্রম', `${title} — ${date}`, 'event');
   saveDB(); closeModal(); render(); toast('কার্যক্রম যোগ হয়েছে','<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22a10 10 0 100-20 10 10 0 000 20zM12 18a6 6 0 100-12 6 6 0 000 12zM12 14a2 2 0 100-4 2 2 0 000 4z"/></svg>');
 }
 function openEditActivity(id){
@@ -2327,8 +2347,14 @@ function submitBloodNeed(){
   if(!patient){ toast('রোগীর নাম দিন','<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M10.3 3.9L1.8 18.1A2 2 0 003.5 21h17a2 2 0 001.7-2.9L13.7 3.9a2 2 0 00-3.4 0zM12 9v4M12 17h.01"/></svg>'); return; }
   if(!mobile || mobile.length<10){ toast('সঠিক মোবাইল নম্বর দিন','<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M10.3 3.9L1.8 18.1A2 2 0 003.5 21h17a2 2 0 001.7-2.9L13.7 3.9a2 2 0 00-3.4 0zM12 9v4M12 17h.01"/></svg>'); return; }
   const seq = db.nextBloodReqSeq++;
-  db.bloodRequests.unshift({id:`UA-BR-2026-${String(seq).padStart(3,'0')}`, patient, mobile, bg:document.getElementById('bnGroup').value, hospital:document.getElementById('bnHosp').value.trim()||'—', units:Number(document.getElementById('bnUnits').value)||1, urgency:document.getElementById('bnUrgency').value, date:document.getElementById('bnDate').value.trim()||'আজ', status:'active'});
+  const bg = document.getElementById('bnGroup').value;
+  const urgency = document.getElementById('bnUrgency').value;
+  db.bloodRequests.unshift({id:`UA-BR-2026-${String(seq).padStart(3,'0')}`, patient, mobile, bg, hospital:document.getElementById('bnHosp').value.trim()||'—', units:Number(document.getElementById('bnUnits').value)||1, urgency, date:document.getElementById('bnDate').value.trim()||'আজ', status:'active'});
   addAudit('রক্তের প্রয়োজন যোগ করেছেন', patient);
+  notifyAdmins('রক্তের প্রয়োজন', `${urgency} · ${bg} — ${patient}`, 'blood');
+  db.members.filter(x=>x.status==='ACTIVE' && x.bloodGroup===bg).forEach(x=>{
+    notifyMember(x.id, 'রক্তের প্রয়োজন', `${urgency} · ${bg} গ্রুপ — ${patient}`, 'blood');
+  });
   saveDB(); closeModal(); render(); toast('যোগ করা হয়েছে','<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5c0 0 7 7.2 7 12.2A7 7 0 1112 2.5z"/></svg>');
 }
 function openEditBloodNeed(id){
@@ -2470,6 +2496,7 @@ function resetPointsAndFunds(){
   db.pointHistory = {};
   db.payments = db.payments.filter(p=>p.status!=='approved');
   addAudit('সকল সদস্যের পয়েন্ট, চাঁদার অবস্থা ও মোট বার্ষিক চাঁদা আদায় রিসেট করেছেন (০০) — অনুদান অপরিবর্তিত', 'সিস্টেম রিসেট');
+  notifyAll('পয়েন্ট ও চাঁদা রিসেট', 'সকল সদস্যের পয়েন্ট ও বার্ষিক চাঁদার হিসাব শূন্য করা হয়েছে। আবার চাঁদা দিতে পারবেন।', 'general');
   saveDB(); closeModal(); render(); toast('পয়েন্ট ও চাঁদার হিসাব ০০ করা হয়েছে, সবাই আবার চাঁদা দিতে পারবে','<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M23 4v6h-6M1 20v-6h6M3.5 9a9 9 0 0114.9-3.4L23 10M1 14l4.6 4.4A9 9 0 0020.5 15"/></svg>');
 }
 function toggleFeature(k){ db.featureFlags[k]=!db.featureFlags[k]; addAudit(`ফিচার ${featureLabel(k)} ${db.featureFlags[k]?'চালু':'বন্ধ'} করেছেন`,'সিস্টেম সেটিংস'); saveDB(); toast('সেটিংস আপডেট হয়েছে','<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15a3 3 0 100-6 3 3 0 000 6zM19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9c.3.6.9 1 1.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/></svg>'); }
@@ -2494,12 +2521,14 @@ function acceptPwReset(reqId){
   if(m){ m.pin = p; }
   r.status='approved';
   addAudit('পাসওয়ার্ড রিসেট অনুমোদন করেছেন', r.memberName);
+  if(m) notifyMember(m.id, 'পাসওয়ার্ড রিসেট হয়েছে', 'আপনার নতুন পাসওয়ার্ড সেট করা হয়েছে। নতুন পাসওয়ার্ড দিয়ে লগইন করুন।', 'password');
   saveDB(); closeModal(); render(); toast('নতুন পাসওয়ার্ড সেট হয়েছে','<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>');
 }
 function rejectPwReset(reqId){
   const r = db.passwordResetRequests.find(x=>x.id===reqId);
   r.status='rejected';
   addAudit('পাসওয়ার্ড রিসেট প্রত্যাখ্যান করেছেন', r.memberName);
+  if(r.memberId) notifyMember(r.memberId, 'পাসওয়ার্ড রিসেট প্রত্যাখ্যাত', 'আপনার পাসওয়ার্ড রিসেট অনুরোধ প্রত্যাখ্যাত হয়েছে।', 'password');
   saveDB(); closeModal(); render(); toast('অনুরোধ প্রত্যাখ্যাত হয়েছে','<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg>');
 }
 function openEditSecretary(){
@@ -2541,43 +2570,16 @@ function savePaymentMethod(i){
 }
 
 /* ---------------- NOTIFICATIONS PANEL ---------------- */
-function notifIcon(type){
-  const map = {
-    point: '<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 14.8 7.2 17l.9-5.4L4.2 7.7l5.4-.8L12 2z"/></svg>',
-    notice: '<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11v2a1 1 0 001 1h2l6 4V6L6 10H4a1 1 0 00-1 1zM16 8.5a4.5 4.5 0 010 7M18.5 6a8 8 0 010 12"/></svg>',
-    payment: '<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7zM3 10h18M7 15h4"/></svg>',
-    registration: '<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM22 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>',
-    blood: '<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5c0 0 7 7.2 7 12.2A7 7 0 1112 2.5z"/></svg>',
-    ban: '<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22a10 10 0 100-20 10 10 0 000 20zM4.9 4.9l14.2 14.2"/></svg>',
-    event: '<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22a10 10 0 100-20 10 10 0 000 20zM12 18a6 6 0 100-12 6 6 0 000 12zM12 14a2 2 0 100-4 2 2 0 000 4z"/></svg>',
-    report: '<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2M9 12h6M9 16h4"/></svg>',
-    password: '<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>',
-    general: '<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8a6 6 0 0112 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.7 1.7 0 003.4 0"/></svg>'
-  };
-  return map[type] || map.general;
-}
 function openNotifPanel(){
-  const list = myNotifications().slice(0, 40);
-  // mark all visible as read
-  list.forEach(n=>{ n.read = true; });
-  saveDB();
+  const items = [
+    {ic:'<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7zM3 10h18M7 15h4"/></svg>',t:'আপনার পেমেন্ট যাচাইয়ের অপেক্ষায় আছে'},
+    {ic:'<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11v2a1 1 0 001 1h2l6 4V6L6 10H4a1 1 0 00-1 1zM16 8.5a4.5 4.5 0 010 7M18.5 6a8 8 0 010 12"/></svg>',t:'নতুন নোটিশ প্রকাশিত হয়েছে'},
+    {ic:'<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5c0 0 7 7.2 7 12.2A7 7 0 1112 2.5z"/></svg>',t:'জরুরি রক্তের প্রয়োজন — B+ গ্রুপ'},
+  ];
   openModal(`
-    <div class="modal-title"><h3><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8a6 6 0 0112 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.7 1.7 0 003.4 0"/></svg> নোটিফিকেশন</h3><button onclick="closeModal(); render();"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
-    <div class="card">
-      ${list.length ? list.map(n=>`
-        <div class="list-item">
-          <div class="ico">${notifIcon(n.type)}</div>
-          <div class="meta">
-            <b>${esc(n.title)}</b>
-            <span>${esc(n.body||'')}</span>
-            <span style="font-size:11px;color:var(--muted);">${relDate(n.createdAt)}</span>
-          </div>
-        </div>
-      `).join('') : emptyState('<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 13l5 5L20 7"/></svg>','কোনো নোটিফিকেশন নেই')}
-    </div>
+    <div class="modal-title"><h3><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8a6 6 0 0112 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.7 1.7 0 003.4 0"/></svg> নোটিফিকেশন</h3><button onclick="closeModal()"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
+    <div class="card">${items.map(i=>`<div class="list-item"><div class="ico">${i.ic}</div><div class="meta"><b>${i.t}</b><span>এখন</span></div></div>`).join('')}</div>
   `);
-  // refresh badge after marking read
-  setTimeout(()=>render(), 50);
 }
 function openReports(){
   session.screen = 'reports';
@@ -2712,6 +2714,7 @@ async function submitReport(){
   if(!db.reports) db.reports=[];
   db.reports.unshift({id:Date.now(), title, body, date:Date.now(), by: currentMember()?currentMember().name:'সুপার অ্যাডমিন', likes:[]});
   addAudit('নতুন প্রতিবেদন যোগ করেছেন', title);
+  notifyAll('নতুন প্রতিবেদন', title, 'report');
   closeModal(); render(); toast('প্রতিবেদন প্রকাশিত হয়েছে','<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 13l5 5L20 7"/></svg>');
   await saveDB();
 }
