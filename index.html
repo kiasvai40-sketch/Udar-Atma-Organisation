@@ -2204,7 +2204,7 @@ function runReminders(){
     const m=currentMember(); if(!m || m.status!=='ACTIVE') return;
     const now=new Date(), ym=now.getFullYear()+'-'+(now.getMonth()+1), day=ym+'-'+now.getDate(), mon=CONTRIBUTION_MONTHS[now.getMonth()], before=db.notifications.length;
     if(m.role==='member'){
-      if(unpaidMonthList(m).includes(mon)) notifyMember(m.id,'চাঁদার রিমাইন্ডার',`${mon} মাসের চাঁদা বকেয়া আছে`,'payment',null,'dues-'+m.id+'-'+ym);
+      /* বকেয়া চাঁদার রিমাইন্ডার এখন runDuesAutomation() (প্রতি ২-৩ দিন, সকাল ৬টা) পরিচালনা করে — একই দিনে দ্বৈত নোটিফিকেশন এড়াতে এখানে আলাদা পাঠানো হয় না */
       if(m.lastDonationDate && daysBetween(m.lastDonationDate)>=120) notifyMember(m.id,'আবার রক্ত দিতে পারবেন','শেষ রক্তদানের পর ১২০ দিন পার হয়েছে।','blood',null,'elig-'+m.id+'-'+m.lastDonationDate);
     } else {
       const p=db.payments.filter(x=>x.status==='pending').length, r=db.members.filter(x=>x.status==='PENDING').length;
@@ -2220,9 +2220,70 @@ function runReminders(){
     if(db.notifications.length!==before) saveDB();
   }catch(e){ console.warn('reminders', e); }
 }
+/* ---------------- মাসিক চাঁদা বকেয়া — স্বয়ংক্রিয় নোটিফিকেশন ---------------- */
+/* বকেয়া শুরু: সদস্যের (যোগদান মাস বা জানুয়ারি) থেকে বর্তমান মাস পর্যন্ত যে মাসগুলোর চাঁদা paidMonths-এ নেই। ভবিষ্যতের মাস কখনো বকেয়া নয়। */
+function duesStartIndex(m, now){
+  const y = now.getFullYear(), cur = now.getMonth();
+  const jd = bnDigitsToEn(m.joinDate||'');
+  const ym = jd.match(/(\d{4})/);
+  if(ym){
+    const jy = Number(ym[1]);
+    if(jy < y) return 0;
+    if(jy > y) return 12;
+  }
+  let idx = CONTRIBUTION_MONTHS.findIndex(mn=>jd.indexOf(mn)>-1);
+  if(idx<0) idx = CONTRIBUTION_MONTHS.findIndex(mn=>jd.indexOf(mn.slice(0,3))>-1);
+  if(!ym && idx<0) return cur;           /* যোগদানের তারিখ বোঝা না গেলে শুধু বর্তমান মাস ধরা হয় */
+  if(idx<0) return cur;
+  return ym ? idx : cur;
+}
+function duesOverdueInfo(m, now){
+  now = now || new Date();
+  const cur = now.getMonth(), start = duesStartIndex(m, now), paid = paidMonthList(m), months = [];
+  for(let i=start;i<=cur;i++){ const mn = CONTRIBUTION_MONTHS[i]; if(!paid.includes(mn)) months.push(mn); }
+  return {count: months.length, months};
+}
+function dues6am(now, dayOffset){ return new Date(now.getFullYear(), now.getMonth(), now.getDate()+(dayOffset||0), 6, 0, 0, 0); }
+function runDuesAutomation(nowArg){
+  try{
+    if(typeof db==='undefined' || !db || !Array.isArray(db.members)) return;
+    const now = nowArg || new Date();
+    if(!db.duesReminders) db.duesReminders = {};
+    if(!Array.isArray(db.notifications)) db.notifications = [];
+    const today6 = dues6am(now,0);
+    const slot = now.getTime() >= today6.getTime() ? today6 : dues6am(now,-1);   /* সবচেয়ে সাম্প্রতিক সকাল ৬টা */
+    let changed = false;
+    db.members.forEach(m=>{
+      const st = db.duesReminders[m.id];
+      if(m.role!=='member' || m.status!=='ACTIVE'){ if(st){ delete db.duesReminders[m.id]; changed = true; } return; }
+      const info = duesOverdueInfo(m, now);
+      if(info.count===0){ if(st){ delete db.duesReminders[m.id]; changed = true; } return; }   /* ক্লিয়ার — অটোমেশন বন্ধ */
+      if(contributionState(m)==='PENDING_VERIFICATION') return;   /* পেমেন্ট যাচাইয়ের অপেক্ষায় থাকলে নোটিফিকেশন বিরতি */
+      let s2 = st;
+      if(!s2){ s2 = db.duesReminders[m.id] = {nextAt: today6.getTime(), sent:0, lastSlot:null, lastCount:0}; changed = true; }
+      if(now.getTime() < s2.nextAt) return;
+      if(s2.lastSlot && (slot.getTime() - s2.lastSlot) < 1.9*86400000) return;   /* কমপক্ষে ২ দিনের বিরতি */
+      const key = 'duesauto-'+m.id+'-'+slot.getFullYear()+'-'+(slot.getMonth()+1)+'-'+slot.getDate();
+      if(!db.notifications.some(n=>n.dedupe===key)){
+        db.notifications.unshift({ id: Date.now()+Math.floor(Math.random()*1000), to:m.id, title:'মাসিক চাঁদা বকেয়া',
+          body:`আপনার ${bnNum(info.count)} মাসের মাসিক চাঁদা বকেয়া রয়েছে। অনুগ্রহ করে বকেয়া চাঁদা পরিশোধ করুন।`,
+          type:'payment', refId:null, perm:null, by:null, dedupe:key, readBy:{}, createdAt:slot.getTime() });
+        if(db.notifications.length > 600) db.notifications = db.notifications.slice(0, 600);
+      }
+      s2.sent = (s2.sent||0) + 1; s2.lastSlot = slot.getTime(); s2.lastCount = info.count;
+      s2.nextAt = dues6am(slot, s2.sent%2 ? 3 : 2).getTime();   /* ৩ দিন, ২ দিন, ৩ দিন ... পর পর সকাল ৬টায় */
+      changed = true;
+    });
+    if(changed) saveDB();
+  }catch(e){ console.warn('dues automation', e); }
+}
+setInterval(function(){ try{ if(session && session.role!=='guest' && typeof db!=='undefined' && db) runDuesAutomation(); }catch(e){} }, 60000);
+document.addEventListener('visibilitychange', function(){ try{ if(!document.hidden && session && session.role!=='guest' && db) runDuesAutomation(); }catch(e){} });
+
 function afterLoginNotify(){
   if(session.role==='guest') return;
   runReminders();
+  runDuesAutomation();
   setTimeout(()=>{ const u=unreadCount(); if(u>0) toast(`আপনার ${u}টি নতুন নোটিফিকেশন আছে`, notifIcon('general')); }, 1800);
 }
 
