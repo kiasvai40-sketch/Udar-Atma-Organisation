@@ -735,7 +735,7 @@ function seedData(){
       {title:'বৃক্ষরোপণ ২০২৬', emoji:'<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22v-7M7 15l5-11 5 11H7zM5.5 18.5h13"/></svg>', color:'#178A54'},
       {title:'শীতবস্ত্র বিতরণ', emoji:'<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3h6v3l-1.5 2v13h-3V8L9 6V3zM10 3V1.5M14 3V1.5"/></svg>', color:'#0F0F54'},
       {title:'কুইজ প্রতিযোগিতা', emoji:'<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 01-10 0V4zM7 4H5a2 2 0 00-2 2v1a4 4 0 004 4M17 4h2a2 2 0 012 2v1a4 4 0 01-4 4"/></svg>', color:'#C79A2E'},
-      {title:'রক্তদান কর্মসূচি', emoji:'<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5c0 0 7 7.2 7 12.2A7 7 0 1112 2.5z"/></svg>', color:'#E31C24'},
+      {title:'রক্তদান কর্মসূচি', emoji:'<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5S19 10.2 19 15a7 7 0 11-14 0C5 10.2 12 2.5 12 2.5z"/></svg>', color:'#E31C24'},
     ],
     offers:[
       {id:'m1', label:'১ মাস', price:100, points:10, best:false},
@@ -793,7 +793,7 @@ const SI_PATHS = {
   'megaphone':'M3 11v2a1 1 0 001 1h2l6 4V6L6 10H4a1 1 0 00-1 1zM16 8.5a4.5 4.5 0 010 7M18.5 6a8 8 0 010 12',
   'settings':'M12 15a3 3 0 100-6 3 3 0 000 6zM19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9c.3.6.9 1 1.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z',
   'target':'M12 22a10 10 0 100-20 10 10 0 000 20zM12 18a6 6 0 100-12 6 6 0 000 12zM12 14a2 2 0 100-4 2 2 0 000 4z',
-  'blood':'M12 2.5c0 0 7 7.2 7 12.2A7 7 0 1112 2.5z',
+  'blood':'M12 2.5S19 10.2 19 15a7 7 0 11-14 0C5 10.2 12 2.5 12 2.5z',
   'idcard':'M4 5h16a1 1 0 011 1v12a1 1 0 01-1 1H4a1 1 0 01-1-1V6a1 1 0 011-1zM8 12a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM5.5 17c.7-2 3.3-2.5 5-2.5s4.3.5 5 2.5M14 10h4M14 13h3',
   'bell':'M6 8a6 6 0 0112 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.7 1.7 0 003.4 0',
   'logout':'M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9',
@@ -1260,7 +1260,7 @@ function computeBadges(m){
   if(m.role==='superadmin') badges.push({icon:'<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 8l4 4 6-8 6 8 4-4v11H2V8zM6 19h12"/></svg>',label:'সুপার এডমিন',cls:'gold'});
   else if(m.role==='admin') badges.push({icon:'<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',label:'এডমিন',cls:'navy'});
   if(m.lastDonationDate){
-    badges.push({icon:'<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5c0 0 7 7.2 7 12.2A7 7 0 1112 2.5z"/></svg>',label:'রক্তদাতা',cls:'red'});
+    badges.push({icon:'<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5S19 10.2 19 15a7 7 0 11-14 0C5 10.2 12 2.5 12 2.5z"/></svg>',label:'রক্তদাতা',cls:'red'});
     if(daysBetween(m.lastDonationDate)<=90) badges.push({icon:'<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 9.5V7a2 2 0 014 0v4M10.5 11V6a2 2 0 014 0v7M14.5 13V8a2 2 0 014 0v8a5.5 5.5 0 01-5.5 5.5h-2A5.5 5.5 0 015.5 16v-4a2 2 0 014 0v1"/></svg>',label:'সক্রিয় দাতা',cls:'red'});
   }
   const score = (m.plus||0)-(m.minus||0);
@@ -1411,7 +1411,7 @@ function screenBlood(){
             <a class="action-pill whatsapp" href="https://wa.me/88${m.mobile}" target="_blank" onclick="event.stopPropagation()"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8.5 8.5 0 01-8.5 8.5H6l-4 3V12A8.5 8.5 0 0112.5 3.5 8.5 8.5 0 0121 12z"/></svg> WhatsApp</a>
           </div>
         </div>
-      `;}).join('') || emptyState('<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5c0 0 7 7.2 7 12.2A7 7 0 1112 2.5z"/></svg>','এই গ্রুপে কোনো ডোনার পাওয়া যায়নি')}
+      `;}).join('') || emptyState('<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5S19 10.2 19 15a7 7 0 11-14 0C5 10.2 12 2.5 12 2.5z"/></svg>','এই গ্রুপে কোনো ডোনার পাওয়া যায়নি')}
     ` : `
       ${db.bloodRequests.filter(r=>r.status==='active').map(r=>`
         <div class="card">
@@ -1420,11 +1420,11 @@ function screenBlood(){
             <span class="pill pill-emergency">${r.urgency}</span>
           </div>
           <div style="font-size:12.5px;color:var(--muted);margin-top:8px;line-height:1.9;">
-            <svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5c0 0 7 7.2 7 12.2A7 7 0 1112 2.5z"/></svg> গ্রুপ: ${r.bg} · প্রয়োজন ${r.units} ব্যাগ<br><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 21V5a1 1 0 011-1h16a1 1 0 011 1v16M3 21h18M10 8v8M8 12h4M3 21V11h4v10M17 21V11h4v10"/></svg> ${r.hospital}<br><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5a1 1 0 011-1h14a1 1 0 011 1v16a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 10h16M8 3v4M16 3v4M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg> ${r.date}
+            <svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5S19 10.2 19 15a7 7 0 11-14 0C5 10.2 12 2.5 12 2.5z"/></svg> গ্রুপ: ${r.bg} · প্রয়োজন ${r.units} ব্যাগ<br><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 21V5a1 1 0 011-1h16a1 1 0 011 1v16M3 21h18M10 8v8M8 12h4M3 21V11h4v10M17 21V11h4v10"/></svg> ${r.hospital}<br><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5a1 1 0 011-1h14a1 1 0 011 1v16a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 10h16M8 3v4M16 3v4M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg> ${r.date}
           </div>
           ${r.mobile ? `<a class="btn btn-ghost" style="margin-top:12px;" href="tel:${r.mobile}"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M22 16.9v3a2 2 0 01-2.2 2 19.8 19.8 0 01-8.6-3.1 19.5 19.5 0 01-6-6 19.8 19.8 0 01-3.1-8.7A2 2 0 014.1 2h3a2 2 0 012 1.7c.1 1 .4 2 .7 3a2 2 0 01-.4 2.1L8.1 10a16 16 0 006 6l1.3-1.3a2 2 0 012.1-.4c1 .3 2 .6 3 .7a2 2 0 011.7 2z"/></svg> যোগাযোগ করুন</a>` : `<button class="btn btn-ghost" style="margin-top:12px;" disabled><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M22 16.9v3a2 2 0 01-2.2 2 19.8 19.8 0 01-8.6-3.1 19.5 19.5 0 01-6-6 19.8 19.8 0 01-3.1-8.7A2 2 0 014.1 2h3a2 2 0 012 1.7c.1 1 .4 2 .7 3a2 2 0 01-.4 2.1L8.1 10a16 16 0 006 6l1.3-1.3a2 2 0 012.1-.4c1 .3 2 .6 3 .7a2 2 0 011.7 2z"/></svg> নম্বর নেই</button>`}
         </div>
-      `).join('') || emptyState('<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5c0 0 7 7.2 7 12.2A7 7 0 1112 2.5z"/></svg>','কোনো সক্রিয় অনুরোধ নেই')}
+      `).join('') || emptyState('<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5S19 10.2 19 15a7 7 0 11-14 0C5 10.2 12 2.5 12 2.5z"/></svg>','কোনো সক্রিয় অনুরোধ নেই')}
     `}
   </div>`;
 }
@@ -1437,7 +1437,7 @@ function openDonorDetail(id){
       <div><b style="font-size:15.5px;display:block;">${esc(m.name)}</b><span style="font-size:12px;color:var(--muted);">${m.id} · ${m.position}</span></div>
     </div>
     <div class="card">
-      <div class="list-item"><div class="ico"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5c0 0 7 7.2 7 12.2A7 7 0 1112 2.5z"/></svg></div><div class="meta"><b>ব্লাড গ্রুপ</b><span>${m.bloodGroup}</span></div></div>
+      <div class="list-item"><div class="ico"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5S19 10.2 19 15a7 7 0 11-14 0C5 10.2 12 2.5 12 2.5z"/></svg></div><div class="meta"><b>ব্লাড গ্রুপ</b><span>${m.bloodGroup}</span></div></div>
       <div class="list-item"><div class="ico"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22a10 10 0 100-20 10 10 0 000 20zM12 6v6l4 2"/></svg></div><div class="meta"><b>শেষ রক্তদান</b><span>${donationLabel(m.lastDonationDate)}</span></div></div>
       ${m.lastDonationDate ? `<div class="list-item"><div class="ico"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-5.5-7-11a7 7 0 0114 0c0 5.5-7 11-7 11zM12 13a3 3 0 100-6 3 3 0 000 6z"/></svg></div><div class="meta"><b>স্থান</b><span>${esc(m.lastDonationPlace||'—')}</span></div></div>`:''}
     </div>
@@ -1568,7 +1568,7 @@ function screenProfile(){
     <div class="section-title"><h3><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M12 11a4 4 0 100-8 4 4 0 000 8z"/></svg> ব্যক্তিগত তথ্য</h3></div>
     <div class="card">
       <div class="list-item"><div class="ico"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 2h8a2 2 0 012 2v16a2 2 0 01-2 2H8a2 2 0 01-2-2V4a2 2 0 012-2zM11 19h2"/></svg></div><div class="meta"><b>মোবাইল</b><span>${m.mobile}</span></div></div>
-      <div class="list-item"><div class="ico"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5c0 0 7 7.2 7 12.2A7 7 0 1112 2.5z"/></svg></div><div class="meta"><b>ব্লাড গ্রুপ</b><span>${m.bloodGroup}</span></div></div>
+      <div class="list-item"><div class="ico"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5S19 10.2 19 15a7 7 0 11-14 0C5 10.2 12 2.5 12 2.5z"/></svg></div><div class="meta"><b>ব্লাড গ্রুপ</b><span>${m.bloodGroup}</span></div></div>
       <div class="list-item"><div class="ico"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5a1 1 0 011-1h14a1 1 0 011 1v16a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 10h16M8 3v4M16 3v4M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg></div><div class="meta"><b>যোগদানের তারিখ</b><span>${m.joinDate}</span></div></div>
     </div>
 
@@ -1609,7 +1609,7 @@ function openPublicProfile(id){
     </div>
     ${badgeRowHTML(mm)}
     <div class="card">
-      <div class="list-item"><div class="ico"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5c0 0 7 7.2 7 12.2A7 7 0 1112 2.5z"/></svg></div><div class="meta"><b>ব্লাড গ্রুপ</b><span>${mm.bloodGroup}</span></div></div>
+      <div class="list-item"><div class="ico"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5S19 10.2 19 15a7 7 0 11-14 0C5 10.2 12 2.5 12 2.5z"/></svg></div><div class="meta"><b>ব্লাড গ্রুপ</b><span>${mm.bloodGroup}</span></div></div>
       <div class="list-item"><div class="ico"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5a1 1 0 011-1h14a1 1 0 011 1v16a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 10h16M8 3v4M16 3v4M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg></div><div class="meta"><b>যোগদানের তারিখ</b><span>${mm.joinDate}</span></div></div>
       <div class="list-item"><div class="ico"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22a10 10 0 100-20 10 10 0 000 20zM12 6v6l4 2"/></svg></div><div class="meta"><b>শেষ রক্তদান</b><span>${donationLabel(mm.lastDonationDate)}</span></div></div>
     </div>
@@ -2024,7 +2024,7 @@ function openMemberDetail(id){
     </div>`:''}
     ${['TEMP_BANNED','PERMA_BANNED','SUSPENDED'].includes(m.status) ? `<button class="btn btn-primary" style="margin-bottom:8px;" onclick="unbanMember('${id}')"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 11V8a5 5 0 019.9-1M6 11h12v10H6V11zM12 15v2"/></svg> আনব্যান করুন</button>`:''}
 
-    ${m.status==='ACTIVE' ? `<button class="btn btn-outline" style="margin-bottom:8px;" onclick="openBloodPointForm('${id}')"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5c0 0 7 7.2 7 12.2A7 7 0 1112 2.5z"/></svg> ${isMemberRole?'রক্তদান পয়েন্ট ও তারিখ':'রক্তদানের তারিখ সেট করুন'}</button>`:''}
+    ${m.status==='ACTIVE' ? `<button class="btn btn-outline" style="margin-bottom:8px;" onclick="openBloodPointForm('${id}')"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5S19 10.2 19 15a7 7 0 11-14 0C5 10.2 12 2.5 12 2.5z"/></svg> ${isMemberRole?'রক্তদান পয়েন্ট ও তারিখ':'রক্তদানের তারিখ সেট করুন'}</button>`:''}
     ${isSuper ? `<button class="btn btn-outline" style="margin-bottom:8px;" onclick="openSuperEditMember('${id}')"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.8-3.8a6 6 0 01-7.9 7.9l-6.9 6.9a2.1 2.1 0 01-3-3l6.9-6.9a6 6 0 017.9-7.9l-3.8 3.8z"/></svg> প্রোফাইল তথ্য সম্পাদনা (সুপার এডমিন)</button>`:''}
     ${isSuper && isMemberRole ? `<button class="btn btn-outline" style="margin-bottom:8px;" onclick="openAdminAddPaidMonths('${id}')"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg> সদস্যের চাঁদার মাস যুক্ত করুন</button>`:''}
 
@@ -2232,7 +2232,7 @@ function openBloodPointForm(id){
   const isMemberRole = m.role==='member';
   const today = new Date().toISOString().slice(0,10);
   openModal(`
-    <div class="modal-title"><h3><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5c0 0 7 7.2 7 12.2A7 7 0 1112 2.5z"/></svg> ${isMemberRole?'রক্তদান পয়েন্ট ও তারিখ':'রক্তদানের তারিখ সেট করুন'}</h3><button onclick="closeModal()"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
+    <div class="modal-title"><h3><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5S19 10.2 19 15a7 7 0 11-14 0C5 10.2 12 2.5 12 2.5z"/></svg> ${isMemberRole?'রক্তদান পয়েন্ট ও তারিখ':'রক্তদানের তারিখ সেট করুন'}</h3><button onclick="closeModal()"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
     <div class="reason-warn"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22a10 10 0 100-20 10 10 0 000 20zM12 16v-4M12 8h.01"/></svg> এখানে যে তারিখ দেওয়া হবে সেটাই এই সদস্যের "শেষ রক্তদান" হিসেবে প্রোফাইলে দেখাবে।</div>
     <label class="field"><span>রক্তদানের তারিখ</span><input id="bpDate" type="date" value="${today}"></label>
     <label class="field"><span>স্থান (ঐচ্ছিক)</span><input id="bpPlace" placeholder="যেমন: সদর হাসপাতাল" value="${esc(m.lastDonationPlace||'')}"></label>
@@ -2254,7 +2254,7 @@ function submitBloodPoint(id){
     db.pointHistory[id].unshift({type:'plus', amount:pts, reason:'রক্তদান', date:Date.now(), by:currentMember().name});
   }
   addAudit('রক্তদানের তারিখ নিবন্ধন করেছেন', m.name);
-  saveDB(); closeModal(); render(); toast('রক্তদানের তথ্য হালনাগাদ হয়েছে','<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5c0 0 7 7.2 7 12.2A7 7 0 1112 2.5z"/></svg>');
+  saveDB(); closeModal(); render(); toast('রক্তদানের তথ্য হালনাগাদ হয়েছে','<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5S19 10.2 19 15a7 7 0 11-14 0C5 10.2 12 2.5 12 2.5z"/></svg>');
 }
 function openSuperEditMember(id){
   const m = getMember(id);
@@ -2538,7 +2538,7 @@ function adminBloodNeedsListHTML(){
           <b style="font-size:14px;">${esc(r.patient)}</b>
           <span class="pill ${r.status==='active'?'pill-emergency':'pill-success'}">${r.status==='active'?r.urgency:'সমাধান হয়েছে'}</span>
         </div>
-        <div style="font-size:12.5px;color:var(--muted);margin-top:8px;line-height:1.9;"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5c0 0 7 7.2 7 12.2A7 7 0 1112 2.5z"/></svg> গ্রুপ: ${r.bg} · প্রয়োজন ${r.units} ব্যাগ<br><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 21V5a1 1 0 011-1h16a1 1 0 011 1v16M3 21h18M10 8v8M8 12h4M3 21V11h4v10M17 21V11h4v10"/></svg> ${r.hospital}<br><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5a1 1 0 011-1h14a1 1 0 011 1v16a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 10h16M8 3v4M16 3v4M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg> ${r.date}</div>
+        <div style="font-size:12.5px;color:var(--muted);margin-top:8px;line-height:1.9;"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5S19 10.2 19 15a7 7 0 11-14 0C5 10.2 12 2.5 12 2.5z"/></svg> গ্রুপ: ${r.bg} · প্রয়োজন ${r.units} ব্যাগ<br><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 21V5a1 1 0 011-1h16a1 1 0 011 1v16M3 21h18M10 8v8M8 12h4M3 21V11h4v10M17 21V11h4v10"/></svg> ${r.hospital}<br><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5a1 1 0 011-1h14a1 1 0 011 1v16a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 10h16M8 3v4M16 3v4M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg> ${r.date}</div>
         ${r.completion ? bloodCompletionSummaryHTML(r) : ''}
         ${(session.role==='superadmin' && r.status==='active' && !r.completion) ? `<div class="btn-row" style="margin-top:12px;"><button class="btn btn-sm btn-primary" onclick="openBloodCompletion('${r.id}')"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 13l5 5L20 7"/></svg> সম্পন্ন করুন</button></div>` : ''}
         <div class="btn-row" style="margin-top:12px;">
@@ -2546,7 +2546,7 @@ function adminBloodNeedsListHTML(){
           <button class="btn btn-sm btn-danger-outline" onclick="deleteBloodNeedConfirm('${r.id}')"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14zM10 11v6M14 11v6"/></svg> মুছুন</button>
         </div>
       </div>
-    `).join('') || emptyState('<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5c0 0 7 7.2 7 12.2A7 7 0 1112 2.5z"/></svg>','কোনো তথ্য নেই')}
+    `).join('') || emptyState('<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5S19 10.2 19 15a7 7 0 11-14 0C5 10.2 12 2.5 12 2.5z"/></svg>','কোনো তথ্য নেই')}
   `;
 }
 function openCreateBloodNeed(){
@@ -2576,7 +2576,7 @@ function submitBloodNeed(){
   db.members.filter(x=>x.status==='ACTIVE' && x.role==='member' && x.bloodGroup===bg).forEach(x=>{
     notifyMember(x.id, 'রক্তের প্রয়োজন', `${urgency} · ${bg} গ্রুপ — ${patient}`, 'blood');
   });
-  saveDB(); closeModal(); render(); toast('যোগ করা হয়েছে','<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5c0 0 7 7.2 7 12.2A7 7 0 1112 2.5z"/></svg>');
+  saveDB(); closeModal(); render(); toast('যোগ করা হয়েছে','<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5S19 10.2 19 15a7 7 0 11-14 0C5 10.2 12 2.5 12 2.5z"/></svg>');
 }
 function openEditBloodNeed(id){
   const r = db.bloodRequests.find(x=>x.id===id);
@@ -2672,7 +2672,7 @@ function openBloodCompletion(id){
     <div id="bcRows">${bloodCompletionRowHTML(false)}</div>
     <button type="button" id="bcAddBtn" class="btn btn-outline btn-sm" style="margin-bottom:16px;" onclick="addBloodCompletionRow()">+ আরেকজন রক্তদাতা যোগ করুন</button>
     <div class="card" style="margin-bottom:14px;">
-      <b style="font-size:13px;display:block;margin-bottom:10px;"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5c0 0 7 7.2 7 12.2A7 7 0 1112 2.5z"/></svg> সংগঠনের বাইরের রক্তদাতা</b>
+      <b style="font-size:13px;display:block;margin-bottom:10px;"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5S19 10.2 19 15a7 7 0 11-14 0C5 10.2 12 2.5 12 2.5z"/></svg> সংগঠনের বাইরের রক্তদাতা</b>
       <label class="field"><span>রক্তদাতার নাম</span><input id="bcOutName" placeholder="রক্তদাতার নাম"></label>
       <label class="field" style="margin-bottom:0;"><span>কত ব্যাগ রক্ত দিয়েছেন</span><input id="bcOutBags" type="text" inputmode="numeric" placeholder="যেমন: ১"></label>
     </div>
@@ -2719,7 +2719,7 @@ function submitBloodCompletion(id){
   addAudit('রক্তদানের অনুরোধ সম্পন্ন করেছেন', r.patient);
   notifyBloodGroup(r.bg,'রক্তের প্রয়োজন পূরণ হয়েছে',`${r.patient} — আর রক্তের প্রয়োজন নেই`);
   notifyAdmins('রক্তের অনুরোধ সম্পন্ন', `${r.patient} (${r.bg}) — মোট ${totalBags} ব্যাগ`, 'blood');
-  saveDB(); closeModal(); render(); toast('রক্তদানের অনুরোধ সম্পন্ন হয়েছে','<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5c0 0 7 7.2 7 12.2A7 7 0 1112 2.5z"/></svg>');
+  saveDB(); closeModal(); render(); toast('রক্তদানের অনুরোধ সম্পন্ন হয়েছে','<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5S19 10.2 19 15a7 7 0 11-14 0C5 10.2 12 2.5 12 2.5z"/></svg>');
 }
 
 /* ---------------- ADMIN: MORE ---------------- */
@@ -2899,7 +2899,7 @@ function notifIcon(type){
     notice: '<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11v2a1 1 0 001 1h2l6 4V6L6 10H4a1 1 0 00-1 1zM16 8.5a4.5 4.5 0 010 7M18.5 6a8 8 0 010 12"/></svg>',
     payment: '<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7zM3 10h18M7 15h4"/></svg>',
     registration: '<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM22 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>',
-    blood: '<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5c0 0 7 7.2 7 12.2A7 7 0 1112 2.5z"/></svg>',
+    blood: '<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5S19 10.2 19 15a7 7 0 11-14 0C5 10.2 12 2.5 12 2.5z"/></svg>',
     ban: '<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22a10 10 0 100-20 10 10 0 000 20zM4.9 4.9l14.2 14.2"/></svg>',
     event: '<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22a10 10 0 100-20 10 10 0 000 20zM12 18a6 6 0 100-12 6 6 0 000 12zM12 14a2 2 0 100-4 2 2 0 000 4z"/></svg>',
     report: '<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2M9 12h6M9 16h4"/></svg>',
@@ -3208,7 +3208,7 @@ if('serviceWorker' in navigator){
    '<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10.5L12 4l8 6.5V20a1 1 0 01-1 1h-5v-6H10v6H5a1 1 0 01-1-1V10.5z"/></svg>':'M4 10.5L12 4l8 6.5V20a1 1 0 01-1 1h-5v-6H10v6H5a1 1 0 01-1-1V10.5z','<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2M9 12h6M9 16h4"/></svg>':'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2M9 12h6M9 16h4',
    '<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 11V8a5 5 0 0110 0v3M6 11h12v10H6V11zM12 15v2"/></svg>':'M7 11V8a5 5 0 0110 0v3M6 11h12v10H6V11zM12 15v2','<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M12 20V4M20 20v-6M4 20h16"/></svg>':'M4 20V10M12 20V4M20 20v-6M4 20h16','<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM22 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>':'M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM22 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75',
    '<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7zM3 10h18M7 15h4"/></svg>':'M3 7a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7zM3 10h18M7 15h4','<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11v2a1 1 0 001 1h2l6 4V6L6 10H4a1 1 0 00-1 1zM16 8.5a4.5 4.5 0 010 7M18.5 6a8 8 0 010 12"/></svg>':'M3 11v2a1 1 0 001 1h2l6 4V6L6 10H4a1 1 0 00-1 1zM16 8.5a4.5 4.5 0 010 7M18.5 6a8 8 0 010 12','<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15a3 3 0 100-6 3 3 0 000 6zM19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9c.3.6.9 1 1.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/></svg>':'M12 15a3 3 0 100-6 3 3 0 000 6zM19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9c.3.6.9 1 1.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z',
-   '<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22a10 10 0 100-20 10 10 0 000 20zM12 18a6 6 0 100-12 6 6 0 000 12zM12 14a2 2 0 100-4 2 2 0 000 4z"/></svg>':'M12 22a10 10 0 100-20 10 10 0 000 20zM12 18a6 6 0 100-12 6 6 0 000 12zM12 14a2 2 0 100-4 2 2 0 000 4z','<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5c0 0 7 7.2 7 12.2A7 7 0 1112 2.5z"/></svg>':'M12 2.5c0 0 7 7.2 7 12.2A7 7 0 1112 2.5z',
+   '<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22a10 10 0 100-20 10 10 0 000 20zM12 18a6 6 0 100-12 6 6 0 000 12zM12 14a2 2 0 100-4 2 2 0 000 4z"/></svg>':'M12 22a10 10 0 100-20 10 10 0 000 20zM12 18a6 6 0 100-12 6 6 0 000 12zM12 14a2 2 0 100-4 2 2 0 000 4z','<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5S19 10.2 19 15a7 7 0 11-14 0C5 10.2 12 2.5 12 2.5z"/></svg>':'M12 2.5S19 10.2 19 15a7 7 0 11-14 0C5 10.2 12 2.5 12 2.5z',
    '<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16a1 1 0 011 1v12a1 1 0 01-1 1H4a1 1 0 01-1-1V6a1 1 0 011-1zM8 12a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM5.5 17c.7-2 3.3-2.5 5-2.5s4.3.5 5 2.5M14 10h4M14 13h3"/></svg>':'M4 5h16a1 1 0 011 1v12a1 1 0 01-1 1H4a1 1 0 01-1-1V6a1 1 0 011-1zM8 12a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM5.5 17c.7-2 3.3-2.5 5-2.5s4.3.5 5 2.5M14 10h4M14 13h3','<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8a6 6 0 0112 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.7 1.7 0 003.4 0"/></svg>':'M6 8a6 6 0 0112 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.7 1.7 0 003.4 0',
    '<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>':'M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9','<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>':'M19 12H5M12 19l-7-7 7-7'};
   function ico(d){return '<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="'+d+'"/></svg>';}
