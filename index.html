@@ -566,6 +566,8 @@ function startRealtimeSync(){
     const incoming = data.state;
     if((incoming.updatedAt||0) > (db.updatedAt||0)){
       db = incoming;
+      if(!db.notifications) db.notifications = [];
+      if(!db.reports) db.reports = [];
       localStorage.setItem(LS_KEY, JSON.stringify(db));
       if(!document.getElementById('modalRoot')) render(); // don't wipe an open form
     }
@@ -600,6 +602,7 @@ function seedData(){
       secretaryName:'এডমিন ১', secretaryMobile:'01800000001'
     },
     featureFlags:{messaging:true, blood:true, finance:true, events:true, registration:true, gallery:true},
+    notifications:[],
     members:[
       {id:'UA-2026-001', name:'সুপার এডমিন', mobile:'01700000001', pin:'111111', role:'superadmin', status:'ACTIVE', position:'সুপার এডমিন', bloodGroup:'B+', joinDate:'01 জান, ২০২৪', plus:0, minus:0, avatarSeed:'সু', contribution:'PAID', nextDue:'০৫ অক্টোবর, ২০২৬', lastDonationDate:'2026-03-10', lastDonationPlace:'সদর হাসপাতাল'},
       {id:'UA-2026-002', name:'এডমিন ১', mobile:'01800000001', pin:'222222', role:'admin', permissions:['member.approve','payment.verify','point.add','notice.publish'], status:'ACTIVE', position:'এডমিন', bloodGroup:'A+', joinDate:'03 জান, ২০২৪', plus:0, minus:0, avatarSeed:'এ১', contribution:'PAID', nextDue:'১২ অক্টোবর, ২০২৬', lastDonationDate:'2026-08-01', lastDonationPlace:'কমিউনিটি ব্লাড ব্যাংক'},
@@ -2706,6 +2709,7 @@ window.onload = async function(){
     saveDBToCloud();
   }
   if(!db.reports) db.reports = [];
+  if(!db.notifications) db.notifications = [];
   try{
     let rid = null;
     if(location.hash && location.hash.indexOf('report=')>-1){
