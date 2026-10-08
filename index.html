@@ -1464,7 +1464,7 @@ function screenBlood(){
           </div>
           ${r.mobile ? `<a class="btn btn-ghost" style="margin-top:12px;" href="tel:${r.mobile}"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M22 16.9v3a2 2 0 01-2.2 2 19.8 19.8 0 01-8.6-3.1 19.5 19.5 0 01-6-6 19.8 19.8 0 01-3.1-8.7A2 2 0 014.1 2h3a2 2 0 012 1.7c.1 1 .4 2 .7 3a2 2 0 01-.4 2.1L8.1 10a16 16 0 006 6l1.3-1.3a2 2 0 012.1-.4c1 .3 2 .6 3 .7a2 2 0 011.7 2z"/></svg> যোগাযোগ করুন</a>` : `<button class="btn btn-ghost" style="margin-top:12px;" disabled><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M22 16.9v3a2 2 0 01-2.2 2 19.8 19.8 0 01-8.6-3.1 19.5 19.5 0 01-6-6 19.8 19.8 0 01-3.1-8.7A2 2 0 014.1 2h3a2 2 0 012 1.7c.1 1 .4 2 .7 3a2 2 0 01-.4 2.1L8.1 10a16 16 0 006 6l1.3-1.3a2 2 0 012.1-.4c1 .3 2 .6 3 .7a2 2 0 011.7 2z"/></svg> নম্বর নেই</button>`}
         </div>
-      `).join('') || emptyState('<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5S19 10.2 19 15a7 7 0 11-14 0C5 10.2 12 2.5 12 2.5z"/></svg>','কোনো সক্রিয় অনুরোধ নেই')}
+      `).join('') || emptyState('<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5S19 10.2 19 15a7 7 0 11-14 0C5 10.2 12 2.5 12 2.5z"/></svg>','কোনো সক্রিয় অনুরোধ নেই')}${completedBloodSectionHTML()}
     `}
   </div>`;
 }
@@ -1484,7 +1484,7 @@ function screenGuestBlood(){
           </div>
           ${r.mobile ? `<a class="btn btn-ghost" style="margin-top:12px;" href="tel:${r.mobile}"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M22 16.9v3a2 2 0 01-2.2 2 19.8 19.8 0 01-8.6-3.1 19.5 19.5 0 01-6-6 19.8 19.8 0 01-3.1-8.7A2 2 0 014.1 2h3a2 2 0 012 1.7c.1 1 .4 2 .7 3a2 2 0 01-.4 2.1L8.1 10a16 16 0 006 6l1.3-1.3a2 2 0 012.1-.4c1 .3 2 .6 3 .7a2 2 0 011.7 2z"/></svg> যোগাযোগ করুন</a>` : `<button class="btn btn-ghost" style="margin-top:12px;" disabled><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M22 16.9v3a2 2 0 01-2.2 2 19.8 19.8 0 01-8.6-3.1 19.5 19.5 0 01-6-6 19.8 19.8 0 01-3.1-8.7A2 2 0 014.1 2h3a2 2 0 012 1.7c.1 1 .4 2 .7 3a2 2 0 01-.4 2.1L8.1 10a16 16 0 006 6l1.3-1.3a2 2 0 012.1-.4c1 .3 2 .6 3 .7a2 2 0 011.7 2z"/></svg> নম্বর নেই</button>`}
         </div>
-      `).join('') || emptyState('<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5S19 10.2 19 15a7 7 0 11-14 0C5 10.2 12 2.5 12 2.5z"/></svg>','কোনো সক্রিয় অনুরোধ নেই')}
+      `).join('') || emptyState('<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5S19 10.2 19 15a7 7 0 11-14 0C5 10.2 12 2.5 12 2.5z"/></svg>','কোনো সক্রিয় অনুরোধ নেই')}${completedBloodSectionHTML()}
   </div>`;
 }
 
@@ -1504,6 +1504,29 @@ function openDonorDetail(id){
     <button class="btn btn-primary" style="margin-top:12px;" onclick="closeModal(); openPublicProfile('${m.id}')"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M12 11a4 4 0 100-8 4 4 0 000 8z"/></svg> প্রোফাইল দেখুন</button>
   `);
 }
+/* ---- সুপার অ্যাডমিন সম্পন্ন করা রক্তের অনুরোধ: তালিকার নিচে সবসময় দেখায় ---- */
+function completedBloodSectionHTML(){
+  const done = (db.bloodRequests||[]).filter(r=>r.completion);
+  if(!done.length) return '';
+  const check = '<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 13l5 5L20 7"/></svg>';
+  const names = session.role!=='guest';   /* দাতার নাম শুধু লগইন করা ব্যবহারকারীরা দেখেন */
+  return `<div style="margin:18px 0 10px;font-size:13px;font-weight:700;color:var(--muted);">${check} সম্পন্ন হওয়া অনুরোধ</div>` + done.map(r=>{
+    const c = r.completion, rows = [];
+    if(names){
+      (c.donors||[]).forEach(d=>rows.push(`<div>• ${esc(d.name)} — <b>${bnNum(d.bags)} ব্যাগ</b></div>`));
+      (c.outsideDonors||[]).forEach(d=>rows.push(`<div>• ${esc(d.name)} <span style="opacity:.75;">(সংগঠনের বাইরের)</span> — <b>${bnNum(d.bags)} ব্যাগ</b></div>`));
+    }
+    return `<div class="card" style="opacity:.95;">
+      <div style="display:flex;justify-content:space-between;">
+        <b style="font-size:14px;">${esc(r.patient)}</b>
+        <span class="pill pill-success">সম্পন্ন হয়েছে</span>
+      </div>
+      <div style="font-size:12.5px;color:var(--muted);margin-top:8px;line-height:1.9;">গ্রুপ: ${r.bg} · ${esc(r.hospital||'—')} · ${r.date}</div>
+      <div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(128,128,128,.25);font-size:12.5px;color:var(--muted);line-height:1.9;"><b>মোট ${bnNum(c.totalBags||0)} ব্যাগ রক্ত পাওয়া গেছে</b>${rows.join('')}</div>
+    </div>`;
+  }).join('');
+}
+
 function localISODate(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function openBloodRequestForm(){
   openModal(`
@@ -2657,7 +2680,7 @@ function deleteActivity(id){
 function adminBloodNeedsListHTML(){
   return `
     <button class="btn btn-red" style="margin-bottom:14px;" onclick="openCreateBloodNeed()"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg> নতুন রক্তের প্রয়োজন যোগ করুন</button>
-    ${db.bloodRequests.map(r=>`
+    ${db.bloodRequests.slice().sort((a,b)=>(a.completion?1:0)-(b.completion?1:0)).map(r=>`
       <div class="card">
         <div style="display:flex;justify-content:space-between;">
           <b style="font-size:14px;">${esc(r.patient)}</b>
