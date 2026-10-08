@@ -1504,6 +1504,7 @@ function openDonorDetail(id){
     <button class="btn btn-primary" style="margin-top:12px;" onclick="closeModal(); openPublicProfile('${m.id}')"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M12 11a4 4 0 100-8 4 4 0 000 8z"/></svg> প্রোফাইল দেখুন</button>
   `);
 }
+function localISODate(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function openBloodRequestForm(){
   openModal(`
     <div class="modal-title"><h3><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22a10 10 0 100-20 10 10 0 000 20zM12 8v5M12 16h.01"/></svg> রক্তের অনুরোধ</h3><button onclick="closeModal()"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
@@ -1513,6 +1514,7 @@ function openBloodRequestForm(){
       <select id="bqGroup"><option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>O+</option><option>O-</option><option>AB+</option><option>AB-</option></select>
     </label>
     <label class="field"><span>হাসপাতাল</span><input id="bqHosp" placeholder="হাসপাতালের নাম"></label>
+    <label class="field"><span>কোন দিন রক্ত লাগবে</span><input id="bqDate" type="date" value="${localISODate(new Date())}" min="${localISODate(new Date())}"></label>
     <label class="field"><span>প্রয়োজনীয় ব্যাগ সংখ্যা</span><input id="bqUnits" type="number" value="1" min="1"></label>
     <button class="btn btn-red" onclick="submitBloodRequest()">অনুরোধ জমা দিন</button>
   `);
@@ -1522,9 +1524,15 @@ function submitBloodRequest(){
   const mobile=document.getElementById('bqMobile').value.trim().replace(/[\s-]/g,'');
   if(!name){ toast('রোগীর নাম দিন','<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M10.3 3.9L1.8 18.1A2 2 0 003.5 21h17a2 2 0 001.7-2.9L13.7 3.9a2 2 0 00-3.4 0zM12 9v4M12 17h.01"/></svg>'); return; }
   if(!mobile || mobile.length<10){ toast('সঠিক মোবাইল নম্বর দিন','<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M10.3 3.9L1.8 18.1A2 2 0 003.5 21h17a2 2 0 001.7-2.9L13.7 3.9a2 2 0 00-3.4 0zM12 9v4M12 17h.01"/></svg>'); return; }
+  const needRaw = (document.getElementById('bqDate')||{}).value || '';
+  const dm = needRaw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if(!dm){ toast('কোন দিন রক্ত লাগবে তা নির্বাচন করুন','<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M10.3 3.9L1.8 18.1A2 2 0 003.5 21h17a2 2 0 001.7-2.9L13.7 3.9a2 2 0 00-3.4 0zM12 9v4M12 17h.01"/></svg>'); return; }
+  const needDate = new Date(Number(dm[1]), Number(dm[2])-1, Number(dm[3]));
+  const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+  if(needDate < todayStart){ toast('অতীতের তারিখ দেওয়া যাবে না','<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M10.3 3.9L1.8 18.1A2 2 0 003.5 21h17a2 2 0 001.7-2.9L13.7 3.9a2 2 0 00-3.4 0zM12 9v4M12 17h.01"/></svg>'); return; }
   const seq = db.nextBloodReqSeq++;
   const bg = document.getElementById('bqGroup').value;
-  db.bloodRequests.unshift({id:`UA-BR-2026-${String(seq).padStart(3,'0')}`, patient:name, mobile, bg, hospital:document.getElementById('bqHosp').value||'—', units:document.getElementById('bqUnits').value, urgency:'জরুরি', date:'আজ', status:'active'});
+  db.bloodRequests.unshift({id:`UA-BR-2026-${String(seq).padStart(3,'0')}`, patient:name, mobile, bg, hospital:document.getElementById('bqHosp').value||'—', units:document.getElementById('bqUnits').value, urgency:'জরুরি', date:bnDateStr(needDate), needDate:needRaw, status:'active'});
   notifyAdmins('রক্তের প্রয়োজন', `${bg} — ${name} (${document.getElementById('bqHosp').value||'—'})`, 'blood');
   db.members.filter(x=>x.status==='ACTIVE' && x.role==='member' && x.bloodGroup===bg).forEach(x=>{
     notifyMember(x.id, 'জরুরি রক্তের প্রয়োজন', `${bg} গ্রুপের রক্ত প্রয়োজন — ${name}`, 'blood');
