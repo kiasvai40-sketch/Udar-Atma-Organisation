@@ -1506,12 +1506,14 @@ function openDonorDetail(id){
 }
 /* ---- সুপার অ্যাডমিন সম্পন্ন করা রক্তের অনুরোধ: তালিকার নিচে সবসময় দেখায় ---- */
 function completedBloodSectionHTML(){
-  const done = (db.bloodRequests||[]).filter(r=>r.completion);
+  /* ইতিহাস = সম্পন্ন করা (completion সহ) এবং আগে "সমাধান হয়েছে" হিসেবে বন্ধ করা সব অনুরোধ */
+  const done = (db.bloodRequests||[]).filter(r=>r.completion || r.status==='closed')
+    .sort((a,b)=>((b.completion&&b.completion.completedAt)||0)-((a.completion&&a.completion.completedAt)||0));
   if(!done.length) return '';
   const check = '<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 13l5 5L20 7"/></svg>';
   const names = session.role!=='guest';   /* দাতার নাম শুধু লগইন করা ব্যবহারকারীরা দেখেন */
   return `<div style="margin:18px 0 10px;font-size:13px;font-weight:700;color:var(--muted);">${check} সম্পন্ন হওয়া অনুরোধ</div>` + done.map(r=>{
-    const c = r.completion, rows = [];
+    const c = r.completion || {}, rows = [];
     if(names){
       (c.donors||[]).forEach(d=>rows.push(`<div>• ${esc(d.name)} — <b>${bnNum(d.bags)} ব্যাগ</b></div>`));
       (c.outsideDonors||[]).forEach(d=>rows.push(`<div>• ${esc(d.name)} <span style="opacity:.75;">(সংগঠনের বাইরের)</span> — <b>${bnNum(d.bags)} ব্যাগ</b></div>`));
@@ -1522,7 +1524,7 @@ function completedBloodSectionHTML(){
         <span class="pill pill-success">সম্পন্ন হয়েছে</span>
       </div>
       <div style="font-size:12.5px;color:var(--muted);margin-top:8px;line-height:1.9;">গ্রুপ: ${r.bg} · ${esc(r.hospital||'—')} · ${r.date}</div>
-      <div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(128,128,128,.25);font-size:12.5px;color:var(--muted);line-height:1.9;"><b>মোট ${bnNum(c.totalBags||0)} ব্যাগ রক্ত পাওয়া গেছে</b>${rows.join('')}</div>
+      ${r.completion ? `<div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(128,128,128,.25);font-size:12.5px;color:var(--muted);line-height:1.9;"><b>মোট ${bnNum(c.totalBags||0)} ব্যাগ রক্ত পাওয়া গেছে</b>${rows.join('')}</div>` : ''}
     </div>`;
   }).join('');
 }
