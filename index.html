@@ -2691,7 +2691,7 @@ function adminBloodNeedsListHTML(){
         ${(session.role==='superadmin' && r.status==='active' && !r.completion) ? `<div class="btn-row" style="margin-top:12px;"><button class="btn btn-sm btn-primary" onclick="openBloodCompletion('${r.id}')"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 13l5 5L20 7"/></svg> সম্পন্ন করুন</button></div>` : ''}
         <div class="btn-row" style="margin-top:12px;">
           <button class="btn btn-sm btn-ghost" onclick="openEditBloodNeed('${r.id}')"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> সম্পাদনা</button>
-          <button class="btn btn-sm btn-danger-outline" onclick="deleteBloodNeedConfirm('${r.id}')"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14zM10 11v6M14 11v6"/></svg> মুছুন</button>
+          ${r.completion ? '' : `<button class="btn btn-sm btn-danger-outline" onclick="deleteBloodNeedConfirm('${r.id}')"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14zM10 11v6M14 11v6"/></svg> মুছুন</button>`}
         </div>
       </div>
     `).join('') || emptyState('<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5S19 10.2 19 15a7 7 0 11-14 0C5 10.2 12 2.5 12 2.5z"/></svg>','কোনো তথ্য নেই')}
@@ -2765,6 +2765,7 @@ function deleteBloodNeedConfirm(id){
 }
 function deleteBloodNeed(id){
   const r = db.bloodRequests.find(x=>x.id===id);
+  if(r && r.completion){ closeModal(); return; }   /* সম্পন্ন হওয়া অনুরোধ ইতিহাস হিসেবে স্থায়ীভাবে সংরক্ষিত থাকে */
   db.bloodRequests = db.bloodRequests.filter(x=>x.id!==id);
   addAudit('রক্তের প্রয়োজন মুছে ফেলেছেন', r?r.patient:'');
   if(r && r.status==='active') notifyBloodGroup(r.bg,'রক্তের অনুরোধ বাতিল',`${r.patient} — অনুরোধটি বাতিল করা হয়েছে`);
