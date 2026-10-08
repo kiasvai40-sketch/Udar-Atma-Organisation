@@ -1155,12 +1155,12 @@ function renderTopbar(){
   </div>`;
 }
 function screenTitle(){
-  if(session.role==='guest') return 'স্বাগতম';
+  if(session.role==='guest') return session.screen==='guestblood' ? 'রক্তের অনুরোধ' : 'স্বাগতম';
   if(isAdminRole()) return adminTabTitles[session.adminTab||'dashboard'];
   return memberTabTitles[session.tab||'home'];
 }
 function screenSub(){
-  if(session.role==='guest') return 'সংগঠনের কার্যক্রম সম্পর্কে জানুন';
+  if(session.role==='guest') return session.screen==='guestblood' ? 'রক্তের প্রয়োজনে অনুরোধ করুন বা যোগাযোগ করুন' : 'সংগঠনের কার্যক্রম সম্পর্কে জানুন';
   const m = currentMember();
   if(isAdminRole()) return `স্বাগতম, ${m?m.name:''}`;
   return `${m?m.id:''} · ${statusLabel(m?m.status:'')}`;
@@ -1177,8 +1177,9 @@ function goToAdminTab(tab){ session.screen='app'; session.adminTab=tab; render()
 function renderBottomNav(){
   if(session.role==='guest'){
     return `<div class="bottomnav">
-      <button class="navbtn ${session.screen!=='reports'?'active':''}" onclick="goHome()"><span class="ic"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10.5L12 4l8 6.5V20a1 1 0 01-1 1h-5v-6H10v6H5a1 1 0 01-1-1V10.5z"/></svg></span>হোম</button>
+      <button class="navbtn ${session.screen!=='reports'&&session.screen!=='guestblood'?'active':''}" onclick="goHome()"><span class="ic"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10.5L12 4l8 6.5V20a1 1 0 01-1 1h-5v-6H10v6H5a1 1 0 01-1-1V10.5z"/></svg></span>হোম</button>
       <button class="navbtn ${session.screen==='reports'?'active':''}" onclick="openReports()"><span class="ic"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2M9 12h6M9 16h4"/></svg></span>প্রতিবেদন</button>
+      <button class="navbtn ${session.screen==='guestblood'?'active':''}" onclick="openGuestBlood()"><span class="ic"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5S19 10.2 19 15a7 7 0 11-14 0C5 10.2 12 2.5 12 2.5z"/></svg></span>রক্তের অনুরোধ</button>
       <button class="navbtn" onclick="goToLogin()"><span class="ic"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 11V8a5 5 0 0110 0v3M6 11h12v10H6V11zM12 15v2"/></svg></span>লগইন</button>
     </div>`;
   }
@@ -1198,7 +1199,7 @@ function renderBottomNav(){
 
 /* ---------------- SCREEN DISPATCH ---------------- */
 function renderScreen(){
-  if(session.role==='guest') return screenGuestHome();
+  if(session.role==='guest') return session.screen==='guestblood' ? screenGuestBlood() : screenGuestHome();
   if(isAdminRole()){
     return {dashboard:screenAdminDashboard, members:screenAdminMembers, payments:screenAdminPayments, notices:screenAdminNotices, more:screenAdminMore}[session.adminTab||'dashboard']();
   }
@@ -1467,6 +1468,26 @@ function screenBlood(){
     `}
   </div>`;
 }
+/* ---- অতিথির জন্য রক্তের অনুরোধ (দেখা, যোগাযোগ, নতুন অনুরোধ) ---- */
+function openGuestBlood(){ session.screen='guestblood'; render(); window.scrollTo(0,0); }
+function screenGuestBlood(){
+  return `<div class="screen">
+    <button class="btn btn-red" style="margin-bottom:14px;" onclick="openBloodRequestForm()"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22a10 10 0 100-20 10 10 0 000 20zM12 8v5M12 16h.01"/></svg> রক্তের জন্য অনুরোধ করুন</button>
+      ${db.bloodRequests.filter(r=>r.status==='active').map(r=>`
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;">
+            <b style="font-size:14px;">${esc(r.patient)}</b>
+            <span class="pill pill-emergency">${r.urgency}</span>
+          </div>
+          <div style="font-size:12.5px;color:var(--muted);margin-top:8px;line-height:1.9;">
+            <svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5S19 10.2 19 15a7 7 0 11-14 0C5 10.2 12 2.5 12 2.5z"/></svg> গ্রুপ: ${r.bg} · প্রয়োজন ${r.units} ব্যাগ<br><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 21V5a1 1 0 011-1h16a1 1 0 011 1v16M3 21h18M10 8v8M8 12h4M3 21V11h4v10M17 21V11h4v10"/></svg> ${r.hospital}<br><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5a1 1 0 011-1h14a1 1 0 011 1v16a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 10h16M8 3v4M16 3v4M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg> ${r.date}
+          </div>
+          ${r.mobile ? `<a class="btn btn-ghost" style="margin-top:12px;" href="tel:${r.mobile}"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M22 16.9v3a2 2 0 01-2.2 2 19.8 19.8 0 01-8.6-3.1 19.5 19.5 0 01-6-6 19.8 19.8 0 01-3.1-8.7A2 2 0 014.1 2h3a2 2 0 012 1.7c.1 1 .4 2 .7 3a2 2 0 01-.4 2.1L8.1 10a16 16 0 006 6l1.3-1.3a2 2 0 012.1-.4c1 .3 2 .6 3 .7a2 2 0 011.7 2z"/></svg> যোগাযোগ করুন</a>` : `<button class="btn btn-ghost" style="margin-top:12px;" disabled><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M22 16.9v3a2 2 0 01-2.2 2 19.8 19.8 0 01-8.6-3.1 19.5 19.5 0 01-6-6 19.8 19.8 0 01-3.1-8.7A2 2 0 014.1 2h3a2 2 0 012 1.7c.1 1 .4 2 .7 3a2 2 0 01-.4 2.1L8.1 10a16 16 0 006 6l1.3-1.3a2 2 0 012.1-.4c1 .3 2 .6 3 .7a2 2 0 011.7 2z"/></svg> নম্বর নেই</button>`}
+        </div>
+      `).join('') || emptyState('<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5S19 10.2 19 15a7 7 0 11-14 0C5 10.2 12 2.5 12 2.5z"/></svg>','কোনো সক্রিয় অনুরোধ নেই')}
+  </div>`;
+}
+
 function openDonorDetail(id){
   const m = getMember(id);
   openModal(`
