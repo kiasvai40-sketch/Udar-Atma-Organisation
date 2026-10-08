@@ -1,14 +1,14 @@
 {
-  "name": "উদার আত্মা সংগঠন",
-  "short_name": "উদার আত্মা",
-  "description": "উদার আত্মা সংগঠন — স্বেচ্ছাসেবী সামাজিক ও রক্তদান সংগঠন",
+  "name": "UDAR ATMA ORGANISATION",
+  "short_name": "UDAR ATMA",
+  "description": "Udar Atma Organisation — voluntary social & blood donation organization",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0F0F54",
   "theme_color": "#0F0F54",
-  "lang": "bn",
+  "lang": "en",
   "dir": "ltr",
   "icons": [
     {
