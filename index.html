@@ -544,6 +544,8 @@ try{
 const FS_COLLECTION = 'udaratma';
 const FS_DOC = 'main';
 let cloudReady = false;
+let cloudLoadFailed = false; /* ক্লাউড থেকে ডাটা আনতে ব্যর্থ হলে true (অফলাইন/নেটওয়ার্ক সমস্যা) */
+let dbIsUntrusted = false;
 
 /* ---------------- FCM (PUSH NOTIFICATION) ---------------- */
 const VAPID_KEY = "BECjQ7nU9uLHxRZGbkvZ8tCdGIyAG45UcndLMBPGy1lXTg9XnTf0_FLO1ejDaUbGxxvmGtcxieQEzDlvg0Ov0Ds";
@@ -649,7 +651,7 @@ async function loadDBFromCloud(){
   try{
     const snap = await fsDB.collection(FS_COLLECTION).doc(FS_DOC).get();
     if(snap.exists && snap.data().state){ cloudReady = true; return snap.data().state; }
-  }catch(e){ console.warn('Cloud load failed, using local/demo data', e); }
+  }catch(e){ cloudLoadFailed = true; console.warn('Cloud load failed, using local/demo data', e); }
   cloudReady = true;
   return null;
 }
@@ -671,6 +673,7 @@ function startRealtimeSync(){
       if(!db.notifications) db.notifications = [];
       if(!db.reports) db.reports = [];
       localStorage.setItem(LS_KEY, JSON.stringify(db));
+      tryRestorePendingSession();
       if(session.role!=='guest'){ myNotifications().filter(n=>!isReadByMe(n)&&!prevIds.has(n.id)).slice(0,3).forEach((n,i)=>setTimeout(()=>{ if(document.hidden) sysNotify(n); else toast((n.title+(n.body?': '+n.body:'')).slice(0,90), notifIcon(n.type)); }, i*900)); }
       if(!document.getElementById('modalRoot')) render(); // don't wipe an open form
     }
@@ -883,29 +886,64 @@ function loadSession(){
 function goToLogin(){ session.screen='auth'; session.authView='login'; render(); }
 function backToApp(){ session.screen='app'; render(); }
 function saveSession(){
-  let str; try{ str = JSON.stringify(session); }catch(e){ return; }
+  let str;
+  try{
+    if(session.role!=='guest' && session.memberId && !session.authAt) session.authAt = Date.now();
+    str = JSON.stringify(session);
+  }catch(e){ return; }
   const loggedIn = session.role!=='guest' && !!session.memberId;
   try{ sessionStorage.setItem(SESSION_KEY, str); }catch(e){}
-  try{
-    if(loggedIn) localStorage.setItem(SESSION_KEY, str);
-    else localStorage.removeItem(SESSION_KEY); /* Logout হলে স্থায়ী সেশন মুছে যায় */
-  }catch(e){}
+  /* গুরুত্বপূর্ণ: লগইন সেশন শুধু সদস্য নিজে Logout করলেই (clearPersistedSession) মুছবে — অতিথি/খালি ট্যাবের রেন্ডারে কখনোই নয় */
+  if(loggedIn){ try{ localStorage.setItem(SESSION_KEY, str); }catch(e){} }
 }
-/* পুনরায় অ্যাপ খোলার সময় সংরক্ষিত সেশন এখনো বৈধ কি না যাচাই (ব্যান/সাসপেন্ড/মুছে ফেলা হলে লগইন থাকবে না; রোল সবসময় বর্তমান ডাটা থেকে) */
-function validatePersistedSession(){
+const LOGOUT_KEY = 'udaratma_logout_at';
+function clearPersistedSession(){
+  try{ localStorage.setItem(LOGOUT_KEY, String(Date.now())); }catch(e){}
+  try{ localStorage.removeItem(SESSION_KEY); }catch(e){}
+  try{ sessionStorage.removeItem(SESSION_KEY); }catch(e){}
+}
+function sessionRoleOf(m){ return m.role==='superadmin'?'superadmin':m.role==='admin'?'admin':'member'; }
+let pendingSession = null;
+/* অ্যাপ খোলার সময় সংরক্ষিত সেশন যাচাই।
+   trusted=true মানে ক্লাউড থেকে সদ্য সফলভাবে ডাটা এসেছে। ডাটা যাচাই করা না গেলে (অফলাইন / ডাটা লোড ব্যর্থ) কখনোই লগআউট করা হয় না। */
+function validatePersistedSession(trusted){
   if(!session || session.role==='guest' || !session.memberId) return;
   const m = db && db.members ? db.members.find(x=>x.id===session.memberId) : null;
-  if(!m || ['TEMP_BANNED','PERMA_BANNED','SUSPENDED','PENDING'].includes(m.status)){
-    session = guestSession(); saveSession(); return;
+  if(m){
+    if(['TEMP_BANNED','PERMA_BANNED','SUSPENDED','PENDING'].includes(m.status)){
+      if(trusted){ clearPersistedSession(); session = guestSession(); }   /* প্রকৃত অ্যাকাউন্ট সীমাবদ্ধ */
+      return;
+    }
+    session.role = sessionRoleOf(m);
+    return;
   }
-  session.role = m.role==='superadmin'?'superadmin':m.role==='admin'?'admin':'member';
+  if(trusted){ clearPersistedSession(); session = guestSession(); return; }   /* ক্লাউডে অ্যাকাউন্ট আর নেই */
+  pendingSession = session; session = guestSession();   /* যাচাই করা যায়নি: সেভ করা লগইন অক্ষত থাকে, ক্লাউড ডাটা এলে ফিরে আসবে */
 }
-/* এক ট্যাবে Logout করলে অন্য খোলা ট্যাবেও লগআউট হবে */
+function tryRestorePendingSession(){
+  try{
+    if(!pendingSession || !db || !db.members) return;
+    const m = db.members.find(x=>x.id===pendingSession.memberId);
+    const ps = pendingSession; pendingSession = null;
+    if(!m || ['TEMP_BANNED','PERMA_BANNED','SUSPENDED','PENDING'].includes(m.status)){ clearPersistedSession(); return; }
+    if(session && session.role!=='guest') return;
+    ps.role = sessionRoleOf(m); session = ps; saveSession();
+  }catch(e){}
+}
+/* অন্য ট্যাবে সদস্য নিজে Logout করলে এই ট্যাবও লগআউট হবে (পুরোনো ট্যাব আবার লগইন "জীবিত" করতে পারবে না) */
+function checkLogoutElsewhere(){
+  try{
+    if(!session || session.role==='guest' || !session.memberId) return;
+    const t = Number(localStorage.getItem(LOGOUT_KEY)||0);
+    if(t && t > (session.authAt||0)){ session = guestSession(); render(); }
+  }catch(e){}
+}
 window.addEventListener('storage', function(e){
-  if(e.key===SESSION_KEY && !e.newValue && session && session.role!=='guest'){
-    session = guestSession(); try{ render(); }catch(err){}
-  }
+  if(e.key===LOGOUT_KEY || (e.key===SESSION_KEY && !e.newValue)) checkLogoutElsewhere();
 });
+document.addEventListener('visibilitychange', function(){ if(!document.hidden) checkLogoutElsewhere(); });
+window.addEventListener('pageshow', checkLogoutElsewhere);
+window.addEventListener('focus', checkLogoutElsewhere);
 
 /* ---------------- HELPERS ---------------- */
 function toast(msg, icon){
@@ -1071,7 +1109,7 @@ function doRegister(){
   notifyAdmins('নতুন সদস্য আবেদন', `${name} (${mobile}) অনুমোদনের অপেক্ষায়`, 'registration', null, 'member.approve');
   session.regStep=2; saveDB(); render();
 }
-function logout(){ session={screen:'app', role:'guest', memberId:null, tab:'home', authView:'login', regStep:1, adminTab:'dashboard'}; render(); }
+function logout(){ clearPersistedSession(); pendingSession=null; session={screen:'app', role:'guest', memberId:null, tab:'home', authView:'login', regStep:1, adminTab:'dashboard'}; render(); }
 function openForgotPassword(){
   openModal(`
     <div class="modal-title"><h3><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg> পাসওয়ার্ড ভুলে গেছেন?</h3><button onclick="closeModal()"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
@@ -2244,15 +2282,13 @@ function duesOverdueInfo(m, now){
   for(let i=start;i<=cur;i++){ const mn = CONTRIBUTION_MONTHS[i]; if(!paid.includes(mn)) months.push(mn); }
   return {count: months.length, months};
 }
-function dues6am(now, dayOffset){ return new Date(now.getFullYear(), now.getMonth(), now.getDate()+(dayOffset||0), 6, 0, 0, 0); }
 function runDuesAutomation(nowArg){
   try{
     if(typeof db==='undefined' || !db || !Array.isArray(db.members)) return;
     const now = nowArg || new Date();
     if(!db.duesReminders) db.duesReminders = {};
     if(!Array.isArray(db.notifications)) db.notifications = [];
-    const today6 = dues6am(now,0);
-    const slot = now.getTime() >= today6.getTime() ? today6 : dues6am(now,-1);   /* সবচেয়ে সাম্প্রতিক সকাল ৬টা */
+    const slot = now;   /* সময়ের কোনো নির্দিষ্ট বাধ্যবাধকতা নেই — যখন সময় হয় তখনই পাঠানো হয় */
     let changed = false;
     db.members.forEach(m=>{
       const st = db.duesReminders[m.id];
@@ -2261,18 +2297,18 @@ function runDuesAutomation(nowArg){
       if(info.count===0){ if(st){ delete db.duesReminders[m.id]; changed = true; } return; }   /* ক্লিয়ার — অটোমেশন বন্ধ */
       if(contributionState(m)==='PENDING_VERIFICATION') return;   /* পেমেন্ট যাচাইয়ের অপেক্ষায় থাকলে নোটিফিকেশন বিরতি */
       let s2 = st;
-      if(!s2){ s2 = db.duesReminders[m.id] = {nextAt: today6.getTime(), sent:0, lastSlot:null, lastCount:0}; changed = true; }
+      if(!s2){ s2 = db.duesReminders[m.id] = {nextAt: now.getTime(), sent:0, lastSlot:null, lastCount:0}; changed = true; }
       if(now.getTime() < s2.nextAt) return;
       if(s2.lastSlot && (slot.getTime() - s2.lastSlot) < 1.9*86400000) return;   /* কমপক্ষে ২ দিনের বিরতি */
       const key = 'duesauto-'+m.id+'-'+slot.getFullYear()+'-'+(slot.getMonth()+1)+'-'+slot.getDate();
       if(!db.notifications.some(n=>n.dedupe===key)){
         db.notifications.unshift({ id: Date.now()+Math.floor(Math.random()*1000), to:m.id, title:'মাসিক চাঁদা বকেয়া',
           body:`আপনার ${bnNum(info.count)} মাসের মাসিক চাঁদা বকেয়া রয়েছে। অনুগ্রহ করে বকেয়া চাঁদা পরিশোধ করুন।`,
-          type:'payment', refId:null, perm:null, by:null, dedupe:key, readBy:{}, createdAt:slot.getTime() });
+          type:'payment', refId:null, perm:null, by:null, dedupe:key, readBy:{}, createdAt:now.getTime() });
         if(db.notifications.length > 600) db.notifications = db.notifications.slice(0, 600);
       }
       s2.sent = (s2.sent||0) + 1; s2.lastSlot = slot.getTime(); s2.lastCount = info.count;
-      s2.nextAt = dues6am(slot, s2.sent%2 ? 3 : 2).getTime();   /* ৩ দিন, ২ দিন, ৩ দিন ... পর পর সকাল ৬টায় */
+      s2.nextAt = now.getTime() + (s2.sent%2 ? 3 : 2)*86400000;   /* ৩ দিন, ২ দিন, ৩ দিন ... পর পর */
       changed = true;
     });
     if(changed) saveDB();
@@ -3139,14 +3175,14 @@ window.onload = async function(){
     localStorage.setItem(LS_KEY, JSON.stringify(db));
   } else if(localData){
     db = localData;
-    saveDBToCloud();
+    if(!cloudLoadFailed) saveDBToCloud();   /* ক্লাউড থেকে পড়া ব্যর্থ হলে পুরোনো লোকাল ডাটা দিয়ে ক্লাউড ওভাররাইট করা হয় না */
   } else {
     db = loadDB();
-    saveDBToCloud();
+    if(!cloudLoadFailed) saveDBToCloud();   /* ক্লাউড পড়া ব্যর্থ হলে ডেমো ডাটা দিয়ে আসল ডাটা মুছে ফেলা হয় না */
   }
   if(!db.reports) db.reports = [];
   if(!db.notifications) db.notifications = [];
-  validatePersistedSession();
+  validatePersistedSession(!!cloudData);
   try{ if(navigator.storage && navigator.storage.persist) navigator.storage.persist(); }catch(e){}
   try{
     let rid = null;
