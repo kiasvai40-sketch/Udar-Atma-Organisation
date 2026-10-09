@@ -619,6 +619,7 @@ async function requestFCMPermissionAndToken() {
     currentFcmToken = token;
     await saveFcmTokenToFirestore(token);
     if (typeof toast === 'function') toast('পুশ নোটিফিকেশন চালু হয়েছে ✓','');
+    try{ if(!localStorage.getItem('push_setup_done')) setTimeout(function(){ showPushSetupGuide(true); }, 600); }catch(e){}
     return token;
   } catch (err) {
     console.error('FCM token error:', err && err.message ? err.message : err);
@@ -2315,8 +2316,82 @@ function myNotifications(){
   });
 }
 function unreadCount(){ return myNotifications().filter(n=>!isReadByMe(n)).length; }
-function askNotifPermission(){ try{ if('Notification' in window && Notification.permission==='default') Notification.requestPermission(); }catch(e){} }
-function notifPermCard(){ if(!('Notification' in window) || Notification.permission!=='default') return ''; return `<div class="card" style="margin-bottom:10px;"><button class="btn btn-outline" onclick="askNotifPermission();closeModal();">ফোনে নোটিফিকেশন চালু করুন</button></div>`; }
+function askNotifPermission(){
+  try{
+    if(!('Notification' in window)){
+      if(typeof toast==='function') toast('এই ডিভাইসে নোটিফিকেশন সাপোর্ট নেই','');
+      return;
+    }
+    if(Notification.permission==='granted'){
+      if(typeof requestFCMPermissionAndToken==='function') requestFCMPermissionAndToken();
+      showPushSetupGuide(false);
+      return;
+    }
+    if(Notification.permission==='denied'){
+      showPushBlockedGuide();
+      return;
+    }
+    Notification.requestPermission().then(function(p){
+      if(p==='granted'){
+        if(typeof requestFCMPermissionAndToken==='function') requestFCMPermissionAndToken();
+        showPushSetupGuide(true);
+      } else if(p==='denied'){
+        showPushBlockedGuide();
+      }
+    }).catch(function(){});
+  }catch(e){}
+}
+function notifPermCard(){
+  if(!('Notification' in window)) return '';
+  if(Notification.permission==='granted') return '';
+  return `<div class="card" style="margin-bottom:10px;">
+    <b style="display:block;margin-bottom:6px">নোটিফিকেশন চালু করুন</b>
+    <span style="font-size:13px;opacity:.85;display:block;margin-bottom:8px">অ্যাপ বন্ধ থাকলেও রক্তের অনুরোধ ও জরুরি খবর পেতে Allow চাপুন।</span>
+    <button class="btn btn-primary" style="width:100%" onclick="askNotifPermission();">পারমিশন দিন</button>
+  </div>`;
+}
+function showPushSetupGuide(justGranted){
+  try{
+    if(localStorage.getItem('push_setup_done')==='1' && !justGranted) return;
+  }catch(e){}
+  if(typeof openModal!=='function') return;
+  openModal(`
+    <div class="modal-title"><h3>নোটিফিকেশন সবসময় চালু রাখুন</h3></div>
+    <p style="font-size:14px;line-height:1.55;margin:0 0 12px">
+      অ্যাপ বন্ধ বা রিসেন্ট থেকে সরিয়ে দিলেও নোটিফিকেশন পেতে নিচের সেটিংস একবার করে দিন।
+    </p>
+    <div class="card" style="margin-bottom:10px;font-size:13px;line-height:1.5">
+      <b>১. নোটিফিকেশন</b><br>
+      Allow / অনুমতি দিন — ${('Notification' in window && Notification.permission==='granted')?'✓ চালু':'এখনই Allow চাপুন'}
+    </div>
+    <div class="card" style="margin-bottom:10px;font-size:13px;line-height:1.5">
+      <b>২. ব্যাটারি (জরুরি)</b><br>
+      Settings → Apps → UDAR ATMA বা Chrome → Battery → <b>Unrestricted</b> / বাধাহীন
+    </div>
+    <div class="card" style="margin-bottom:10px;font-size:13px;line-height:1.5">
+      <b>৩. অটো-স্টার্ট (থাকলে)</b><br>
+      Settings → Apps → UDAR ATMA / Chrome → Autostart চালু করুন
+    </div>
+    <div class="card" style="margin-bottom:12px;font-size:13px;line-height:1.5">
+      <b>৪. Force stop চাপবেন না</b><br>
+      Force stop করলে নোটিফিকেশন বন্ধ থাকে যতক্ষণ না আবার অ্যাপ খোলেন।
+    </div>
+    <button class="btn btn-primary" style="width:100%;margin-bottom:8px" onclick="try{localStorage.setItem('push_setup_done','1');}catch(e){} closeModal(); if(Notification.permission!=='granted') askNotifPermission();">বুঝেছি / চালু করুন</button>
+    <button class="btn btn-outline" style="width:100%" onclick="try{localStorage.setItem('push_setup_done','1');}catch(e){} closeModal();">পরে করব</button>
+  `);
+}
+function showPushBlockedGuide(){
+  if(typeof openModal!=='function') return;
+  openModal(`
+    <div class="modal-title"><h3>নোটিফিকেশন বন্ধ আছে</h3></div>
+    <p style="font-size:14px;line-height:1.55">ফোনের সেটিংস থেকে চালু করুন:</p>
+    <div class="card" style="font-size:13px;line-height:1.5;margin-bottom:12px">
+      Settings → Apps → UDAR ATMA বা Chrome → Notifications → <b>Allow</b>
+    </div>
+    <button class="btn btn-primary" style="width:100%" onclick="closeModal()">ঠিক আছে</button>
+  `);
+}
+
 function sysNotify(n){ try{ if(!('Notification' in window) || Notification.permission!=='granted' || !navigator.serviceWorker) return; navigator.serviceWorker.ready.then(r=>r.showNotification(n.title,{body:n.body||'', tag:String(n.id), icon:NOTIF_ICON})); }catch(e){} }
 function trackLoginFail(mobile,m){ if(!m) return; if(!db.loginFails) db.loginFails={}; const f=db.loginFails[mobile]||{c:0}; f.c++; f.t=Date.now(); db.loginFails[mobile]=f; if(f.c%5===0) notifySuperAdmins('বারবার ভুল পিন', `${m.name} (${mobile}) — ${f.c} বার ভুল পিন দেওয়া হয়েছে`, 'password'); saveDB(); }
 function dupTx(txid){ const m=currentMember(); notifyAdmins('সন্দেহজনক: একই TxID', `${m?m.name:'কেউ'} ব্যবহৃত TxID (${txid}) আবার দিয়েছেন`, 'payment', null, 'payment.verify'); saveDB(); }
