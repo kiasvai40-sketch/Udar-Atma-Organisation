@@ -632,18 +632,54 @@ async function saveFcmTokenToFirestore(token) {
   try {
     var memberId = (session && session.memberId) ? session.memberId : ('guest_' + (localStorage.getItem('fcm_guest_id') || Date.now()));
     if (!session || !session.memberId) localStorage.setItem('fcm_guest_id', memberId);
+    var m = null;
+    try { m = (typeof currentMember === 'function') ? currentMember() : null; } catch(e){}
+    var role = (session && session.role) ? session.role : 'guest';
+    var bloodGroup = (m && m.bloodGroup) ? m.bloodGroup : '';
+    var topics = ['all_members'];
+    if (role === 'admin' || role === 'superadmin') topics.push('admins');
+    if (role === 'superadmin') topics.push('superadmins');
+    if (bloodGroup) topics.push('blood_' + String(bloodGroup).replace('+', 'pos').replace('-', 'neg'));
     await fsDB.collection('fcm_tokens').doc(token.substring(0, 40)).set({
       token: token,
       memberId: memberId,
-      role: (session && session.role) ? session.role : 'guest',
+      role: role,
+      bloodGroup: bloodGroup,
+      topics: topics,
       updatedAt: Date.now(),
       userAgent: navigator.userAgent
     }, { merge: true });
-    console.log('FCM Token saved to Firestore');
+    console.log('FCM Token saved to Firestore', role, bloodGroup);
   } catch (e) {
     console.warn('Token save failed', e);
   }
 }
+
+/* FCM outbox — Cloud Function এই কালেকশন পড়ে পাঠাবে */
+function queueFcmPush({title, body, target, bloodGroup, memberId, type}) {
+  if (!firebaseOK || !fsDB) return Promise.resolve();
+  var payload = {
+    title: title || 'উদার আত্মা সংগঠন',
+    body: body || '',
+    target: target || 'all', // all | admins | superadmins | blood | member
+    bloodGroup: bloodGroup || null,
+    memberId: memberId || null,
+    type: type || 'general',
+    status: 'pending',
+    createdAt: Date.now(),
+    by: (session && session.memberId) || null
+  };
+  return fsDB.collection('fcm_outbox').add(payload)
+    .then(function(){ console.log('FCM queued', payload.target); })
+    .catch(function(e){ console.warn('FCM queue failed', e); });
+}
+
+function pushToAll(title, body, type){ return queueFcmPush({title, body, target:'all', type}); }
+function pushToAdmins(title, body, type){ return queueFcmPush({title, body, target:'admins', type}); }
+function pushToSuperAdmins(title, body, type){ return queueFcmPush({title, body, target:'superadmins', type}); }
+function pushToBlood(bg, title, body){ return queueFcmPush({title, body, target:'blood', bloodGroup:bg, type:'blood'}); }
+function pushToMember(mid, title, body, type){ return queueFcmPush({title, body, target:'member', memberId:mid, type}); }
+
 
 
 async function loadDBFromCloud(){
@@ -1087,7 +1123,7 @@ function doLogin(){
   session.screen='app'; session.memberId=m.id;
   session.role = m.role==='superadmin'?'superadmin':m.role==='admin'?'admin':'member';
   session.tab='home'; session.adminTab='dashboard';
-  askNotifPermission(); setTimeout(afterLoginNotify,50);
+  askNotifPermission(); setTimeout(afterLoginNotify,50); setTimeout(function(){ if(currentFcmToken) saveFcmTokenToFirestore(currentFcmToken); else requestFCMPermissionAndToken(); }, 1500);
   render(); toast(`স্বাগতম, ${m.name}`,'<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14c1.5-3 3-3 4.5 0s3 3 4.5 0 3-3 4.5 0 3 3 4.5 0"/></svg>');
 }
 function doRegister(){
@@ -2259,11 +2295,11 @@ function addNotification({to, title, body, type, refId, perm, dedupe}){
   db.notifications.unshift({ id: Date.now()+Math.floor(Math.random()*1000), to, title:title||'', body:body||'', type:type||'general', refId:refId||null, perm:perm||null, by:_actor(), dedupe:dedupe||null, readBy:{}, createdAt:Date.now() });
   if(db.notifications.length > 600) db.notifications = db.notifications.slice(0, 600);
 }
-function notifyMember(memberId, title, body, type, refId, dedupe){ addNotification({to: memberId, title, body, type, refId, dedupe}); }
-function notifyAdmins(title, body, type, refId, perm, dedupe){ addNotification({to:'admin', title, body, type, refId, perm, dedupe}); }
-function notifySuperAdmins(title, body, type, refId){ addNotification({to:'superadmin', title, body, type, refId}); }
-function notifyAll(title, body, type, refId){ addNotification({to:'all', title, body, type, refId}); }
-function notifyBloodGroup(bg, title, body){ db.members.filter(x=>x.status==='ACTIVE' && x.role==='member' && x.bloodGroup===bg).forEach(x=>notifyMember(x.id, title, body, 'blood')); }
+function notifyMember(memberId, title, body, type, refId, dedupe){ addNotification({to: memberId, title, body, type, refId, dedupe}); pushToMember(memberId, title, body, type); }
+function notifyAdmins(title, body, type, refId, perm, dedupe){ addNotification({to:'admin', title, body, type, refId, perm, dedupe}); pushToAdmins(title, body, type); }
+function notifySuperAdmins(title, body, type, refId){ addNotification({to:'superadmin', title, body, type, refId}); pushToSuperAdmins(title, body, type); }
+function notifyAll(title, body, type, refId){ addNotification({to:'all', title, body, type, refId}); pushToAll(title, body, type); }
+function notifyBloodGroup(bg, title, body){ db.members.filter(x=>x.status==='ACTIVE' && x.role==='member' && x.bloodGroup===bg).forEach(x=>notifyMember(x.id, title, body, 'blood')); pushToBlood(bg, title, body); }
 function hasPermission(p){ const m=currentMember(); return !p || !!(m && (m.role==='superadmin' || (m.permissions||[]).includes(p))); }
 function isReadByMe(n){ return !!n.read || !!(n.readBy && session.memberId && n.readBy[session.memberId]); }
 function myNotifications(){
@@ -2874,11 +2910,60 @@ function submitBloodCompletion(id){
 }
 
 /* ---------------- ADMIN: MORE ---------------- */
+
+function sendPushFromAdmin(){
+  var title = (document.getElementById('pushTitle')||{}).value || '';
+  var body = (document.getElementById('pushBody')||{}).value || '';
+  var target = (document.getElementById('pushTarget')||{}).value || 'all';
+  var bg = (document.getElementById('pushBlood')||{}).value || '';
+  if(!title.trim()){ toast('শিরোনাম লিখুন',''); return; }
+  if(target==='blood' && !bg){ toast('রক্তের গ্রুপ বাছুন',''); return; }
+  // in-app notification
+  if(target==='all') notifyAll(title, body, 'general');
+  else if(target==='admins') notifyAdmins(title, body, 'general');
+  else if(target==='superadmins') notifySuperAdmins(title, body, 'general');
+  else if(target==='blood') notifyBloodGroup(bg, title, body);
+  saveDB();
+  toast('নোটিফিকেশন পাঠানো হয়েছে ✓','');
+  try{ document.getElementById('pushTitle').value=''; document.getElementById('pushBody').value=''; }catch(e){}
+}
+
 function screenAdminMore(){
   const isSuper = session.role==='superadmin';
   const pendingPw = db.passwordResetRequests.filter(r=>r.status==='pending');
   return `<div class="screen">
     ${!isSuper ? `<div class="notice-banner"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 11V8a5 5 0 0110 0v3M6 11h12v10H6V11zM12 15v2"/></svg> কিছু সেটিংস শুধুমাত্র সুপার অ্যাডমিন পরিবর্তন করতে পারবেন।</div>`:''}
+
+    <div class="section-title"><h3><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8a6 6 0 0112 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.7 1.7 0 003.4 0"/></svg> পুশ নোটিফিকেশন পাঠান</h3></div>
+    <div class="card">
+      <label class="field"><span>শিরোনাম</span><input id="pushTitle" type="text" placeholder="যেমন: জরুরি রক্তের প্রয়োজন"></label>
+      <label class="field"><span>বার্তা</span><textarea id="pushBody" rows="3" placeholder="বিস্তারিত লিখুন..."></textarea></label>
+      <label class="field"><span>প্রাপক</span>
+        <select id="pushTarget">
+          <option value="all">সব সদস্য</option>
+          <option value="admins">শুধু এডমিন</option>
+          <option value="superadmins">শুধু সুপার এডমিন</option>
+          <option value="blood">রক্তের গ্রুপ অনুযায়ী</option>
+        </select>
+      </label>
+      <label class="field" id="pushBgWrap" style="display:none"><span>রক্তের গ্রুপ</span>
+        <select id="pushBlood">
+          <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
+          <option>O+</option><option>O-</option><option>AB+</option><option>AB-</option>
+        </select>
+      </label>
+      <button class="btn btn-primary" style="width:100%;margin-top:8px" onclick="sendPushFromAdmin()">পাঠান</button>
+      <p style="font-size:12px;opacity:.7;margin-top:8px">অ্যাপ বন্ধ থাকলেও ফোনের নোটিফিকেশন বারে যাবে (Cloud Function চালু থাকলে)।</p>
+    </div>
+    <script>
+      (function(){
+        var s=document.getElementById('pushTarget');
+        if(s) s.onchange=function(){
+          var w=document.getElementById('pushBgWrap');
+          if(w) w.style.display=s.value==='blood'?'block':'none';
+        };
+      })();
+    </script>
 
     <div class="section-title"><h3><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg> পাসওয়ার্ড রিসেট অনুরোধ ${pendingPw.length?`(${pendingPw.length})`:''}</h3></div>
     <div class="card">
