@@ -2939,7 +2939,7 @@ function screenAdminMore(){
       <label class="field"><span>শিরোনাম</span><input id="pushTitle" type="text" placeholder="যেমন: জরুরি রক্তের প্রয়োজন"></label>
       <label class="field"><span>বার্তা</span><textarea id="pushBody" rows="3" placeholder="বিস্তারিত লিখুন..."></textarea></label>
       <label class="field"><span>প্রাপক</span>
-        <select id="pushTarget">
+        <select id="pushTarget" onchange="var w=document.getElementById('pushBgWrap');if(w)w.style.display=this.value==='blood'?'block':'none';">
           <option value="all">সব সদস্য</option>
           <option value="admins">শুধু এডমিন</option>
           <option value="superadmins">শুধু সুপার এডমিন</option>
@@ -2955,15 +2955,6 @@ function screenAdminMore(){
       <button class="btn btn-primary" style="width:100%;margin-top:8px" onclick="sendPushFromAdmin()">পাঠান</button>
       <p style="font-size:12px;opacity:.7;margin-top:8px">অ্যাপ বন্ধ থাকলেও ফোনের নোটিফিকেশন বারে যাবে (Cloud Function চালু থাকলে)।</p>
     </div>
-    <script>
-      (function(){
-        var s=document.getElementById('pushTarget');
-        if(s) s.onchange=function(){
-          var w=document.getElementById('pushBgWrap');
-          if(w) w.style.display=s.value==='blood'?'block':'none';
-        };
-      })();
-    </script>
 
     <div class="section-title"><h3><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg> পাসওয়ার্ড রিসেট অনুরোধ ${pendingPw.length?`(${pendingPw.length})`:''}</h3></div>
     <div class="card">
