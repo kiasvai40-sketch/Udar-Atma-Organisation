@@ -711,7 +711,7 @@ function startRealtimeSync(){
       if(!db.reports) db.reports = [];
       localStorage.setItem(LS_KEY, JSON.stringify(db));
       tryRestorePendingSession();
-      if(session.role!=='guest'){ myNotifications().filter(n=>!isReadByMe(n)&&!prevIds.has(n.id)).slice(0,3).forEach((n,i)=>setTimeout(()=>{ if(document.hidden) sysNotify(n); else toast((n.title+(n.body?': '+n.body:'')).slice(0,90), notifIcon(n.type)); }, i*900)); }
+      if(session.role!=='guest'){ myNotifications().filter(n=>!isReadByMe(n)&&!prevIds.has(n.id)).slice(0,3).forEach((n,i)=>setTimeout(()=>{ sysNotify(n); toast((n.title+(n.body?': '+n.body:'')).slice(0,90), notifIcon(n.type)); }, i*900)); }
       if(!document.getElementById('modalRoot')) render(); // don't wipe an open form
     }
   }, e=>console.warn('Realtime sync error', e));
@@ -931,7 +931,11 @@ function saveSession(){
   const loggedIn = session.role!=='guest' && !!session.memberId;
   try{ sessionStorage.setItem(SESSION_KEY, str); }catch(e){}
   /* গুরুত্বপূর্ণ: লগইন সেশন শুধু সদস্য নিজে Logout করলেই (clearPersistedSession) মুছবে — অতিথি/খালি ট্যাবের রেন্ডারে কখনোই নয় */
-  if(loggedIn){ try{ localStorage.setItem(SESSION_KEY, str); }catch(e){} }
+  if(loggedIn){
+    try{ localStorage.setItem(SESSION_KEY, str); }catch(e){}
+    /* পুরনো logout ফ্ল্যাগ মুছে দাও — না হলে focus-এ অটো লগআউট হতে পারে */
+    try{ localStorage.removeItem(LOGOUT_KEY); }catch(e){}
+  }
 }
 const LOGOUT_KEY = 'udaratma_logout_at';
 function clearPersistedSession(){
@@ -944,27 +948,36 @@ let pendingSession = null;
 /* অ্যাপ খোলার সময় সংরক্ষিত সেশন যাচাই।
    trusted=true মানে ক্লাউড থেকে সদ্য সফলভাবে ডাটা এসেছে। ডাটা যাচাই করা না গেলে (অফলাইন / ডাটা লোড ব্যর্থ) কখনোই লগআউট করা হয় না। */
 function validatePersistedSession(trusted){
+  /* অটো লগআউট বন্ধ: শুধু ইউজার নিজে logout() করলে সেশন মুছে */
   if(!session || session.role==='guest' || !session.memberId) return;
-  const m = db && db.members ? db.members.find(x=>x.id===session.memberId) : null;
+  const mid = session.memberId;
+  const m = db && db.members ? db.members.find(x=>x.id===mid || String(x.id)===String(mid)) : null;
   if(m){
-    if(['TEMP_BANNED','PERMA_BANNED','SUSPENDED','PENDING'].includes(m.status)){
-      if(trusted){ clearPersistedSession(); session = guestSession(); }   /* প্রকৃত অ্যাকাউন্ট সীমাবদ্ধ */
+    /* শুধু ব্যান/সাসপেন্ডে সেশন সীমিত — PENDING-এ লগআউট নয় */
+    if(['TEMP_BANNED','PERMA_BANNED','SUSPENDED'].includes(m.status)){
+      if(trusted){ clearPersistedSession(); session = guestSession(); }
       return;
     }
     session.role = sessionRoleOf(m);
     return;
   }
-  if(trusted){ clearPersistedSession(); session = guestSession(); return; }   /* ক্লাউডে অ্যাকাউন্ট আর নেই */
-  pendingSession = session; session = guestSession();   /* যাচাই করা যায়নি: সেভ করা লগইন অক্ষত থাকে, ক্লাউড ডাটা এলে ফিরে আসবে */
+  /* সদস্য তালিকায় না পেলেও লগআউট নয় — অফলাইন/লোড বিলম্বে সেশন রাখো */
+  if(!trusted){
+    pendingSession = session;
+  }
 }
 function tryRestorePendingSession(){
   try{
     if(!pendingSession || !db || !db.members) return;
-    const m = db.members.find(x=>x.id===pendingSession.memberId);
+    const mid = pendingSession.memberId;
+    const m = db.members.find(x=>x.id===mid || String(x.id)===String(mid));
     const ps = pendingSession; pendingSession = null;
-    if(!m || ['TEMP_BANNED','PERMA_BANNED','SUSPENDED','PENDING'].includes(m.status)){ clearPersistedSession(); return; }
+    if(m && ['TEMP_BANNED','PERMA_BANNED','SUSPENDED'].includes(m.status)){
+      clearPersistedSession(); return;
+    }
     if(session && session.role!=='guest') return;
-    ps.role = sessionRoleOf(m); session = ps; saveSession();
+    if(m) ps.role = sessionRoleOf(m);
+    session = ps; saveSession();
   }catch(e){}
 }
 /* অন্য ট্যাবে সদস্য নিজে Logout করলে এই ট্যাবও লগআউট হবে (পুরোনো ট্যাব আবার লগইন "জীবিত" করতে পারবে না) */
@@ -2386,7 +2399,20 @@ function showPushBlockedGuide(){
   `);
 }
 
-function sysNotify(n){ try{ if(!('Notification' in window) || Notification.permission!=='granted' || !navigator.serviceWorker) return; navigator.serviceWorker.ready.then(r=>r.showNotification(n.title,{body:n.body||'', tag:String(n.id), icon:NOTIF_ICON})); }catch(e){} }
+function sysNotify(n){ try{
+  if(!('Notification' in window) || Notification.permission!=='granted') return;
+  var title = (n && n.title) || 'UDAR ATMA';
+  var body = (n && n.body) || '';
+  var tag = String((n && n.id) || Date.now());
+  var opts = { body: body, tag: tag, icon: (typeof NOTIF_ICON!=='undefined'?NOTIF_ICON:'/icon-192.png'), badge: '/icon-192.png' };
+  if(navigator.serviceWorker){
+    navigator.serviceWorker.ready.then(function(r){ return r.showNotification(title, opts); }).catch(function(){
+      try{ new Notification(title, opts); }catch(e2){}
+    });
+  } else {
+    try{ new Notification(title, opts); }catch(e3){}
+  }
+}catch(e){} }
 function trackLoginFail(mobile,m){ if(!m) return; if(!db.loginFails) db.loginFails={}; const f=db.loginFails[mobile]||{c:0}; f.c++; f.t=Date.now(); db.loginFails[mobile]=f; if(f.c%5===0) notifySuperAdmins('বারবার ভুল পিন', `${m.name} (${mobile}) — ${f.c} বার ভুল পিন দেওয়া হয়েছে`, 'password'); saveDB(); }
 function dupTx(txid){ const m=currentMember(); notifyAdmins('সন্দেহজনক: একই TxID', `${m?m.name:'কেউ'} ব্যবহৃত TxID (${txid}) আবার দিয়েছেন`, 'payment', null, 'payment.verify'); saveDB(); }
 function rsvpActivity(id){
