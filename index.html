@@ -662,7 +662,7 @@ function queueFcmPush({title, body, target, bloodGroup, memberId, type}) {
   var payload = {
     title: title || 'উদার আত্মা সংগঠন',
     body: body || '',
-    target: target || 'all', // all | admins | superadmins | blood | member
+    target: target || 'all',
     bloodGroup: bloodGroup || null,
     memberId: memberId || null,
     type: type || 'general',
@@ -671,7 +671,16 @@ function queueFcmPush({title, body, target, bloodGroup, memberId, type}) {
     by: (session && session.memberId) || null
   };
   return fsDB.collection('fcm_outbox').add(payload)
-    .then(function(){ console.log('FCM queued', payload.target); })
+    .then(function(){
+      console.log('FCM queued', payload.target);
+      /* Vercel API — বন্ধ ফোনেও পুশ পাঠায় */
+      try {
+        fetch('/api/process-outbox', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' })
+          .then(function(r){ return r.json().catch(function(){ return {}; }); })
+          .then(function(j){ console.log('push process', j); })
+          .catch(function(e){ console.warn('push API', e); });
+      } catch (e) {}
+    })
     .catch(function(e){ console.warn('FCM queue failed', e); });
 }
 
@@ -817,7 +826,38 @@ function loadDB(){
   }catch(e){}
   return seedData();
 }
-function saveDB(){ db.updatedAt = Date.now(); localStorage.setItem(LS_KEY, JSON.stringify(db)); return saveDBToCloud(); }
+function mergeById(remoteArr, localArr){
+  const map = {};
+  (remoteArr || []).forEach(function(x){ if(x && x.id != null) map[x.id] = x; });
+  (localArr || []).forEach(function(x){ if(x && x.id != null) map[x.id] = x; });
+  return Object.keys(map).map(function(k){ return map[k]; });
+}
+function saveDB(){
+  db.updatedAt = Date.now();
+  try{ localStorage.setItem(LS_KEY, JSON.stringify(db)); }catch(e){}
+  if(!firebaseOK || !fsDB) return Promise.resolve();
+  /* ক্লাউডের সাথে মার্জ — একসাথে সেভে ডাটা হারানো কমায় */
+  return fsDB.collection(FS_COLLECTION).doc(FS_DOC).get().then(function(snap){
+    if(snap.exists && snap.data() && snap.data().state){
+      var remote = snap.data().state;
+      if(remote.notifications || db.notifications){
+        db.notifications = mergeById(remote.notifications, db.notifications);
+        if(db.notifications.length > 600) db.notifications = db.notifications.slice(0, 600);
+      }
+      if(remote.members && db.members){
+        var mm = {};
+        remote.members.forEach(function(x){ if(x && x.id != null) mm[x.id] = x; });
+        db.members.forEach(function(x){ if(x && x.id != null) mm[x.id] = Object.assign({}, mm[x.id] || {}, x); });
+        db.members = Object.keys(mm).map(function(k){ return mm[k]; });
+      }
+    }
+    db.updatedAt = Date.now();
+    return saveDBToCloud();
+  }).catch(function(e){
+    console.warn('merge save fallback', e);
+    return saveDBToCloud();
+  });
+}
 function resetDemo(){ localStorage.removeItem(LS_KEY); location.reload(); }
 
 
