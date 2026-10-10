@@ -596,7 +596,7 @@ async function requestFCMPermissionAndToken() {
     }
     if (permission !== 'granted') {
       console.log('Notification permission denied');
-      if (typeof toast === 'function') toast('নোটিফিকেশন বন্ধ আছে — সেটিংস থেকে চালু করুন','');
+      if (typeof toast === 'function') toast('Notifications blocked — enable in Settings','');
       return null;
     }
 
@@ -611,14 +611,14 @@ async function requestFCMPermissionAndToken() {
 
     if (!token) {
       console.warn('getToken returned empty');
-      if (typeof toast === 'function') toast('টোকেন পাওয়া যায়নি','');
+      if (typeof toast === 'function') toast('Token not available','');
       return null;
     }
 
     console.log('FCM Token:', token);
     currentFcmToken = token;
     await saveFcmTokenToFirestore(token);
-    if (typeof toast === 'function') toast('পুশ নোটিফিকেশন চালু হয়েছে ✓','');
+    if (typeof toast === 'function') toast('Notifications enabled ✓','');
     try{ if(!localStorage.getItem('push_setup_done')) setTimeout(function(){ showPushSetupGuide(true); }, 600); }catch(e){}
     return token;
   } catch (err) {
@@ -2345,9 +2345,9 @@ function notifPermCard(){
   if(!('Notification' in window)) return '';
   if(Notification.permission==='granted') return '';
   return `<div class="card" style="margin-bottom:10px;">
-    <b style="display:block;margin-bottom:6px">নোটিফিকেশন চালু করুন</b>
-    <span style="font-size:13px;opacity:.85;display:block;margin-bottom:8px">অ্যাপ বন্ধ থাকলেও রক্তের অনুরোধ ও জরুরি খবর পেতে Allow চাপুন।</span>
-    <button class="btn btn-primary" style="width:100%" onclick="askNotifPermission();">পারমিশন দিন</button>
+    <b style="display:block;margin-bottom:6px">Enable notifications</b>
+    <span style="font-size:13px;opacity:.85;display:block;margin-bottom:8px">Get alerts even when the app is closed.</span>
+    <button class="btn btn-primary" style="width:100%" onclick="askNotifPermission();">Allow</button>
   </div>`;
 }
 function showPushSetupGuide(justGranted){
@@ -2356,39 +2356,33 @@ function showPushSetupGuide(justGranted){
   }catch(e){}
   if(typeof openModal!=='function') return;
   openModal(`
-    <div class="modal-title"><h3>নোটিফিকেশন সবসময় চালু রাখুন</h3></div>
-    <p style="font-size:14px;line-height:1.55;margin:0 0 12px">
-      অ্যাপ বন্ধ বা রিসেন্ট থেকে সরিয়ে দিলেও নোটিফিকেশন পেতে নিচের সেটিংস একবার করে দিন।
-    </p>
-    <div class="card" style="margin-bottom:10px;font-size:13px;line-height:1.5">
-      <b>১. নোটিফিকেশন</b><br>
-      Allow / অনুমতি দিন — ${('Notification' in window && Notification.permission==='granted')?'✓ চালু':'এখনই Allow চাপুন'}
+    <div class="modal-title"><h3>Notifications</h3></div>
+    <p style="font-size:13px;line-height:1.5;margin:0 0 10px">Keep alerts on when the app is closed.</p>
+    <div class="card" style="margin-bottom:8px;font-size:12px;line-height:1.45">
+      <b>1. Notifications</b> — ${('Notification' in window && Notification.permission==='granted')?'On':'Tap Allow'}
     </div>
-    <div class="card" style="margin-bottom:10px;font-size:13px;line-height:1.5">
-      <b>২. ব্যাটারি (জরুরি)</b><br>
-      Settings → Apps → UDAR ATMA বা Chrome → Battery → <b>Unrestricted</b> / বাধাহীন
+    <div class="card" style="margin-bottom:8px;font-size:12px;line-height:1.45">
+      <b>2. Battery</b> — Apps → UDAR ATMA / Chrome → Battery → Unrestricted
     </div>
-    <div class="card" style="margin-bottom:10px;font-size:13px;line-height:1.5">
-      <b>৩. অটো-স্টার্ট (থাকলে)</b><br>
-      Settings → Apps → UDAR ATMA / Chrome → Autostart চালু করুন
+    <div class="card" style="margin-bottom:8px;font-size:12px;line-height:1.45">
+      <b>3. Autostart</b> — Enable if available
     </div>
-    <div class="card" style="margin-bottom:12px;font-size:13px;line-height:1.5">
-      <b>৪. Force stop চাপবেন না</b><br>
-      Force stop করলে নোটিফিকেশন বন্ধ থাকে যতক্ষণ না আবার অ্যাপ খোলেন।
+    <div class="card" style="margin-bottom:10px;font-size:12px;line-height:1.45">
+      <b>4. Do not Force stop</b> the app
     </div>
-    <button class="btn btn-primary" style="width:100%;margin-bottom:8px" onclick="try{localStorage.setItem('push_setup_done','1');}catch(e){} closeModal(); if(Notification.permission!=='granted') askNotifPermission();">বুঝেছি / চালু করুন</button>
-    <button class="btn btn-outline" style="width:100%" onclick="try{localStorage.setItem('push_setup_done','1');}catch(e){} closeModal();">পরে করব</button>
+    <button class="btn btn-primary" style="width:100%;margin-bottom:8px" onclick="try{localStorage.setItem('push_setup_done','1');}catch(e){} closeModal(); if(Notification.permission!=='granted') askNotifPermission();">OK</button>
+    <button class="btn btn-outline" style="width:100%" onclick="try{localStorage.setItem('push_setup_done','1');}catch(e){} closeModal();">Later</button>
   `);
 }
 function showPushBlockedGuide(){
   if(typeof openModal!=='function') return;
   openModal(`
-    <div class="modal-title"><h3>নোটিফিকেশন বন্ধ আছে</h3></div>
-    <p style="font-size:14px;line-height:1.55">ফোনের সেটিংস থেকে চালু করুন:</p>
-    <div class="card" style="font-size:13px;line-height:1.5;margin-bottom:12px">
-      Settings → Apps → UDAR ATMA বা Chrome → Notifications → <b>Allow</b>
+    <div class="modal-title"><h3>Notifications blocked</h3></div>
+    <p style="font-size:13px;line-height:1.5">Enable in phone settings:</p>
+    <div class="card" style="font-size:12px;line-height:1.45;margin-bottom:10px">
+      Apps → UDAR ATMA / Chrome → Notifications → Allow
     </div>
-    <button class="btn btn-primary" style="width:100%" onclick="closeModal()">ঠিক আছে</button>
+    <button class="btn btn-primary" style="width:100%" onclick="closeModal()">OK</button>
   `);
 }
 
