@@ -1,6 +1,9 @@
 /**
- * Vercel Serverless — fcm_outbox থেকে pending পুশ পাঠায়
+ * Vercel Serverless — fcm_outbox থেকে pending পুশ পাঠায়
  * Env: FIREBASE_SERVICE_ACCOUNT = service account JSON (এক লাইন)
+ *
+ * Web + Native Android দুই ধরনের টোকেন সাপোর্ট করে।
+ * Native টোকেনে android.priority = high → Recent থেকে সরালেও ডেলিভারি ভালো।
  */
 const admin = require('firebase-admin');
 
@@ -21,19 +24,32 @@ async function tokensFor(db, data) {
     const d = doc.data();
     if (!d || !d.token) return;
     const role = d.role || 'guest';
+    let match = false;
     if (data.target === 'all') {
-      if (role !== 'guest') out.push(d.token);
+      if (role !== 'guest') match = true;
     } else if (data.target === 'admins') {
-      if (role === 'admin' || role === 'superadmin') out.push(d.token);
+      if (role === 'admin' || role === 'superadmin') match = true;
     } else if (data.target === 'superadmins') {
-      if (role === 'superadmin') out.push(d.token);
+      if (role === 'superadmin') match = true;
     } else if (data.target === 'blood') {
-      if (d.bloodGroup === data.bloodGroup) out.push(d.token);
+      if (d.bloodGroup === data.bloodGroup) match = true;
     } else if (data.target === 'member') {
-      if (String(d.memberId) === String(data.memberId)) out.push(d.token);
+      if (String(d.memberId) === String(data.memberId)) match = true;
+    }
+    if (match) {
+      out.push({
+        token: d.token,
+        docId: doc.id,
+        platform: d.platform || 'web',
+      });
     }
   });
-  return [...new Set(out)];
+  const seen = new Set();
+  return out.filter((t) => {
+    if (seen.has(t.token)) return false;
+    seen.add(t.token);
+    return true;
+  });
 }
 
 module.exports = async function handler(req, res) {
@@ -61,8 +77,8 @@ module.exports = async function handler(req, res) {
     let processed = 0;
     for (const doc of pending.docs) {
       const data = doc.data();
-      const tokens = await tokensFor(db, data);
-      if (!tokens.length) {
+      const tokenEntries = await tokensFor(db, data);
+      if (!tokenEntries.length) {
         await doc.ref.update({ status: 'empty', processedAt: Date.now() });
         processed++;
         continue;
@@ -72,35 +88,120 @@ module.exports = async function handler(req, res) {
       const body = data.body || '';
       let success = 0;
       let failure = 0;
+      const invalidDocIds = [];
 
-      for (let i = 0; i < tokens.length; i += 500) {
-        const chunk = tokens.slice(i, i + 500);
-        const result = await messaging.sendEachForMulticast({
-          tokens: chunk,
-          notification: { title, body },
-          data: {
-            type: String(data.type || 'general'),
-            title: String(title),
-            body: String(body),
-          },
-          webpush: {
-            notification: {
-              title,
-              body,
-              icon: '/icon-192.png',
+      const nativeTokens = tokenEntries.filter((t) => t.platform === 'android-native');
+      const webTokens = tokenEntries.filter((t) => t.platform !== 'android-native');
+
+      // —— Native Android (high priority) ——
+      for (let i = 0; i < nativeTokens.length; i += 500) {
+        const chunk = nativeTokens.slice(i, i + 500);
+        const tokens = chunk.map((t) => t.token);
+        try {
+          const result = await messaging.sendEachForMulticast({
+            tokens,
+            data: {
+              type: String(data.type || 'general'),
+              title: String(title),
+              body: String(body),
             },
-            fcmOptions: { link: '/' },
-          },
-        });
-        success += result.successCount;
-        failure += result.failureCount;
+            android: {
+              priority: 'high',
+              ttl: 86400000,
+              notification: {
+                title,
+                body,
+                channelId: 'udar_atma_default',
+                priority: 'high',
+                defaultSound: true,
+                defaultVibrateTimings: true,
+              },
+            },
+          });
+          success += result.successCount;
+          failure += result.failureCount;
+          if (result.responses) {
+            result.responses.forEach((r, idx) => {
+              if (!r.success && r.error) {
+                const code = (r.error.code || '') + '';
+                if (
+                  code.includes('registration-token-not-registered') ||
+                  code.includes('invalid-registration-token') ||
+                  code.includes('invalid-argument')
+                ) {
+                  invalidDocIds.push(chunk[idx].docId);
+                }
+              }
+            });
+          }
+        } catch (e) {
+          console.error('native send error', e.message);
+          failure += tokens.length;
+        }
+      }
+
+      // —— Web Push ——
+      for (let i = 0; i < webTokens.length; i += 500) {
+        const chunk = webTokens.slice(i, i + 500);
+        const tokens = chunk.map((t) => t.token);
+        try {
+          const result = await messaging.sendEachForMulticast({
+            tokens,
+            data: {
+              type: String(data.type || 'general'),
+              title: String(title),
+              body: String(body),
+              tag: 'udar-atma-' + String(Date.now()),
+            },
+            webpush: {
+              headers: { Urgency: 'high', TTL: '86400' },
+              notification: {
+                title,
+                body,
+                icon: '/icon-192.png',
+                badge: '/icon-192.png',
+              },
+              fcmOptions: { link: '/' },
+            },
+          });
+          success += result.successCount;
+          failure += result.failureCount;
+          if (result.responses) {
+            result.responses.forEach((r, idx) => {
+              if (!r.success && r.error) {
+                const code = (r.error.code || '') + '';
+                if (
+                  code.includes('registration-token-not-registered') ||
+                  code.includes('invalid-registration-token') ||
+                  code.includes('invalid-argument')
+                ) {
+                  invalidDocIds.push(chunk[idx].docId);
+                }
+              }
+            });
+          }
+        } catch (e) {
+          console.error('web send error', e.message);
+          failure += tokens.length;
+        }
+      }
+
+      for (const id of [...new Set(invalidDocIds)]) {
+        try {
+          await db.collection('fcm_tokens').doc(id).delete();
+        } catch (e) {
+          console.warn('token cleanup failed', id, e.message);
+        }
       }
 
       await doc.ref.update({
         status: 'sent',
         success,
         failure,
-        tokenCount: tokens.length,
+        tokenCount: tokenEntries.length,
+        nativeCount: nativeTokens.length,
+        webCount: webTokens.length,
+        cleaned: invalidDocIds.length,
         processedAt: Date.now(),
       });
       processed++;
