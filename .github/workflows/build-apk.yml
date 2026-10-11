@@ -30,8 +30,11 @@ jobs:
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          accept-android-sdk-licenses: true
+          packages: platform-tools platforms;android-34 build-tools;34.0.0
 
-      - name: Install dependencies
+      - name: Install npm packages
         run: npm install
 
       - name: Add Android platform
@@ -39,47 +42,39 @@ jobs:
 
       - name: Copy google-services.json
         run: |
-          if [ -f google-services.json ]; then
-            cp google-services.json android/app/google-services.json
-            echo "google-services.json copied"
-          else
-            echo "ERROR: google-services.json not found in repo root"
+          if [ ! -f google-services.json ]; then
+            echo "ERROR: google-services.json missing"
             exit 1
           fi
+          cp google-services.json android/app/google-services.json
+          echo "google-services.json OK"
 
-      - name: Patch AndroidManifest for notifications
+      - name: Patch AndroidManifest
         run: |
           MANIFEST="android/app/src/main/AndroidManifest.xml"
-          # POST_NOTIFICATIONS permission
           if ! grep -q "POST_NOTIFICATIONS" "$MANIFEST"; then
             sed -i 's|<application|<uses-permission android:name="android.permission.POST_NOTIFICATIONS" />\n    <application|' "$MANIFEST"
           fi
-          # default channel
           if ! grep -q "default_notification_channel_id" "$MANIFEST"; then
             sed -i 's|</application>|<meta-data android:name="com.google.firebase.messaging.default_notification_channel_id" android:value="udar_atma_default" />\n    </application>|' "$MANIFEST"
           fi
-          echo "--- AndroidManifest ---"
-          cat "$MANIFEST"
 
       - name: Enable Google Services plugin
         run: |
-          # project-level build.gradle
           if ! grep -q "google-services" android/build.gradle; then
             sed -i "s|dependencies {|dependencies {\n        classpath 'com.google.gms:google-services:4.4.2'|" android/build.gradle
           fi
-          # app-level
-          if ! grep -q "google-services" android/app/build.gradle; then
+          if ! grep -q "com.google.gms.google-services" android/app/build.gradle; then
             echo "" >> android/app/build.gradle
             echo "apply plugin: 'com.google.gms.google-services'" >> android/app/build.gradle
           fi
-          echo "Google Services plugin enabled"
 
       - name: Sync Capacitor
         run: npx cap sync android
 
       - name: Build Debug APK
         working-directory: android
-        run: ./gradlew assembleDebug --no-daemon
+        run: chmod +x gradlew && ./gradlew assembleDebug --no-daemon --stacktrace
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
