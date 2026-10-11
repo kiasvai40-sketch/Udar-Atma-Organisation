@@ -1,0 +1,89 @@
+name: Build Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'capacitor.config.json'
+      - 'package.json'
+      - 'google-services.json'
+      - '.github/workflows/build-apk.yml'
+      - 'www/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Add Android platform
+        run: npx cap add android
+
+      - name: Copy google-services.json
+        run: |
+          if [ -f google-services.json ]; then
+            cp google-services.json android/app/google-services.json
+            echo "google-services.json copied"
+          else
+            echo "ERROR: google-services.json not found in repo root"
+            exit 1
+          fi
+
+      - name: Patch AndroidManifest for notifications
+        run: |
+          MANIFEST="android/app/src/main/AndroidManifest.xml"
+          # POST_NOTIFICATIONS permission
+          if ! grep -q "POST_NOTIFICATIONS" "$MANIFEST"; then
+            sed -i 's|<application|<uses-permission android:name="android.permission.POST_NOTIFICATIONS" />\n    <application|' "$MANIFEST"
+          fi
+          # default channel
+          if ! grep -q "default_notification_channel_id" "$MANIFEST"; then
+            sed -i 's|</application>|<meta-data android:name="com.google.firebase.messaging.default_notification_channel_id" android:value="udar_atma_default" />\n    </application>|' "$MANIFEST"
+          fi
+          echo "--- AndroidManifest ---"
+          cat "$MANIFEST"
+
+      - name: Enable Google Services plugin
+        run: |
+          # project-level build.gradle
+          if ! grep -q "google-services" android/build.gradle; then
+            sed -i "s|dependencies {|dependencies {\n        classpath 'com.google.gms:google-services:4.4.2'|" android/build.gradle
+          fi
+          # app-level
+          if ! grep -q "google-services" android/app/build.gradle; then
+            echo "" >> android/app/build.gradle
+            echo "apply plugin: 'com.google.gms.google-services'" >> android/app/build.gradle
+          fi
+          echo "Google Services plugin enabled"
+
+      - name: Sync Capacitor
+        run: npx cap sync android
+
+      - name: Build Debug APK
+        working-directory: android
+        run: ./gradlew assembleDebug --no-daemon
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: udar-atma-apk
+          path: android/app/build/outputs/apk/debug/*.apk
+          retention-days: 14
