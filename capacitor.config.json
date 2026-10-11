@@ -1,0 +1,18 @@
+{
+  "appId": "org.udaratma.app",
+  "appName": "উদার আত্মা",
+  "webDir": "www",
+  "server": {
+    "url": "https://udar-atma.web.app",
+    "cleartext": false
+  },
+  "plugins": {
+    "PushNotifications": {
+      "presentationOptions": ["badge", "sound", "alert"]
+    }
+  },
+  "android": {
+    "allowMixedContent": false,
+    "backgroundColor": "#0F0F54"
+  }
+}

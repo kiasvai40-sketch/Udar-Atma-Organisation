@@ -1,7 +1,13 @@
 {
-  "name": "udar-atma",
+  "name": "udar-atma-app",
+  "version": "1.0.0",
   "private": true,
   "dependencies": {
-    "firebase-admin": "^12.6.0"
+    "@capacitor/android": "^6.2.0",
+    "@capacitor/core": "^6.2.0",
+    "@capacitor/push-notifications": "^6.0.3"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.2.0"
   }
 }
