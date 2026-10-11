@@ -1,5 +1,5 @@
-// উদার আত্মা সংগঠন — FCM Service Worker
-// অ্যাপ বন্ধ / রিসেন্ট থেকে সরানো থাকলেও পুশ নোটিফিকেশন দেখায়
+// উদার আত্মা সংগঠন — FCM Service Worker (Web fallback)
+// Capacitor native অ্যাপে এটি ব্যবহার হয় না; শুধু ব্রাউজার/PWA-এর জন্য
 
 importScripts('https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/10.13.2/firebase-messaging-compat.js');
@@ -21,47 +21,53 @@ function showPushNotification(title, body, data) {
     icon: '/icon-192.png',
     badge: '/icon-192.png',
     data: data || {},
-    tag: (data && data.tag) || 'udar-atma',
+    tag: (data && data.tag) || 'udar-atma-' + String(Date.now()).slice(-6),
     renotify: true,
     requireInteraction: false,
     vibrate: [120, 80, 120],
-    actions: []
+    silent: false
   };
   return self.registration.showNotification(title || 'উদার আত্মা সংগঠন', options);
 }
 
-// FCM ব্যাকগ্রাউন্ড (অ্যাপ বন্ধ / ব্যাকগ্রাউন্ড)
-messaging.onBackgroundMessage(function(payload) {
-  console.log('[FCM Background]', payload);
-  var title = (payload.notification && payload.notification.title) ||
-              (payload.data && payload.data.title) ||
-              'উদার আত্মা সংগঠন';
-  var body = (payload.notification && payload.notification.body) ||
-             (payload.data && payload.data.body) ||
-             '';
+function extractPayload(payload) {
+  var title =
+    (payload.notification && payload.notification.title) ||
+    (payload.data && payload.data.title) ||
+    'উদার আত্মা সংগঠন';
+  var body =
+    (payload.notification && payload.notification.body) ||
+    (payload.data && payload.data.body) ||
+    '';
   var data = Object.assign({}, payload.data || {}, {
     title: title,
-    body: body
+    body: body,
+    type: (payload.data && payload.data.type) || 'general'
   });
-  return showPushNotification(title, body, data);
+  return { title: title, body: body, data: data };
+}
+
+messaging.onBackgroundMessage(function(payload) {
+  console.log('[FCM Background]', payload);
+  var p = extractPayload(payload || {});
+  return showPushNotification(p.title, p.body, p.data);
 });
 
-// অতিরিক্ত নিরাপত্তা: সাধারণ push ইভেন্ট (কিছু ব্রাউজারে দরকার)
 self.addEventListener('push', function(event) {
-  // FCM SDK নিজে হ্যান্ডেল করলে ডুপ্লিকেট এড়াতে — শুধু raw push হলে
   if (!event.data) return;
-  try {
-    var payload = event.data.json();
-    // যদি notification অবজেক্ট থাকে এবং onBackgroundMessage ইতিমধ্যে চলে, Firebase সাধারণত এটি ম্যানেজ করে
-    // data-only মেসেজের জন্য backup
-    if (payload && payload.data && !payload.notification) {
-      var title = payload.data.title || 'উদার আত্মা সংগঠন';
-      var body = payload.data.body || '';
-      event.waitUntil(showPushNotification(title, body, payload.data));
-    }
-  } catch (e) {
-    console.log('[push parse]', e);
-  }
+  event.waitUntil(
+    (async function() {
+      try {
+        var payload = event.data.json();
+        if (payload && payload.data && !payload.notification) {
+          var p = extractPayload(payload);
+          await showPushNotification(p.title, p.body, p.data);
+        }
+      } catch (e) {
+        console.log('[push parse]', e);
+      }
+    })()
+  );
 });
 
 self.addEventListener('notificationclick', function(event) {
@@ -76,21 +82,12 @@ self.addEventListener('notificationclick', function(event) {
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(clientList) {
       for (var i = 0; i < clientList.length; i++) {
         var client = clientList[i];
-        if (client.url && 'focus' in client) {
-          return client.focus();
-        }
+        if (client.url && 'focus' in client) return client.focus();
       }
-      if (clients.openWindow) {
-        return clients.openWindow(url);
-      }
+      if (clients.openWindow) return clients.openWindow(url);
     })
   );
 });
 
-self.addEventListener('install', function(e) {
-  self.skipWaiting();
-});
-
-self.addEventListener('activate', function(e) {
-  e.waitUntil(self.clients.claim());
-});
+self.addEventListener('install', function(e) { self.skipWaiting(); });
+self.addEventListener('activate', function(e) { e.waitUntil(self.clients.claim()); });

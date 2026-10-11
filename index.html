@@ -552,6 +552,105 @@ const VAPID_KEY = "BECjQ7nU9uLHxRZGbkvZ8tCdGIyAG45UcndLMBPGy1lXTg9XnTf0_FLO1ejDa
 let messaging = null;
 let currentFcmToken = null;
 
+/* ========== NATIVE PUSH (Capacitor) — Recent থেকে সরালেও নোটিফিকেশন ========== */
+async function initNativePush() {
+  if (typeof window.Capacitor === 'undefined' || !window.Capacitor.isNativePlatform()) {
+    console.log('[Push] Web mode — using web FCM');
+    return false;
+  }
+  try {
+    var PushNotifications = null;
+    if (window.Capacitor.Plugins && window.Capacitor.Plugins.PushNotifications) {
+      PushNotifications = window.Capacitor.Plugins.PushNotifications;
+    } else {
+      try {
+        var mod = await import('@capacitor/push-notifications');
+        PushNotifications = mod.PushNotifications;
+      } catch (e) {
+        console.warn('[Push] Plugin not found', e);
+        return false;
+      }
+    }
+    var permStatus = await PushNotifications.checkPermissions();
+    if (permStatus.receive === 'prompt' || permStatus.receive === 'prompt-with-rationale') {
+      permStatus = await PushNotifications.requestPermissions();
+    }
+    if (permStatus.receive !== 'granted') {
+      console.warn('[Push] Native permission denied');
+      if (typeof toast === 'function') toast('নোটিফিকেশন পারমিশন দিন', '');
+      return false;
+    }
+    await PushNotifications.register();
+    await PushNotifications.addListener('registration', async function(token) {
+      console.log('[Push] Native FCM Token:', token.value);
+      currentFcmToken = token.value;
+      await saveNativeFcmToken(token.value);
+    });
+    await PushNotifications.addListener('registrationError', function(err) {
+      console.error('[Push] Registration error', err);
+    });
+    await PushNotifications.addListener('pushNotificationReceived', function(notification) {
+      console.log('[Push] Foreground', notification);
+      var title = notification.title || 'উদার আত্মা সংগঠন';
+      var body = notification.body || '';
+      if (typeof toast === 'function') {
+        toast((title + (body ? ': ' + body : '')).slice(0, 100), '');
+      }
+    });
+    await PushNotifications.addListener('pushNotificationActionPerformed', function(action) {
+      console.log('[Push] Tapped', action);
+    });
+    try {
+      await PushNotifications.createChannel({
+        id: 'udar_atma_default',
+        name: 'উদার আত্মা',
+        description: 'সংগঠনের নোটিফিকেশন',
+        importance: 5,
+        visibility: 1,
+        sound: 'default',
+        vibration: true,
+        lights: true
+      });
+    } catch (chErr) {
+      console.warn('[Push] Channel create', chErr);
+    }
+    console.log('[Push] Native push initialized');
+    return true;
+  } catch (e) {
+    console.error('[Push] initNativePush failed', e);
+    return false;
+  }
+}
+
+async function saveNativeFcmToken(token) {
+  if (!firebaseOK || !token || !fsDB) return;
+  try {
+    var memberId = (session && session.memberId)
+      ? session.memberId
+      : ('guest_' + (localStorage.getItem('fcm_guest_id') || Date.now()));
+    if (!session || !session.memberId) {
+      try { localStorage.setItem('fcm_guest_id', memberId); } catch (e) {}
+    }
+    var m = null;
+    try { m = (typeof currentMember === 'function') ? currentMember() : null; } catch (e) {}
+    var role = (session && session.role) ? session.role : 'guest';
+    var bloodGroup = (m && m.bloodGroup) ? m.bloodGroup : '';
+    await fsDB.collection('fcm_tokens').doc(token.substring(0, 40)).set({
+      token: token,
+      memberId: memberId,
+      role: role,
+      bloodGroup: bloodGroup,
+      platform: 'android-native',
+      updatedAt: Date.now(),
+      userAgent: navigator.userAgent || 'android-native'
+    }, { merge: true });
+    console.log('[Push] Native token saved', role, bloodGroup);
+    if (typeof toast === 'function') toast('নেটিভ নোটিফিকেশন চালু ✓', '');
+  } catch (e) {
+    console.warn('[Push] Token save failed', e);
+  }
+}
+
 function initFCM() {
   if (!firebaseOK || typeof firebase.messaging !== 'function') {
     console.warn('FCM not available');
@@ -3489,9 +3588,19 @@ window.onload = async function(){
     render(); afterLoginNotify();
   }, 1300);
   startRealtimeSync();
-  // FCM পুশ নোটিফিকেশন চালু
-  initFCM();
-  setTimeout(function(){ requestFCMPermissionAndToken(); }, 2000);
+  // FCM / Native পুশ নোটিফিকেশন চালু
+  // Capacitor অ্যাপে native FCM, ব্রাউজারে web FCM
+  if (typeof initNativePush === 'function') {
+    initNativePush().then(function(isNative) {
+      if (!isNative) {
+        initFCM();
+        setTimeout(function(){ requestFCMPermissionAndToken(); }, 1500);
+      }
+    });
+  } else {
+    initFCM();
+    setTimeout(function(){ requestFCMPermissionAndToken(); }, 2000);
+  }
 };
 
 if('serviceWorker' in navigator){
