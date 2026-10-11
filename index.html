@@ -675,10 +675,21 @@ function queueFcmPush({title, body, target, bloodGroup, memberId, type}) {
       console.log('FCM queued', payload.target);
       /* Vercel API — বন্ধ ফোনেও পুশ পাঠায় */
       try {
-        fetch('/api/process-outbox', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' })
-          .then(function(r){ return r.json().catch(function(){ return {}; }); })
-          .then(function(j){ console.log('push process', j); })
-          .catch(function(e){ console.warn('push API', e); });
+        var PUSH_API_URLS = [
+          'https://udar-atma.vercel.app/api/process-outbox',
+          'https://udar-atma-organisation.vercel.app/api/process-outbox'
+        ];
+        var callPushApi = function(i){
+          if (i >= PUSH_API_URLS.length) return;
+          fetch(PUSH_API_URLS[i], { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' })
+            .then(function(r){
+              if (!r.ok) throw new Error('HTTP ' + r.status);
+              return r.json().catch(function(){ return {}; });
+            })
+            .then(function(j){ console.log('push process', j); })
+            .catch(function(e){ console.warn('push API', PUSH_API_URLS[i], e); callPushApi(i + 1); });
+        };
+        callPushApi(0);
       } catch (e) {}
     })
     .catch(function(e){ console.warn('FCM queue failed', e); });
