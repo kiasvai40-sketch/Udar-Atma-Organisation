@@ -13,7 +13,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
 
       - name: Setup Java
         uses: actions/setup-java@v4
@@ -21,7 +21,6 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      # v4 — পুরনো v3 SDK ডাউনলোডে ফেল হচ্ছিল
       - name: Setup Android SDK
         uses: android-actions/setup-android@v4
 
@@ -31,19 +30,48 @@ jobs:
           yes | sdkmanager --licenses || true
 
       - name: Install npm packages
-        run: npm install
+        run: |
+          npm install
+          npm install -D @capacitor/assets
+
+      - name: Prepare app icon
+        run: |
+          mkdir -p resources
+          # লোগো খুঁজে resources/icon.png বানাও
+          if [ -f resources/icon.png ]; then
+            echo "Using resources/icon.png"
+          elif [ -f icon-source.png ]; then
+            cp icon-source.png resources/icon.png
+            echo "Using icon-source.png"
+          elif [ -f icon-512.png ]; then
+            cp icon-512.png resources/icon.png
+            echo "Using icon-512.png"
+          elif [ -f icon-192.png ]; then
+            cp icon-192.png resources/icon.png
+            echo "Using icon-192.png"
+          else
+            echo "WARNING: No icon found — default Capacitor icon will be used"
+          fi
+          ls -la resources/ || true
 
       - name: Add Android platform
         run: npx cap add android
 
+      - name: Generate Android icons from logo
+        run: |
+          if [ -f resources/icon.png ]; then
+            npx capacitor-assets generate --android \
+              --iconBackgroundColor '#0F0F54' \
+              --iconBackgroundColorDark '#0F0F54' || echo "assets generate failed, continuing"
+          fi
+
       - name: Copy google-services.json
         run: |
           if [ ! -f google-services.json ]; then
-            echo "ERROR: google-services.json missing in repo root"
+            echo "ERROR: google-services.json missing"
             exit 1
           fi
           cp google-services.json android/app/google-services.json
-          echo "google-services.json OK"
 
       - name: Patch AndroidManifest
         run: |
