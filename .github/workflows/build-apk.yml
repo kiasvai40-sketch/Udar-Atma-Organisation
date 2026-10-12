@@ -37,7 +37,6 @@ jobs:
       - name: Prepare app icon
         run: |
           mkdir -p resources
-          # লোগো খুঁজে resources/icon.png বানাও
           if [ -f resources/icon.png ]; then
             echo "Using resources/icon.png"
           elif [ -f icon-source.png ]; then
@@ -46,31 +45,36 @@ jobs:
           elif [ -f icon-512.png ]; then
             cp icon-512.png resources/icon.png
             echo "Using icon-512.png"
-          elif [ -f icon-192.png ]; then
-            cp icon-192.png resources/icon.png
-            echo "Using icon-192.png"
           else
-            echo "WARNING: No icon found — default Capacitor icon will be used"
+            echo "WARNING: No custom icon found"
           fi
           ls -la resources/ || true
 
       - name: Add Android platform
         run: npx cap add android
 
-      - name: Generate Android icons from logo
+      - name: Generate Android icons
         run: |
           if [ -f resources/icon.png ]; then
             npx capacitor-assets generate --android \
               --iconBackgroundColor '#0F0F54' \
-              --iconBackgroundColorDark '#0F0F54' || echo "assets generate failed, continuing"
+              --iconBackgroundColorDark '#0F0F54'
+            echo "Icons generated"
+            find android/app/src/main/res -name "ic_launcher*" | head -20
+          fi
+
+      - name: Set app name to উদার আত্মা
+        run: |
+          # strings.xml-এ অ্যাপ নাম
+          STRINGS="android/app/src/main/res/values/strings.xml"
+          if [ -f "$STRINGS" ]; then
+            sed -i 's|<string name="app_name">.*</string>|<string name="app_name">উদার আত্মা</string>|' "$STRINGS"
+            sed -i 's|<string name="title_activity_main">.*</string>|<string name="title_activity_main">উদার আত্মা</string>|' "$STRINGS"
+            cat "$STRINGS"
           fi
 
       - name: Copy google-services.json
         run: |
-          if [ ! -f google-services.json ]; then
-            echo "ERROR: google-services.json missing"
-            exit 1
-          fi
           cp google-services.json android/app/google-services.json
 
       - name: Patch AndroidManifest
@@ -100,9 +104,19 @@ jobs:
         working-directory: android
         run: chmod +x gradlew && ./gradlew assembleDebug --no-daemon --stacktrace
 
+      - name: Rename APK to Udar-Atma.apk
+        run: |
+          OUT="android/app/build/outputs/apk/debug"
+          ls -la "$OUT"
+          if [ -f "$OUT/app-debug.apk" ]; then
+            mv "$OUT/app-debug.apk" "$OUT/Udar-Atma.apk"
+            echo "Renamed to Udar-Atma.apk"
+          fi
+          ls -la "$OUT"
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: udar-atma-apk
-          path: android/app/build/outputs/apk/debug/*.apk
+          path: android/app/build/outputs/apk/debug/Udar-Atma.apk
           retention-days: 14
