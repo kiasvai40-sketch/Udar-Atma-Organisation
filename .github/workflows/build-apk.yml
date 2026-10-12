@@ -30,52 +30,59 @@ jobs:
           yes | sdkmanager --licenses || true
 
       - name: Install npm packages
-        run: |
-          npm install
-          npm install -D @capacitor/assets
-
-      - name: Prepare app icon
-        run: |
-          mkdir -p resources
-          if [ -f resources/icon.png ]; then
-            echo "Using resources/icon.png"
-          elif [ -f icon-source.png ]; then
-            cp icon-source.png resources/icon.png
-            echo "Using icon-source.png"
-          elif [ -f icon-512.png ]; then
-            cp icon-512.png resources/icon.png
-            echo "Using icon-512.png"
-          else
-            echo "WARNING: No custom icon found"
-          fi
-          ls -la resources/ || true
+        run: npm install
 
       - name: Add Android platform
         run: npx cap add android
 
-      - name: Generate Android icons
+      - name: Set app name
         run: |
-          if [ -f resources/icon.png ]; then
-            npx capacitor-assets generate --android \
-              --iconBackgroundColor '#0F0F54' \
-              --iconBackgroundColorDark '#0F0F54'
-            echo "Icons generated"
-            find android/app/src/main/res -name "ic_launcher*" | head -20
-          fi
-
-      - name: Set app name to উদার আত্মা
-        run: |
-          # strings.xml-এ অ্যাপ নাম
           STRINGS="android/app/src/main/res/values/strings.xml"
           if [ -f "$STRINGS" ]; then
-            sed -i 's|<string name="app_name">.*</string>|<string name="app_name">উদার আত্মা</string>|' "$STRINGS"
-            sed -i 's|<string name="title_activity_main">.*</string>|<string name="title_activity_main">উদার আত্মা</string>|' "$STRINGS"
-            cat "$STRINGS"
+            python3 - << 'PY'
+          import re, pathlib
+          p = pathlib.Path("android/app/src/main/res/values/strings.xml")
+          t = p.read_text(encoding="utf-8")
+          t = re.sub(r'<string name="app_name">[^<]*</string>',
+                     '<string name="app_name">উদার আত্মা</string>', t)
+          t = re.sub(r'<string name="title_activity_main">[^<]*</string>',
+                     '<string name="title_activity_main">উদার আত্মা</string>', t)
+          p.write_text(t, encoding="utf-8")
+          print(p.read_text(encoding="utf-8"))
+          PY
+          fi
+
+      - name: Copy custom icons if available
+        run: |
+          # icon-source বা icon-512 থেকে সব mipmap-এ কপি (সহজ পদ্ধতি)
+          SRC=""
+          if [ -f icon-source.png ]; then SRC=icon-source.png
+          elif [ -f icon-512.png ]; then SRC=icon-512.png
+          fi
+          if [ -n "$SRC" ]; then
+            echo "Using icon: $SRC"
+            for dir in android/app/src/main/res/mipmap-*; do
+              [ -d "$dir" ] || continue
+              for f in ic_launcher.png ic_launcher_round.png ic_launcher_foreground.png; do
+                if [ -f "$dir/$f" ] || true; then
+                  cp "$SRC" "$dir/ic_launcher.png" 2>/dev/null || true
+                  cp "$SRC" "$dir/ic_launcher_round.png" 2>/dev/null || true
+                fi
+              done
+            done
+            # adaptive icon foreground
+            for dir in android/app/src/main/res/mipmap-*; do
+              [ -d "$dir" ] || continue
+              cp "$SRC" "$dir/ic_launcher_foreground.png" 2>/dev/null || true
+            done
+            echo "Icons copied"
+            find android/app/src/main/res -name "ic_launcher*.png" | head -30
+          else
+            echo "No custom icon — using default"
           fi
 
       - name: Copy google-services.json
-        run: |
-          cp google-services.json android/app/google-services.json
+        run: cp google-services.json android/app/google-services.json
 
       - name: Patch AndroidManifest
         run: |
@@ -104,15 +111,23 @@ jobs:
         working-directory: android
         run: chmod +x gradlew && ./gradlew assembleDebug --no-daemon --stacktrace
 
-      - name: Rename APK to Udar-Atma.apk
+      - name: Verify and rename APK
         run: |
           OUT="android/app/build/outputs/apk/debug"
           ls -la "$OUT"
-          if [ -f "$OUT/app-debug.apk" ]; then
-            mv "$OUT/app-debug.apk" "$OUT/Udar-Atma.apk"
-            echo "Renamed to Udar-Atma.apk"
+          APK=$(find "$OUT" -name "*.apk" | head -1)
+          if [ -z "$APK" ]; then
+            echo "ERROR: No APK found"
+            exit 1
           fi
-          ls -la "$OUT"
+          SIZE=$(stat -c%s "$APK")
+          echo "APK size: $SIZE bytes"
+          if [ "$SIZE" -lt 2000000 ]; then
+            echo "ERROR: APK too small ($SIZE) — build likely broken"
+            exit 1
+          fi
+          mv "$APK" "$OUT/Udar-Atma.apk"
+          ls -la "$OUT/Udar-Atma.apk"
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
