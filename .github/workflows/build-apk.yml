@@ -77,9 +77,51 @@ jobs:
       - name: Copy google-services.json
         run: cp google-services.json android/app/google-services.json
 
+      - name: Generate notification icon from logo (white silhouette)
+        run: |
+          pip install pillow numpy || pip install --break-system-packages pillow numpy || true
+          mkdir -p android/app/src/main/res/values
+          python3 - <<'PY' || echo "Icon generation failed - skipping notification icon"
+          from PIL import Image
+          import numpy as np, os
+          src = 'icon-source.png' if os.path.exists('icon-source.png') else 'icon-512.png'
+          a = np.array(Image.open(src).convert('RGB')).astype(int)
+          h, w, _ = a.shape
+          r, g, b = a[..., 0], a[..., 1], a[..., 2]
+          red = (r > 180) & (g < 80) & (b < 80)
+          ys, xs = np.where(red)
+          x0, x1, y0, y1 = xs.min(), xs.max(), ys.min(), ys.max()
+          cx, cy, R = (x0 + x1) / 2, (y0 + y1) / 2, (x1 - x0) / 2
+          yy, xx = np.mgrid[0:h, 0:w]
+          inside = ((xx - cx) ** 2 + (yy - cy) ** 2) < (R * 0.97) ** 2
+          mask = (r > 200) & (g > 200) & (b > 200) & inside
+          ys, xs = np.where(mask)
+          m = mask[ys.min():ys.max() + 1, xs.min():xs.max() + 1]
+          mh, mw = m.shape
+          side = int(max(mh, mw) * 1.25)
+          canvas = np.zeros((side, side), dtype=np.uint8)
+          oy, ox = (side - mh) // 2, (side - mw) // 2
+          canvas[oy:oy + mh, ox:ox + mw] = m * 255
+          alpha = Image.fromarray(canvas)
+          sizes = {'mdpi': 24, 'hdpi': 36, 'xhdpi': 48, 'xxhdpi': 72, 'xxxhdpi': 96}
+          for d, s in sizes.items():
+              p = f'android/app/src/main/res/drawable-{d}'
+              os.makedirs(p, exist_ok=True)
+              out = Image.new('RGBA', (s, s), (255, 255, 255, 0))
+              out.putalpha(alpha.resize((s, s), Image.LANCZOS))
+              out.save(p + '/ic_stat_notification.png')
+          open('android/app/src/main/res/values/notification_color.xml', 'w').write(
+              '<?xml version="1.0" encoding="utf-8"?>\n<resources>\n'
+              '    <color name="notification_color">#E31E24</color>\n</resources>\n')
+          PY
+          find android/app/src/main/res -name "ic_stat_notification*" | sort || true
+
       - name: Patch AndroidManifest
         run: |
           MANIFEST="android/app/src/main/AndroidManifest.xml"
+          if [ -f android/app/src/main/res/drawable-mdpi/ic_stat_notification.png ] && ! grep -q "default_notification_icon" "$MANIFEST"; then
+            sed -i 's|</application>|<meta-data android:name="com.google.firebase.messaging.default_notification_icon" android:resource="@drawable/ic_stat_notification" />\n        <meta-data android:name="com.google.firebase.messaging.default_notification_color" android:resource="@color/notification_color" />\n    </application>|' "$MANIFEST"
+          fi
           if ! grep -q "POST_NOTIFICATIONS" "$MANIFEST"; then
             sed -i 's|<application|<uses-permission android:name="android.permission.POST_NOTIFICATIONS" />\n    <application|' "$MANIFEST"
           fi
