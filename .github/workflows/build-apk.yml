@@ -57,8 +57,8 @@ jobs:
       - name: Generate launcher icons (official way)
         run: |
           npx capacitor-assets generate --android \
-            --iconBackgroundColor '#0F0F54' \
-            --iconBackgroundColorDark '#0F0F54'
+            --iconBackgroundColor '#FFFFFF' \
+            --iconBackgroundColorDark '#FFFFFF'
           echo "=== Generated launcher files ==="
           find android/app/src/main/res -name "ic_launcher*" | sort
 
