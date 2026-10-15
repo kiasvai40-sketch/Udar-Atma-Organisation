@@ -33,10 +33,35 @@ jobs:
           yes | sdkmanager --licenses || true
 
       - name: Install npm packages
-        run: npm install
+        run: |
+          npm install
+          npm install -D @capacitor/assets
+
+      - name: Prepare icon
+        run: |
+          mkdir -p resources
+          if [ -f icon-source.png ]; then
+            cp icon-source.png resources/icon.png
+            echo "Using icon-source.png"
+          elif [ -f icon-512.png ]; then
+            cp icon-512.png resources/icon.png
+            echo "Using icon-512.png"
+          else
+            echo "WARNING: No custom icon found — default will be used"
+          fi
+          ls -la resources/ || true
 
       - name: Add Android platform
         run: npx cap add android
+
+      - name: Generate launcher icons
+        run: |
+          if [ -f resources/icon.png ]; then
+            npx capacitor-assets generate --android \
+              --iconBackgroundColor '#0F0F54' \
+              --iconBackgroundColorDark '#0F0F54' || echo "assets generate failed, continuing"
+            find android/app/src/main/res -name "ic_launcher*" | head -20
+          fi
 
       - name: Set app name উদার আত্মা
         run: |
@@ -77,11 +102,8 @@ jobs:
           if [ -f release.keystore ]; then
             cp release.keystore android/release.keystore
             echo "Using release.keystore from repo"
-          elif [ -n "${{ secrets.KEYSTORE_BASE64 }}" ]; then
-            echo "${{ secrets.KEYSTORE_BASE64 }}" | tr -d '\n\r ' | base64 -d > android/release.keystore
-            echo "Using KEYSTORE_BASE64 secret"
           else
-            echo "ERROR: release.keystore file or KEYSTORE_BASE64 secret required"
+            echo "ERROR: release.keystore missing in repo root"
             exit 1
           fi
           ls -la android/release.keystore
@@ -93,7 +115,7 @@ jobs:
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
           if [ -z "$KEYSTORE_PASSWORD" ] || [ -z "$KEY_ALIAS" ] || [ -z "$KEY_PASSWORD" ]; then
-            echo "ERROR: KEYSTORE_PASSWORD / KEY_ALIAS / KEY_PASSWORD secrets missing"
+            echo "ERROR: signing secrets missing"
             exit 1
           fi
           python3 << 'PY'
@@ -141,7 +163,6 @@ jobs:
           APK=$(find "$OUT" -name "*.apk" | head -1)
           if [ -z "$APK" ]; then
             echo "ERROR: Release APK not found"
-            find android/app/build/outputs -type f | head -50
             exit 1
           fi
           cp "$APK" Udar-Atma-Release.apk
@@ -165,12 +186,12 @@ jobs:
             ## উদার আত্মা সংগঠন — Android অ্যাপ
 
             **ইনস্টল:**
-            1. `Udar-Atma-Release.apk` ডাউনলোড করুন
-            2. ফোনে Unknown sources অনুমতি দিন
+            1. APK ডাউনলোড করুন
+            2. Unknown sources অনুমতি দিন
             3. Install চাপুন
-            4. নোটিফিকেশন Allow + Battery → Unrestricted
+            4. নোটিফিকেশন Allow + Battery Unrestricted
 
-            ডাউনলোড পেজ: https://udar-atma.web.app/download
+            ডাউনলোড: https://udar-atma.web.app/download
           files: Udar-Atma-Release.apk
           draft: false
           prerelease: false
