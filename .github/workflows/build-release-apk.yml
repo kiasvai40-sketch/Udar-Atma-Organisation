@@ -38,59 +38,43 @@ jobs:
           npm install
           npm install -D @capacitor/assets
 
-      - name: Prepare icons (white background)
+      - name: Prepare icon sources
         run: |
-          mkdir -p resources android/app/src/main/res/drawable
-
-          # —— ১ম লোগো: অ্যাপ আইকন + নোটিফিকেশন বড় আইকন ——
+          mkdir -p resources
           if [ ! -f icon-source.png ]; then
-            echo "ERROR: icon-source.png (পূর্ণ সিল লোগো) রিপো রুটে লাগবে"
+            echo "ERROR: icon-source.png required"
             exit 1
           fi
-          # সাদা ব্যাকগ্রাউন্ডে বসান
-          convert icon-source.png -background white -gravity center -extent 1024x1024 \
-            resources/icon.png
-          echo "App icon ready from icon-source.png"
-
-          # —— ২য় লোগো: নোটিফিকেশন ছোট/একরঙা আইকন ——
+          convert icon-source.png -background white -gravity center -extent 1024x1024 resources/icon.png
           if [ -f icon-notification.png ]; then
-            SRC_NOTIF=icon-notification.png
+            cp icon-notification.png resources/icon-notification.png
           else
-            echo "WARNING: icon-notification.png নেই — icon-source ব্যবহার"
-            SRC_NOTIF=icon-source.png
+            cp icon-source.png resources/icon-notification.png
           fi
-          # সাদা BG + স্ট্যাটাস বারের জন্য সাদা সিলুয়েটও তৈরি
-          convert "$SRC_NOTIF" -background white -gravity center -extent 256x256 \
-            android/app/src/main/res/drawable/ic_notification_large.png
-          # Status bar: white on transparent (Android rule)
-          convert "$SRC_NOTIF" -resize 96x96 -background none -gravity center -extent 96x96 \
-            -colorspace Gray -threshold 40% -alpha on \
-            -channel RGB -evaluate set 100% \
-            android/app/src/main/res/drawable/ic_stat_udar.png || \
-          convert "$SRC_NOTIF" -resize 96x96 -background white -gravity center -extent 96x96 \
-            android/app/src/main/res/drawable/ic_stat_udar.png
-
-          ls -la resources/ android/app/src/main/res/drawable/
+          ls -la resources/
 
       - name: Add Android platform
-        run: npx cap add android
+        run: |
+          rm -rf android
+          npx cap add android
 
       - name: Generate launcher icons
         run: |
           npx capacitor-assets generate --android \
             --iconBackgroundColor '#FFFFFF' \
             --iconBackgroundColorDark '#FFFFFF'
-          find android/app/src/main/res -name "ic_launcher*" | sort | head -30
+          find android/app/src/main/res -name "ic_launcher*" | sort | head -20
 
-      - name: Re-copy notification drawables (cap may reset)
+      - name: Create notification icons
         run: |
           mkdir -p android/app/src/main/res/drawable
-          if [ -f icon-notification.png ]; then SRC=icon-notification.png; else SRC=icon-source.png; fi
-          convert "$SRC" -background white -gravity center -extent 256x256 \
+          convert resources/icon-notification.png -background white -gravity center -extent 256x256 \
             android/app/src/main/res/drawable/ic_notification_large.png
-          convert "$SRC" -resize 96x96 -background none -gravity center -extent 96x96 \
+          convert resources/icon-notification.png -resize 96x96 -background none -gravity center -extent 96x96 \
             -colorspace Gray -threshold 40% -alpha on -channel RGB -evaluate set 100% \
-            android/app/src/main/res/drawable/ic_stat_udar.png || true
+            android/app/src/main/res/drawable/ic_stat_udar.png || \
+          convert resources/icon-notification.png -resize 96x96 -background white -gravity center -extent 96x96 \
+            android/app/src/main/res/drawable/ic_stat_udar.png
           ls -la android/app/src/main/res/drawable/
 
       - name: Set app name
@@ -194,7 +178,7 @@ jobs:
           name: উদার আত্মা v${{ steps.apk.outputs.version }}
           body: |
             লোগোসহ Release APK
-            ডাউনলোড: https://udar-atma.web.app/download
+            https://udar-atma.web.app/download
           files: Udar-Atma-Release.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
