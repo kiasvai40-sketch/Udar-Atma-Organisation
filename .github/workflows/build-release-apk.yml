@@ -27,43 +27,73 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v4
 
-      - name: Install platform & build-tools
+      - name: Install tools
         run: |
           sdkmanager "platforms;android-34" "build-tools;34.0.0" "platform-tools" || true
           yes | sdkmanager --licenses || true
+          sudo apt-get update -qq && sudo apt-get install -y -qq imagemagick
 
       - name: Install npm packages
         run: |
           npm install
           npm install -D @capacitor/assets
 
-      - name: Prepare icon
+      - name: Prepare icons (white background)
         run: |
-          mkdir -p resources
-          if [ -f icon-source.png ]; then
-            cp icon-source.png resources/icon.png
-            echo "Using icon-source.png"
-          elif [ -f icon-512.png ]; then
-            cp icon-512.png resources/icon.png
-            echo "Using icon-512.png"
-          else
-            echo "WARNING: No custom icon found — default will be used"
+          mkdir -p resources android/app/src/main/res/drawable
+
+          # —— ১ম লোগো: অ্যাপ আইকন + নোটিফিকেশন বড় আইকন ——
+          if [ ! -f icon-source.png ]; then
+            echo "ERROR: icon-source.png (পূর্ণ সিল লোগো) রিপো রুটে লাগবে"
+            exit 1
           fi
-          ls -la resources/ || true
+          # সাদা ব্যাকগ্রাউন্ডে বসান
+          convert icon-source.png -background white -gravity center -extent 1024x1024 \
+            resources/icon.png
+          echo "App icon ready from icon-source.png"
+
+          # —— ২য় লোগো: নোটিফিকেশন ছোট/একরঙা আইকন ——
+          if [ -f icon-notification.png ]; then
+            SRC_NOTIF=icon-notification.png
+          else
+            echo "WARNING: icon-notification.png নেই — icon-source ব্যবহার"
+            SRC_NOTIF=icon-source.png
+          fi
+          # সাদা BG + স্ট্যাটাস বারের জন্য সাদা সিলুয়েটও তৈরি
+          convert "$SRC_NOTIF" -background white -gravity center -extent 256x256 \
+            android/app/src/main/res/drawable/ic_notification_large.png
+          # Status bar: white on transparent (Android rule)
+          convert "$SRC_NOTIF" -resize 96x96 -background none -gravity center -extent 96x96 \
+            -colorspace Gray -threshold 40% -alpha on \
+            -channel RGB -evaluate set 100% \
+            android/app/src/main/res/drawable/ic_stat_udar.png || \
+          convert "$SRC_NOTIF" -resize 96x96 -background white -gravity center -extent 96x96 \
+            android/app/src/main/res/drawable/ic_stat_udar.png
+
+          ls -la resources/ android/app/src/main/res/drawable/
 
       - name: Add Android platform
         run: npx cap add android
 
       - name: Generate launcher icons
         run: |
-          if [ -f resources/icon.png ]; then
-            npx capacitor-assets generate --android \
-              --iconBackgroundColor '#0F0F54' \
-              --iconBackgroundColorDark '#0F0F54' || echo "assets generate failed, continuing"
-            find android/app/src/main/res -name "ic_launcher*" | head -20
-          fi
+          npx capacitor-assets generate --android \
+            --iconBackgroundColor '#FFFFFF' \
+            --iconBackgroundColorDark '#FFFFFF'
+          find android/app/src/main/res -name "ic_launcher*" | sort | head -30
 
-      - name: Set app name উদার আত্মা
+      - name: Re-copy notification drawables (cap may reset)
+        run: |
+          mkdir -p android/app/src/main/res/drawable
+          if [ -f icon-notification.png ]; then SRC=icon-notification.png; else SRC=icon-source.png; fi
+          convert "$SRC" -background white -gravity center -extent 256x256 \
+            android/app/src/main/res/drawable/ic_notification_large.png
+          convert "$SRC" -resize 96x96 -background none -gravity center -extent 96x96 \
+            -colorspace Gray -threshold 40% -alpha on -channel RGB -evaluate set 100% \
+            android/app/src/main/res/drawable/ic_stat_udar.png || true
+          ls -la android/app/src/main/res/drawable/
+
+      - name: Set app name
         run: |
           python3 -c "
           import pathlib, re
@@ -83,8 +113,8 @@ jobs:
           if ! grep -q "POST_NOTIFICATIONS" "$MANIFEST"; then
             sed -i 's|<application|<uses-permission android:name="android.permission.POST_NOTIFICATIONS" />\n    <application|' "$MANIFEST"
           fi
-          if ! grep -q "default_notification_channel_id" "$MANIFEST"; then
-            sed -i 's|</application>|<meta-data android:name="com.google.firebase.messaging.default_notification_channel_id" android:value="udar_atma_default" />\n    </application>|' "$MANIFEST"
+          if ! grep -q "default_notification_icon" "$MANIFEST"; then
+            sed -i 's|</application>|<meta-data android:name="com.google.firebase.messaging.default_notification_icon" android:resource="@drawable/ic_stat_udar" />\n    <meta-data android:name="com.google.firebase.messaging.default_notification_channel_id" android:value="udar_atma_default" />\n    </application>|' "$MANIFEST"
           fi
 
       - name: Enable Google Services plugin
@@ -99,14 +129,8 @@ jobs:
 
       - name: Prepare keystore
         run: |
-          if [ -f release.keystore ]; then
-            cp release.keystore android/release.keystore
-            echo "Using release.keystore from repo"
-          else
-            echo "ERROR: release.keystore missing in repo root"
-            exit 1
-          fi
-          ls -la android/release.keystore
+          test -f release.keystore || { echo "release.keystore missing"; exit 1; }
+          cp release.keystore android/release.keystore
 
       - name: Configure release signing
         env:
@@ -114,17 +138,13 @@ jobs:
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
-          if [ -z "$KEYSTORE_PASSWORD" ] || [ -z "$KEY_ALIAS" ] || [ -z "$KEY_PASSWORD" ]; then
-            echo "ERROR: signing secrets missing"
-            exit 1
-          fi
           python3 << 'PY'
           import os, pathlib, re
           p = pathlib.Path("android/app/build.gradle")
           t = p.read_text(encoding="utf-8")
-          store_pass = os.environ["KEYSTORE_PASSWORD"].replace("\\", "\\\\").replace("'", "\\'")
-          key_pass = os.environ["KEY_PASSWORD"].replace("\\", "\\\\").replace("'", "\\'")
-          alias = os.environ["KEY_ALIAS"].replace("\\", "\\\\").replace("'", "\\'")
+          store_pass = os.environ["KEYSTORE_PASSWORD"].replace("'", "\\'")
+          key_pass = os.environ["KEY_PASSWORD"].replace("'", "\\'")
+          alias = os.environ["KEY_ALIAS"].replace("'", "\\'")
           signing = f'''
           signingConfigs {{
               release {{
@@ -138,13 +158,8 @@ jobs:
           if "signingConfigs" not in t:
               t = t.replace("android {", "android {\n" + signing, 1)
           if "signingConfig signingConfigs.release" not in t:
-              t = re.sub(
-                  r'(buildTypes\s*\{[^}]*release\s*\{)',
-                  r"\1\n            signingConfig signingConfigs.release",
-                  t,
-                  count=1,
-                  flags=re.S,
-              )
+              t = re.sub(r'(buildTypes\s*\{[^}]*release\s*\{)',
+                         r"\1\n            signingConfig signingConfigs.release", t, count=1, flags=re.S)
           t = t.replace("minifyEnabled true", "minifyEnabled false")
           p.write_text(t, encoding="utf-8")
           PY
@@ -159,16 +174,11 @@ jobs:
       - name: Prepare APK
         id: apk
         run: |
-          OUT="android/app/build/outputs/apk/release"
-          APK=$(find "$OUT" -name "*.apk" | head -1)
-          if [ -z "$APK" ]; then
-            echo "ERROR: Release APK not found"
-            exit 1
-          fi
+          APK=$(find android/app/build/outputs/apk/release -name "*.apk" | head -1)
+          test -n "$APK" || exit 1
           cp "$APK" Udar-Atma-Release.apk
           ls -lah Udar-Atma-Release.apk
-          VERSION="1.0.${{ github.run_number }}"
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "version=1.0.${{ github.run_number }}" >> $GITHUB_OUTPUT
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -183,17 +193,8 @@ jobs:
           tag_name: v${{ steps.apk.outputs.version }}
           name: উদার আত্মা v${{ steps.apk.outputs.version }}
           body: |
-            ## উদার আত্মা সংগঠন — Android অ্যাপ
-
-            **ইনস্টল:**
-            1. APK ডাউনলোড করুন
-            2. Unknown sources অনুমতি দিন
-            3. Install চাপুন
-            4. নোটিফিকেশন Allow + Battery Unrestricted
-
+            লোগোসহ Release APK
             ডাউনলোড: https://udar-atma.web.app/download
           files: Udar-Atma-Release.apk
-          draft: false
-          prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
