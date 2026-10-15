@@ -72,15 +72,18 @@ jobs:
             echo "apply plugin: 'com.google.gms.google-services'" >> android/app/build.gradle
           fi
 
-      - name: Decode release keystore
-        env:
-          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+      - name: Prepare keystore
         run: |
-          if [ -z "$KEYSTORE_BASE64" ]; then
-            echo "ERROR: Secret KEYSTORE_BASE64 missing"
+          if [ -f release.keystore ]; then
+            cp release.keystore android/release.keystore
+            echo "Using release.keystore from repo"
+          elif [ -n "${{ secrets.KEYSTORE_BASE64 }}" ]; then
+            echo "${{ secrets.KEYSTORE_BASE64 }}" | tr -d '\n\r ' | base64 -d > android/release.keystore
+            echo "Using KEYSTORE_BASE64 secret"
+          else
+            echo "ERROR: release.keystore file or KEYSTORE_BASE64 secret required"
             exit 1
           fi
-          echo "$KEYSTORE_BASE64" | base64 -d > android/release.keystore
           ls -la android/release.keystore
 
       - name: Configure release signing
@@ -138,6 +141,7 @@ jobs:
           APK=$(find "$OUT" -name "*.apk" | head -1)
           if [ -z "$APK" ]; then
             echo "ERROR: Release APK not found"
+            find android/app/build/outputs -type f | head -50
             exit 1
           fi
           cp "$APK" Udar-Atma-Release.apk
@@ -162,13 +166,11 @@ jobs:
 
             **ইনস্টল:**
             1. `Udar-Atma-Release.apk` ডাউনলোড করুন
-            2. ফোনে **Unknown sources / Install unknown apps** অনুমতি দিন
-            3. APK ওপেন করে Install চাপুন
-            4. নোটিফিকেশন **Allow** + Battery → **Unrestricted**
+            2. ফোনে Unknown sources অনুমতি দিন
+            3. Install চাপুন
+            4. নোটিফিকেশন Allow + Battery → Unrestricted
 
-            **ফিচার:** সদস্য ব্যবস্থাপনা, নোটিস, রক্তদান, নেটিভ পুশ নোটিফিকেশন
-
-            ওয়েবসাইট আপডেট হলে অ্যাপে অটো দেখা যাবে।
+            ডাউনলোড পেজ: https://udar-atma.web.app/download
           files: Udar-Atma-Release.apk
           draft: false
           prerelease: false
