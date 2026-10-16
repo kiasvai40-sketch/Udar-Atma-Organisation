@@ -1850,6 +1850,18 @@ function screenProfile(){
       </div>
     `).join('')}</div>` : ''}
 
+    <div class="section-title"><h3><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M12 11a4 4 0 100-8 4 4 0 000 8z"/></svg> ব্যক্তিগত তথ্য</h3></div>
+    <div class="card">
+      <div class="list-item"><div class="ico"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 2h8a2 2 0 012 2v16a2 2 0 01-2 2H8a2 2 0 01-2-2V4a2 2 0 012-2zM11 19h2"/></svg></div><div class="meta"><b>মোবাইল</b><span>${m.mobile}</span></div></div>
+      <div class="list-item"><div class="ico"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5S19 10.2 19 15a7 7 0 11-14 0C5 10.2 12 2.5 12 2.5z"/></svg></div><div class="meta"><b>ব্লাড গ্রুপ</b><span>${m.bloodGroup}</span></div></div>
+      <div class="list-item"><div class="ico"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5a1 1 0 011-1h14a1 1 0 011 1v16a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 10h16M8 3v4M16 3v4M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg></div><div class="meta"><b>যোগদানের তারিখ</b><span>${m.joinDate}</span></div></div>
+    </div>
+
+    <div class="section-title"><h3><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM22 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg> সদস্য র‍্যাংকিং</h3><a onclick="openMemberRankingFull()">সব দেখুন</a></div>
+    <div class="card">
+      ${memberRanking().slice(0,5).map((mm,idx)=>memberRankRow(mm,idx)).join('')}
+    </div>
+
     ${pointListSectionHTML(false)}
 
     <div id="contribSection" class="section-title"><h3><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7zM3 10h18M7 15h4"/></svg> আর্থিক হিসাব</h3></div>
@@ -1862,18 +1874,6 @@ function screenProfile(){
       ${db.payments.some(p=>p.member===m.id&&p.status==='pending')?'<p style="font-size:12px;color:#8a6400;margin-top:10px;">আপনার পেমেন্ট যাচাইয়ের অপেক্ষায় আছে। অনুমোদনের পর সংশ্লিষ্ট মাসগুলো পরিশোধিত দেখাবে।</p>':''}
     </div>
     ${unpaidMonthList(m).length?`<button class="btn btn-red" style="margin-bottom:14px;" onclick="openMonthlyPayment()">মাস নির্বাচন করে চাঁদা পরিশোধ করুন</button>`:''}
-
-    <div class="section-title"><h3><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M12 11a4 4 0 100-8 4 4 0 000 8z"/></svg> ব্যক্তিগত তথ্য</h3></div>
-    <div class="card">
-      <div class="list-item"><div class="ico"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 2h8a2 2 0 012 2v16a2 2 0 01-2 2H8a2 2 0 01-2-2V4a2 2 0 012-2zM11 19h2"/></svg></div><div class="meta"><b>মোবাইল</b><span>${m.mobile}</span></div></div>
-      <div class="list-item"><div class="ico"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5S19 10.2 19 15a7 7 0 11-14 0C5 10.2 12 2.5 12 2.5z"/></svg></div><div class="meta"><b>ব্লাড গ্রুপ</b><span>${m.bloodGroup}</span></div></div>
-      <div class="list-item"><div class="ico"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5a1 1 0 011-1h14a1 1 0 011 1v16a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 10h16M8 3v4M16 3v4M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg></div><div class="meta"><b>যোগদানের তারিখ</b><span>${m.joinDate}</span></div></div>
-    </div>
-
-    <div class="section-title"><h3><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM22 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg> সদস্য র‍্যাংকিং</h3><a onclick="openMemberRankingFull()">সব দেখুন</a></div>
-    <div class="card">
-      ${memberRanking().slice(0,5).map((mm,idx)=>memberRankRow(mm,idx)).join('')}
-    </div>
 
     <button class="btn btn-ghost" style="margin-top:12px;" onclick="openEditProfile()"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> প্রোফাইল সম্পাদনা করুন</button>
     <button class="btn btn-outline" style="margin-top:10px;" onclick="logout()"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3h12v18H4V3zM10 12h.01M16 8l5 2v10H16"/></svg> লগআউট</button>
