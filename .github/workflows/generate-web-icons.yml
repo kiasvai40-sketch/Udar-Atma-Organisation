@@ -1,0 +1,82 @@
+name: Generate Web Icons
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install tools
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq imagemagick python3-pil
+
+      - name: Generate icons from sources
+        run: |
+          python3 << 'PY'
+          from PIL import Image
+          import os
+
+          assert os.path.exists('icon-source.png'), 'icon-source.png missing'
+          assert os.path.exists('icon-notification.png'), 'icon-notification.png missing'
+
+          src = Image.open('icon-source.png').convert('RGBA')
+          side, scale = 1024, 0.92
+          ls = int(side * scale)
+          logo = src.resize((ls, ls), Image.Resampling.LANCZOS)
+          canvas = Image.new('RGBA', (side, side), (255, 255, 255, 255))
+          canvas.paste(logo, ((side - ls) // 2, (side - ls) // 2), logo)
+          rgb = Image.new('RGB', (side, side), (255, 255, 255))
+          rgb.paste(canvas, mask=canvas.split()[-1])
+          rgb.resize((192, 192), Image.Resampling.LANCZOS).save('icon-192.png')
+          rgb.resize((512, 512), Image.Resampling.LANCZOS).save('icon-512.png')
+
+          scale_m = 0.72
+          ls = int(side * scale_m)
+          logo_m = src.resize((ls, ls), Image.Resampling.LANCZOS)
+          cm = Image.new('RGBA', (side, side), (255, 255, 255, 255))
+          cm.paste(logo_m, ((side - ls) // 2, (side - ls) // 2), logo_m)
+          rm = Image.new('RGB', (side, side), (255, 255, 255))
+          rm.paste(cm, mask=cm.split()[-1])
+          rm.resize((512, 512), Image.Resampling.LANCZOS).save('icon-512-maskable.png')
+
+          sm = Image.open('icon-notification.png').convert('RGBA')
+          RED, NAVY = (0xE3, 0x1C, 0x24, 255), (0x0F, 0x0F, 0x54, 255)
+          w, h = sm.size
+          px = sm.load()
+          out = Image.new('RGBA', (w, h))
+          op = out.load()
+          corner = px[5, 5]
+          if corner[0] > 150 and corner[1] < 100:
+              for y in range(h):
+                  for x in range(w):
+                      r, g, b, a = px[x, y]
+                      if (b > r + 15 and r < 80) or (r < 80 and g < 80 and b < 100):
+                          op[x, y] = NAVY
+                      else:
+                          op[x, y] = RED
+          else:
+              for y in range(h):
+                  for x in range(w):
+                      r, g, b, a = px[x, y]
+                      if r < 100 and g < 100 and b < 120:
+                          op[x, y] = NAVY
+                      else:
+                          op[x, y] = RED
+          out.resize((96, 96), Image.Resampling.LANCZOS).save('badge-96.png')
+          print('Generated: icon-192, icon-512, icon-512-maskable, badge-96')
+          PY
+          ls -la icon-192.png icon-512.png icon-512-maskable.png badge-96.png
+
+      - name: Commit icons
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add icon-192.png icon-512.png icon-512-maskable.png badge-96.png
+          git diff --staged --quiet && echo "No changes" && exit 0
+          git commit -m "Generate web icons from icon-source + icon-notification"
+          git push
