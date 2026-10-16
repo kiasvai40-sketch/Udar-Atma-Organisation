@@ -1850,6 +1850,8 @@ function screenProfile(){
       </div>
     `).join('')}</div>` : ''}
 
+    ${pointListSectionHTML(false)}
+
     <div id="contribSection" class="section-title"><h3><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7zM3 10h18M7 15h4"/></svg> আর্থিক হিসাব</h3></div>
     <div class="card" style="margin-bottom:12px;">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
@@ -2376,7 +2378,7 @@ function ensurePointRules(){
   return db.pointRules;
 }
 function bnNum(n){ return String(n).replace(/\d/g,d=>'০১২৩৪৫৬৭৮৯'[d]); }
-function pointCardHTML(type){
+function pointCardHTML(type,editable){
   const rules=ensurePointRules()[type];
   const isPlus=type==='plus';
   const col=isPlus?'var(--success)':'var(--red)';
@@ -2389,29 +2391,34 @@ function pointCardHTML(type){
     ${rules.map((r,i)=>`<div class="list-item">
       <div class="ico rank-ico" style="background:${bg};color:${col};">${bnNum(i+1)}</div>
       <div class="meta"><b>${isPlus?'+':'−'}${bnNum(r.points)} পয়েন্ট</b><span>${esc(r.reason)}</span></div>
+      ${editable?`<div style="display:flex;gap:6px;align-items:center;">
+        <button class="btn btn-sm btn-ghost" style="padding:8px 10px;" aria-label="সম্পাদনা" onclick="openAddPointRule('${type}',${r.id})"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></button>
+        <button class="btn btn-sm btn-danger-outline" style="padding:8px 10px;" aria-label="মুছুন" onclick="confirmDeletePointRule('${type}',${r.id})"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M8 6V4a1 1 0 011-1h6a1 1 0 011 1v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6M10 11v6M14 11v6"/></svg></button>
+      </div>`:''}
     </div>`).join('') || `<div style="font-size:12.5px;color:var(--muted);padding:8px 2px;">এখনো কোনো এন্ট্রি নেই</div>`}
-    <div style="display:flex;justify-content:center;margin-top:10px;">
+    ${editable?`<div style="display:flex;justify-content:center;margin-top:10px;">
       <button class="icon-btn" style="background:${bg};border-color:${col};color:${col};" aria-label="${isPlus?'প্লাস':'নেগেটিভ'} পয়েন্ট এন্ট্রি যোগ করুন" onclick="openAddPointRule('${type}')"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
-    </div>
+    </div>`:''}
   </div>`;
 }
-function pointListSectionHTML(){
+function pointListSectionHTML(editable){
   return `<div class="section-title"><h3><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15a6 6 0 100-12 6 6 0 000 12zM8.2 14.5L7 22l5-3 5 3-1.2-7.5"/></svg> পয়েন্ট তালিকা</h3></div>
   <div class="point-list-wrap" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;">
-    ${pointCardHTML('plus')}${pointCardHTML('minus')}
+    ${pointCardHTML('plus',!!editable)}${pointCardHTML('minus',!!editable)}
   </div>`;
 }
-function openAddPointRule(type){
+function openAddPointRule(type,ruleId){
   if(session.role!=='superadmin') return;
   const isPlus=type==='plus';
+  const r = ruleId!=null ? ensurePointRules()[type].find(x=>x.id===ruleId) : null;
   openModal(`
-    <div class="modal-title"><h3>${isPlus?'প্লাস পয়েন্ট এন্ট্রি (+)':'নেগেটিভ পয়েন্ট এন্ট্রি (−)'}</h3><button onclick="closeModal()"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
-    <label class="field"><span>পয়েন্ট</span><input id="prPoints" type="number" min="1" step="1" inputmode="numeric" placeholder="যেমন: ৫, ১০, ১৫"></label>
-    <label class="field"><span>শর্ত</span><textarea id="prReason" placeholder="কারণ বা শর্ত লিখুন"></textarea></label>
-    <button class="btn ${isPlus?'btn-primary':'btn-red'}" onclick="savePointRule('${type}')">Save</button>
+    <div class="modal-title"><h3>${r?'এন্ট্রি সম্পাদনা':(isPlus?'প্লাস পয়েন্ট এন্ট্রি (+)':'নেগেটিভ পয়েন্ট এন্ট্রি (−)')}</h3><button onclick="closeModal()"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
+    <label class="field"><span>পয়েন্ট</span><input id="prPoints" type="number" min="1" step="1" inputmode="numeric" placeholder="যেমন: ৫, ১০, ১৫" value="${r?r.points:''}"></label>
+    <label class="field"><span>শর্ত</span><textarea id="prReason" placeholder="কারণ বা শর্ত লিখুন">${r?esc(r.reason):''}</textarea></label>
+    <button class="btn ${isPlus?'btn-primary':'btn-red'}" onclick="savePointRule('${type}'${r?','+r.id:''})">Save</button>
   `);
 }
-function savePointRule(type){
+function savePointRule(type,ruleId){
   if(session.role!=='superadmin') return;
   const pts=Number(document.getElementById('prPoints').value);
   const reason=document.getElementById('prReason').value.trim();
@@ -2419,10 +2426,36 @@ function savePointRule(type){
   if(!pts || pts<=0 || !Number.isFinite(pts)){ toast('সঠিক পয়েন্ট দিন',warn); return; }
   if(!reason){ toast('শর্ত লেখা আবশ্যক',warn); return; }
   const pr=ensurePointRules();
-  pr[type].push({id:pr.seq++, points:pts, reason});
-  addAudit(`পয়েন্ট তালিকায় ${type==='plus'?'প্লাস':'নেগেটিভ'} এন্ট্রি যোগ করেছেন (${type==='plus'?'+':'-'}${pts})`, reason);
+  const sign=type==='plus'?'+':'-', lbl=type==='plus'?'প্লাস':'নেগেটিভ';
+  if(ruleId!=null){
+    const r=pr[type].find(x=>x.id===ruleId);
+    if(!r){ closeModal(); render(); return; }
+    r.points=pts; r.reason=reason;
+    addAudit(`পয়েন্ট তালিকার ${lbl} এন্ট্রি সম্পাদনা করেছেন (${sign}${pts})`, reason);
+  } else {
+    pr[type].push({id:pr.seq++, points:pts, reason});
+    addAudit(`পয়েন্ট তালিকায় ${lbl} এন্ট্রি যোগ করেছেন (${sign}${pts})`, reason);
+  }
   saveDB(); closeModal(); render();
   toast('এন্ট্রি সংরক্ষিত হয়েছে','<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 13l5 5L20 7"/></svg>');
+}
+function confirmDeletePointRule(type,ruleId){
+  if(session.role!=='superadmin') return;
+  const r=ensurePointRules()[type].find(x=>x.id===ruleId); if(!r) return;
+  openModal(`
+    <div class="modal-title"><h3>এন্ট্রি মুছবেন?</h3><button onclick="closeModal()"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
+    <div class="reason-warn">${type==='plus'?'+':'−'}${bnNum(r.points)} পয়েন্ট — ${esc(r.reason)}<br>মুছলে এই শর্তটি আর নির্বাচন করা যাবে না। সদস্যদের আগে দেওয়া পয়েন্ট ও হিস্টোরি অপরিবর্তিত থাকবে।</div>
+    <button class="btn btn-red" onclick="deletePointRule('${type}',${r.id})">হ্যাঁ, মুছে ফেলুন</button>
+  `);
+}
+function deletePointRule(type,ruleId){
+  if(session.role!=='superadmin') return;
+  const pr=ensurePointRules();
+  const r=pr[type].find(x=>x.id===ruleId);
+  pr[type]=pr[type].filter(x=>x.id!==ruleId);
+  if(r) addAudit(`পয়েন্ট তালিকার ${type==='plus'?'প্লাস':'নেগেটিভ'} এন্ট্রি মুছেছেন (${type==='plus'?'+':'-'}${r.points})`, r.reason);
+  saveDB(); closeModal(); render();
+  toast('এন্ট্রি মুছে ফেলা হয়েছে','<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 13l5 5L20 7"/></svg>');
 }
 
 /* ---------------- সদস্যকে পয়েন্ট দেওয়া ---------------- */
@@ -3318,7 +3351,7 @@ function screenAdminMore(){
       ${isSuper?`<button class="btn btn-sm btn-outline" onclick="openEditSecretary()"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> সম্পাদনা</button>`:''}
     </div>
 
-    ${isSuper ? pointListSectionHTML() : ''}
+    ${pointListSectionHTML(isSuper)}
 
     ${isSuper ? `
     <div class="section-title"><h3><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M10.3 3.9L1.8 18.1A2 2 0 003.5 21h17a2 2 0 001.7-2.9L13.7 3.9a2 2 0 00-3.4 0zM12 9v4M12 17h.01"/></svg> পয়েন্ট ও চাঁদা রিসেট</h3></div>
