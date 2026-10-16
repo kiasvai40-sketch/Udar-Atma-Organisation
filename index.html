@@ -828,6 +828,7 @@ function startRealtimeSync(){
       db = incoming;
       if(!db.notifications) db.notifications = [];
       if(!db.reports) db.reports = [];
+      ensurePointRules();
       localStorage.setItem(LS_KEY, JSON.stringify(db));
       tryRestorePendingSession();
       if(session.role!=='guest'){ myNotifications().filter(n=>!isReadByMe(n)&&!prevIds.has(n.id)).slice(0,3).forEach((n,i)=>setTimeout(()=>{ sysNotify(n); toast((n.title+(n.body?': '+n.body:'')).slice(0,90), notifIcon(n.type)); }, i*900)); }
@@ -842,6 +843,7 @@ async function refreshFromCloud(){
       const cloudData = snap.data().state;
       if((cloudData.updatedAt||0) >= (db.updatedAt||0)){
         db = cloudData;
+        ensurePointRules();
         localStorage.setItem(LS_KEY, JSON.stringify(db));
       }
       render();
@@ -908,6 +910,7 @@ function seedData(){
       {name:'bKash (Personal)', number:'01700-123456', active:true},
       {name:'Nagad', number:'01700-123457', active:true},
     ],
+    pointRules:{plus:[],minus:[],seq:1},
     pointHistory:{
     },
     reports:[
@@ -1843,7 +1846,7 @@ function screenProfile(){
     ${history.length? `<div class="card">${history.map(h=>`
       <div class="list-item">
         <div class="ico" style="background:${h.type==='plus'?'#E7F6EE':'#FCEAEA'};color:${h.type==='plus'?'var(--success)':'#E31C24'};">${h.type==='plus'?'+':'−'}</div>
-        <div class="meta"><b>${h.type==='plus'?'+':'-'}${h.amount} — ${esc(h.reason)}</b><span>${h.by} · ${relDate(h.date)}</span></div>
+        <div class="meta"><b>${h.type==='plus'?'+':'-'}${h.amount}. ${esc(h.reason)}</b><span>${h.by} · ${relDate(h.date)}</span></div>
       </div>
     `).join('')}</div>` : ''}
 
@@ -1916,7 +1919,7 @@ function openPublicProfile(id){
     ${history.length? `<div class="card">${history.map(h=>`
       <div class="list-item">
         <div class="ico" style="background:${h.type==='plus'?'#E7F6EE':'#FCEAEA'};color:${h.type==='plus'?'var(--success)':'#E31C24'};">${h.type==='plus'?'+':'−'}</div>
-        <div class="meta"><b>${h.type==='plus'?'+':'-'}${h.amount} — ${esc(h.reason)}</b><span>${h.by} · ${relDate(h.date)}</span></div>
+        <div class="meta"><b>${h.type==='plus'?'+':'-'}${h.amount}. ${esc(h.reason)}</b><span>${h.by} · ${relDate(h.date)}</span></div>
       </div>
     `).join('')}</div>` : emptyState('<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M12 20V4M20 20v-6M4 20h16"/></svg>','এখনো কোনো পয়েন্ট হিস্টোরি নেই')}
     ` : ''}
@@ -2364,19 +2367,105 @@ function rejectMember(id){
   notifyMember(m.id, 'আবেদন প্রত্যাখ্যাত', 'আপনার সদস্যপদ আবেদন প্রত্যাখ্যাত হয়েছে। বিস্তারিত জানতে সংগঠনের সাথে যোগাযোগ করুন।', 'registration');
   saveDB(); closeModal(); render(); toast(`আবেদন প্রত্যাখ্যাত হয়েছে`,'<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg>');
 }
+/* ---------------- POINT LIST (সুপার অ্যাডমিন) ---------------- */
+function ensurePointRules(){
+  if(!db.pointRules || typeof db.pointRules!=='object') db.pointRules={plus:[],minus:[],seq:1};
+  if(!Array.isArray(db.pointRules.plus)) db.pointRules.plus=[];
+  if(!Array.isArray(db.pointRules.minus)) db.pointRules.minus=[];
+  if(!db.pointRules.seq) db.pointRules.seq=1;
+  return db.pointRules;
+}
+function bnNum(n){ return String(n).replace(/\d/g,d=>'০১২৩৪৫৬৭৮৯'[d]); }
+function pointCardHTML(type){
+  const rules=ensurePointRules()[type];
+  const isPlus=type==='plus';
+  const col=isPlus?'var(--success)':'var(--red)';
+  const bg=isPlus?'var(--success-bg)':'var(--danger-bg)';
+  return `<div class="card" style="margin-top:10px;">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+      <span style="width:30px;height:30px;border-radius:8px;background:${bg};color:${col};display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;">${isPlus?'+':'−'}</span>
+      <b style="font-size:14.5px;color:var(--navy);">${isPlus?'প্লাস পয়েন্ট (+)':'নেগেটিভ পয়েন্ট (−)'}</b>
+    </div>
+    ${rules.map((r,i)=>`<div class="list-item">
+      <div class="ico rank-ico" style="background:${bg};color:${col};">${bnNum(i+1)}</div>
+      <div class="meta"><b>${isPlus?'+':'−'}${bnNum(r.points)} পয়েন্ট</b><span>${esc(r.reason)}</span></div>
+    </div>`).join('') || `<div style="font-size:12.5px;color:var(--muted);padding:8px 2px;">এখনো কোনো এন্ট্রি নেই</div>`}
+    <div style="display:flex;justify-content:center;margin-top:10px;">
+      <button class="icon-btn" style="background:${bg};border-color:${col};color:${col};" aria-label="${isPlus?'প্লাস':'নেগেটিভ'} পয়েন্ট এন্ট্রি যোগ করুন" onclick="openAddPointRule('${type}')"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
+    </div>
+  </div>`;
+}
+function pointListSectionHTML(){
+  return `<div class="section-title"><h3><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15a6 6 0 100-12 6 6 0 000 12zM8.2 14.5L7 22l5-3 5 3-1.2-7.5"/></svg> পয়েন্ট তালিকা</h3></div>
+  <div class="point-list-wrap" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;">
+    ${pointCardHTML('plus')}${pointCardHTML('minus')}
+  </div>`;
+}
+function openAddPointRule(type){
+  if(session.role!=='superadmin') return;
+  const isPlus=type==='plus';
+  openModal(`
+    <div class="modal-title"><h3>${isPlus?'প্লাস পয়েন্ট এন্ট্রি (+)':'নেগেটিভ পয়েন্ট এন্ট্রি (−)'}</h3><button onclick="closeModal()"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
+    <label class="field"><span>পয়েন্ট</span><input id="prPoints" type="number" min="1" step="1" inputmode="numeric" placeholder="যেমন: ৫, ১০, ১৫"></label>
+    <label class="field"><span>শর্ত</span><textarea id="prReason" placeholder="কারণ বা শর্ত লিখুন"></textarea></label>
+    <button class="btn ${isPlus?'btn-primary':'btn-red'}" onclick="savePointRule('${type}')">Save</button>
+  `);
+}
+function savePointRule(type){
+  if(session.role!=='superadmin') return;
+  const pts=Number(document.getElementById('prPoints').value);
+  const reason=document.getElementById('prReason').value.trim();
+  const warn='<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M10.3 3.9L1.8 18.1A2 2 0 003.5 21h17a2 2 0 001.7-2.9L13.7 3.9a2 2 0 00-3.4 0zM12 9v4M12 17h.01"/></svg>';
+  if(!pts || pts<=0 || !Number.isFinite(pts)){ toast('সঠিক পয়েন্ট দিন',warn); return; }
+  if(!reason){ toast('শর্ত লেখা আবশ্যক',warn); return; }
+  const pr=ensurePointRules();
+  pr[type].push({id:pr.seq++, points:pts, reason});
+  addAudit(`পয়েন্ট তালিকায় ${type==='plus'?'প্লাস':'নেগেটিভ'} এন্ট্রি যোগ করেছেন (${type==='plus'?'+':'-'}${pts})`, reason);
+  saveDB(); closeModal(); render();
+  toast('এন্ট্রি সংরক্ষিত হয়েছে','<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 13l5 5L20 7"/></svg>');
+}
+
+/* ---------------- সদস্যকে পয়েন্ট দেওয়া ---------------- */
+let _ptSel = null;
 function openAddPoint(id,type){
+  _ptSel = null;
   openModal(`
     <div class="modal-title"><h3>${type==='plus'?'<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg> প্লাস পয়েন্ট যোগ করুন':'<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg> নেগেটিভ পয়েন্ট যোগ করুন'}</h3><button onclick="closeModal()"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
-    <label class="field"><span>পরিমাণ</span><input id="ptAmt" type="number" min="1" value="10"></label>
-    <label class="field"><span>কারণ (আবশ্যক)</span><textarea id="ptReason" placeholder="যেমন: কার্যক্রমে অংশগ্রহণ"></textarea></label>
+    <label class="field"><span>পরিমাণ</span><input id="ptAmt" type="number" readonly value="" placeholder="শর্ত নির্বাচন করুন" style="background:#F4F4F9;cursor:not-allowed;"></label>
+    <label class="field"><span>কারণ (আবশ্যক)</span><textarea id="ptReason" readonly rows="2" placeholder="ক্লিক করে তালিকা থেকে শর্ত নির্বাচন করুন" style="cursor:pointer;" onclick="openPointReasonPicker('${id}','${type}')"></textarea></label>
     <button class="btn ${type==='plus'?'btn-primary':'btn-red'}" onclick="submitPoint('${id}','${type}')">নিশ্চিত করুন</button>
   `);
 }
+function openPointReasonPicker(id,type){
+  const rules=ensurePointRules()[type];
+  const isPlus=type==='plus';
+  const col=isPlus?'var(--success)':'var(--red)';
+  const bg=isPlus?'var(--success-bg)':'var(--danger-bg)';
+  openModal(`
+    <div class="modal-title"><h3>${isPlus?'প্লাস পয়েন্টের শর্ত':'নেগেটিভ পয়েন্টের শর্ত'} নির্বাচন করুন</h3><button onclick="openAddPoint('${id}','${type}')"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
+    ${rules.map((r,i)=>`<div class="list-item" style="cursor:pointer;" onclick="pickPointRule('${id}','${type}',${r.id})">
+      <div class="ico rank-ico" style="background:${bg};color:${col};">${bnNum(i+1)}</div>
+      <div class="meta"><b>${isPlus?'+':'−'}${bnNum(r.points)} পয়েন্ট</b><span>${esc(r.reason)}</span></div>
+    </div>`).join('') || `<div class="reason-warn">সুপার অ্যাডমিন এখনো কোনো ${isPlus?'প্লাস':'নেগেটিভ'} পয়েন্টের শর্ত তৈরি করেননি।</div>`}
+  `);
+}
+function pickPointRule(id,type,ruleId){
+  const r=ensurePointRules()[type].find(x=>x.id===ruleId);
+  if(!r) return;
+  openAddPoint(id,type);
+  _ptSel = {type, ruleId:r.id};
+  document.getElementById('ptAmt').value=r.points;
+  document.getElementById('ptReason').value=r.reason;
+}
 async function submitPoint(id,type){
-  const amt = Number(document.getElementById('ptAmt').value);
-  const reason = document.getElementById('ptReason').value.trim();
-  if(!amt || amt<=0){ toast('সঠিক পরিমাণ দিন','<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M10.3 3.9L1.8 18.1A2 2 0 003.5 21h17a2 2 0 001.7-2.9L13.7 3.9a2 2 0 00-3.4 0zM12 9v4M12 17h.01"/></svg>'); return; }
-  if(!reason){ toast('কারণ লেখা আবশ্যক','<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M10.3 3.9L1.8 18.1A2 2 0 003.5 21h17a2 2 0 001.7-2.9L13.7 3.9a2 2 0 00-3.4 0zM12 9v4M12 17h.01"/></svg>'); return; }
+  const warn='<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M10.3 3.9L1.8 18.1A2 2 0 003.5 21h17a2 2 0 001.7-2.9L13.7 3.9a2 2 0 00-3.4 0zM12 9v4M12 17h.01"/></svg>';
+  if(!_ptSel || _ptSel.type!==type){ toast('কারণ (আবশ্যক) থেকে একটি শর্ত নির্বাচন করুন',warn); return; }
+  const rule = ensurePointRules()[type].find(x=>x.id===_ptSel.ruleId);
+  if(!rule){ toast('নির্বাচিত শর্তটি আর নেই, আবার নির্বাচন করুন',warn); return; }
+  const amt = Number(rule.points);
+  const reason = rule.reason;
+  if(!amt || amt<=0){ toast('সঠিক পরিমাণ দিন',warn); return; }
+  if(!reason){ toast('কারণ লেখা আবশ্যক',warn); return; }
   const m = getMember(id);
   if(type==='plus') m.plus+=amt; else m.minus+=amt;
   if(!db.pointHistory[id]) db.pointHistory[id]=[];
@@ -2384,6 +2473,7 @@ async function submitPoint(id,type){
   addAudit(`পয়েন্ট যোগ করেছেন (${type==='plus'?'+':'-'}${amt})`, m.name);
   if(session.role==='admin') notifySuperAdmins('এডমিন পয়েন্ট দিয়েছেন', `${currentMember().name} → ${m.name}: ${type==='plus'?'+':'-'}${amt} — ${reason}`, 'point');
   notifyMember(m.id, type==='plus'?'প্লাস পয়েন্ট পেয়েছেন':'নেগেটিভ পয়েন্ট পেয়েছেন', `${type==='plus'?'+':'-'}${amt} পয়েন্ট — ${reason}`, 'point');
+  _ptSel=null;
   closeModal(); render(); toast('পয়েন্ট আপডেট হয়েছে','<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 13l5 5L20 7"/></svg>');
   await saveDB();
 }
@@ -3212,15 +3302,6 @@ function screenAdminMore(){
       `).join('') || emptyState('<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 13l5 5L20 7"/></svg>','কোনো অপেক্ষমান অনুরোধ নেই')}
     </div>
 
-    <div class="section-title"><h3><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16M8 4v4M16 10v4M10 16v4"/></svg> ফিচার সুইচ</h3></div>
-    <div class="card">
-      ${Object.entries(db.featureFlags).map(([k,v])=>`
-        <div class="switch-row">
-          <div><b>${featureLabel(k)}</b><span>অ্যাপে চালু/বন্ধ করুন</span></div>
-          <label class="switch"><input type="checkbox" ${v?'checked':''} ${isSuper?'':'disabled'} onchange="toggleFeature('${k}')"><div class="track"></div></label>
-        </div>`).join('')}
-    </div>
-
     <div class="section-title"><h3><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7zM3 10h18M7 15h4"/></svg> অফার পেমেন্ট নাম্বার</h3></div>
     <div class="card">
       ${db.paymentMethods.map((p,i)=>`
@@ -3237,22 +3318,7 @@ function screenAdminMore(){
       ${isSuper?`<button class="btn btn-sm btn-outline" onclick="openEditSecretary()"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> সম্পাদনা</button>`:''}
     </div>
 
-    <div class="section-title"><h3><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5a1 1 0 011-1h14a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 16l4-4 3 3 3-4 6 6M9 9a1.5 1.5 0 100-3 1.5 1.5 0 000 3z"/></svg> ব্র্যান্ডিং</h3></div>
-    <div class="card" style="display:flex;align-items:center;gap:14px;">
-      <div class="mark" style="width:52px;height:52px;"><img src="${LOGO_DATA}" alt="logo" style="width:100%;height:100%;object-fit:contain;border-radius:50%;"></div>
-      <div style="flex:1;"><b style="font-size:13.5px;display:block;">লোগো ভার্সন v${db.logoVersion}</b><span style="font-size:11.5px;color:var(--muted);">${isSuper?'সুপার অ্যাডমিন আপডেট করতে পারবেন':'শুধু সুপার অ্যাডমিন পরিবর্তন করতে পারবেন'}</span></div>
-      ${isSuper?`<button class="btn btn-sm btn-outline" onclick="bumpLogo()">আপডেট</button>`:''}
-    </div>
-
-    <div class="section-title"><h3><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21V4a1 1 0 011-1h9a1 1 0 011 1v17M14 10h5a1 1 0 011 1v10M8 8h2M8 12h2M8 16h2M16 14h2M16 17h2"/></svg> পদবি তালিকা</h3></div>
-    <div class="card">
-      ${db.positions.map(p=>`<div class="list-item"><div class="ico"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15a6 6 0 100-12 6 6 0 000 12zM8.2 14.5L7 22l5-3 5 3-1.2-7.5"/></svg></div><div class="meta"><b>${p}</b></div></div>`).join('')}
-    </div>
-
-    <div class="section-title"><h3><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5a1 1 0 011-1h14a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 16l4-4 3 3 3-4 6 6M9 9a1.5 1.5 0 100-3 1.5 1.5 0 000 3z"/></svg> গ্যালারি</h3></div>
-    <div class="gallery-grid">
-      ${db.gallery.map(g=>`<div class="gallery-tile" style="background:${g.color};">${g.emoji}<span class="cap">${g.title}</span></div>`).join('')}
-    </div>
+    ${isSuper ? pointListSectionHTML() : ''}
 
     ${isSuper ? `
     <div class="section-title"><h3><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M10.3 3.9L1.8 18.1A2 2 0 003.5 21h17a2 2 0 001.7-2.9L13.7 3.9a2 2 0 00-3.4 0zM12 9v4M12 17h.01"/></svg> পয়েন্ট ও চাঁদা রিসেট</h3></div>
@@ -3558,6 +3624,7 @@ window.onload = async function(){
   }
   if(!db.reports) db.reports = [];
   if(!db.notifications) db.notifications = [];
+  ensurePointRules();
   validatePersistedSession(!!cloudData);
   try{ if(navigator.storage && navigator.storage.persist) navigator.storage.persist(); }catch(e){}
   try{
