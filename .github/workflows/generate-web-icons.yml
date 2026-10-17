@@ -13,12 +13,12 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install tools
-        run: sudo apt-get update -qq && sudo apt-get install -y -qq imagemagick python3-pil
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq python3-pil
 
       - name: Generate icons from sources
         run: |
           python3 << 'PY'
-          from PIL import Image
+          from PIL import Image, ImageFilter
           import os
 
           assert os.path.exists('icon-source.png'), 'icon-source.png missing'
@@ -44,31 +44,43 @@ jobs:
           rm.paste(cm, mask=cm.split()[-1])
           rm.resize((512, 512), Image.Resampling.LANCZOS).save('icon-512-maskable.png')
 
+          # Small icon with THICK brackets
           sm = Image.open('icon-notification.png').convert('RGBA')
-          RED, NAVY = (0xE3, 0x1C, 0x24, 255), (0x0F, 0x0F, 0x54, 255)
           w, h = sm.size
           px = sm.load()
-          out = Image.new('RGBA', (w, h))
-          op = out.load()
-          corner = px[5, 5]
-          if corner[0] > 150 and corner[1] < 100:
-              for y in range(h):
-                  for x in range(w):
-                      r, g, b, a = px[x, y]
-                      if (b > r + 15 and r < 80) or (r < 80 and g < 80 and b < 100):
-                          op[x, y] = NAVY
-                      else:
-                          op[x, y] = RED
-          else:
-              for y in range(h):
-                  for x in range(w):
-                      r, g, b, a = px[x, y]
-                      if r < 100 and g < 100 and b < 120:
-                          op[x, y] = NAVY
-                      else:
-                          op[x, y] = RED
-          out.resize((96, 96), Image.Resampling.LANCZOS).save('badge-96.png')
-          print('Generated: icon-192, icon-512, icon-512-maskable, badge-96')
+          mask = Image.new('L', (w, h), 0)
+          mp = mask.load()
+          for y in range(h):
+              for x in range(w):
+                  r, g, b, a = px[x, y]
+                  if r < 100 and g < 100 and b < 130:
+                      mp[x, y] = 255
+                  elif b > r + 20 and r < 90:
+                      mp[x, y] = 255
+          thick = mask
+          for _ in range(8):
+              thick = thick.filter(ImageFilter.MaxFilter(3))
+          thick = thick.filter(ImageFilter.GaussianBlur(1.2))
+          thick = thick.point(lambda v: 255 if v > 100 else 0)
+
+          RED, NAVY = (0xE3, 0x1C, 0x24, 255), (0x0F, 0x0F, 0x54, 255)
+          out = Image.new('RGBA', (w, h), RED)
+          op, tp = out.load(), thick.load()
+          for y in range(h):
+              for x in range(w):
+                  if tp[x, y] > 128:
+                      op[x, y] = NAVY
+          bbox = thick.getbbox()
+          pad = int(max(bbox[2]-bbox[0], bbox[3]-bbox[1]) * 0.08)
+          cx0, cy0 = max(0, bbox[0]-pad), max(0, bbox[1]-pad)
+          cx1, cy1 = min(w, bbox[2]+pad), min(h, bbox[3]+pad)
+          cropped = out.crop((cx0, cy0, cx1, cy1))
+          cw, ch = cropped.size
+          side2 = max(cw, ch)
+          sq = Image.new('RGBA', (side2, side2), RED)
+          sq.paste(cropped, ((side2-cw)//2, (side2-ch)//2))
+          sq.resize((96, 96), Image.Resampling.LANCZOS).save('badge-96.png')
+          print('Generated with thick brackets')
           PY
           ls -la icon-192.png icon-512.png icon-512-maskable.png badge-96.png
 
@@ -78,5 +90,5 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add icon-192.png icon-512.png icon-512-maskable.png badge-96.png
           git diff --staged --quiet && echo "No changes" && exit 0
-          git commit -m "Generate web icons from icon-source + icon-notification"
+          git commit -m "Icons with thicker notification brackets"
           git push

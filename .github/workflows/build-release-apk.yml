@@ -72,45 +72,51 @@ jobs:
         run: |
           mkdir -p android/app/src/main/res/drawable
           python3 << 'PY'
-          from PIL import Image
+          from PIL import Image, ImageFilter
           import os
           src_path = 'icon-notification.png' if os.path.exists('icon-notification.png') else 'icon-source.png'
           im = Image.open(src_path).convert('RGBA')
-          RED, NAVY = (0xE3,0x1C,0x24,255), (0x0F,0x0F,0x54,255)
-          w,h = im.size
+          w, h = im.size
           px = im.load()
-          out = Image.new('RGBA', (w,h))
-          op = out.load()
-          corner = px[5,5]
-          if corner[0] > 150 and corner[1] < 100:
-              for y in range(h):
-                  for x in range(w):
-                      r,g,b,a = px[x,y]
-                      if b > r+15 and r < 80:
-                          op[x,y] = NAVY
-                      elif r < 80 and g < 80 and b < 100:
-                          op[x,y] = NAVY
-                      else:
-                          op[x,y] = RED
-          else:
-              for y in range(h):
-                  for x in range(w):
-                      r,g,b,a = px[x,y]
-                      if r < 100 and g < 100 and b < 120:
-                          op[x,y] = NAVY
-                      else:
-                          op[x,y] = RED
-          out.resize((256,256), Image.Resampling.LANCZOS).save('android/app/src/main/res/drawable/ic_notification_large.png')
-          sil = Image.new('RGBA', (96,96), (0,0,0,0))
-          sm = out.resize((96,96), Image.Resampling.LANCZOS)
+          mask = Image.new('L', (w, h), 0)
+          mp = mask.load()
+          for y in range(h):
+              for x in range(w):
+                  r, g, b, a = px[x, y]
+                  if r < 100 and g < 100 and b < 130:
+                      mp[x, y] = 255
+                  elif b > r + 20 and r < 90:
+                      mp[x, y] = 255
+          thick = mask
+          for _ in range(8):
+              thick = thick.filter(ImageFilter.MaxFilter(3))
+          thick = thick.filter(ImageFilter.GaussianBlur(1.2))
+          thick = thick.point(lambda v: 255 if v > 100 else 0)
+          RED, NAVY = (0xE3, 0x1C, 0x24, 255), (0x0F, 0x0F, 0x54, 255)
+          out = Image.new('RGBA', (w, h), RED)
+          op, tp = out.load(), thick.load()
+          for y in range(h):
+              for x in range(w):
+                  if tp[x, y] > 128:
+                      op[x, y] = NAVY
+          bbox = thick.getbbox()
+          pad = int(max(bbox[2]-bbox[0], bbox[3]-bbox[1]) * 0.08)
+          cropped = out.crop((max(0,bbox[0]-pad), max(0,bbox[1]-pad), min(w,bbox[2]+pad), min(h,bbox[3]+pad)))
+          cw, ch = cropped.size
+          side = max(cw, ch)
+          sq = Image.new('RGBA', (side, side), RED)
+          sq.paste(cropped, ((side-cw)//2, (side-ch)//2))
+          sq.resize((256, 256), Image.Resampling.LANCZOS).save('android/app/src/main/res/drawable/ic_notification_large.png')
+          sil = Image.new('RGBA', (96, 96), (0, 0, 0, 0))
+          sm = sq.resize((96, 96), Image.Resampling.LANCZOS)
           sp, sip = sm.load(), sil.load()
           for y in range(96):
               for x in range(96):
-                  r,g,b,a = sp[x,y]
-                  if b > r+15 and r < 80:
-                      sip[x,y] = (255,255,255,255)
+                  r, g, b, a = sp[x, y]
+                  if b > r + 10 and r < 100:
+                      sip[x, y] = (255, 255, 255, 255)
           sil.save('android/app/src/main/res/drawable/ic_stat_udar.png')
-          print('notification icons ready')
+          print('thick notification icons ready')
           PY
           ls -la android/app/src/main/res/drawable/
 
