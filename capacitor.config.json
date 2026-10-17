@@ -8,11 +8,13 @@
   },
   "plugins": {
     "PushNotifications": {
-      "presentationOptions": ["badge", "sound", "alert"]
+      "presentationOptions": ["badge", "sound", "alert"],
+      "smallIcon": "ic_stat_udar",
+      "iconColor": "#0F0F54"
     }
   },
   "android": {
     "allowMixedContent": false,
-    "backgroundColor": "#0F0F54"
+    "backgroundColor": "#FFFFFF"
   }
 }

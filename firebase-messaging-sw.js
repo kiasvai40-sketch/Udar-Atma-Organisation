@@ -19,7 +19,7 @@ function showPushNotification(title, body, data) {
   var options = {
     body: body || '',
     icon: '/icon-192.png',
-    badge: '/icon-192.png',
+    badge: '/badge-96.png',
     data: data || {},
     tag: (data && data.tag) || 'udar-atma-' + String(Date.now()).slice(-6),
     renotify: true,
