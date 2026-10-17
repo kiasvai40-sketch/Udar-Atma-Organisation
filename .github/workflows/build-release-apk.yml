@@ -31,7 +31,8 @@ jobs:
         run: |
           sdkmanager "platforms;android-34" "build-tools;34.0.0" "platform-tools" || true
           yes | sdkmanager --licenses || true
-          sudo apt-get update -qq && sudo apt-get install -y -qq imagemagick
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq imagemagick python3-pil
 
       - name: Install npm packages
         run: |
@@ -73,17 +74,14 @@ jobs:
           python3 << 'PY'
           from PIL import Image
           import os
-          # Prefer user exact small icon file
           src_path = 'icon-notification.png' if os.path.exists('icon-notification.png') else 'icon-source.png'
-          # If icon-notification is the red+navy one from repo, use it
           im = Image.open(src_path).convert('RGBA')
           RED, NAVY = (0xE3,0x1C,0x24,255), (0x0F,0x0F,0x54,255)
           w,h = im.size
           px = im.load()
-          # Detect if already red bg
-          corner = px[5,5]
           out = Image.new('RGBA', (w,h))
           op = out.load()
+          corner = px[5,5]
           if corner[0] > 150 and corner[1] < 100:
               for y in range(h):
                   for x in range(w):
@@ -103,7 +101,6 @@ jobs:
                       else:
                           op[x,y] = RED
           out.resize((256,256), Image.Resampling.LANCZOS).save('android/app/src/main/res/drawable/ic_notification_large.png')
-          # Status bar: white silhouette transparent
           sil = Image.new('RGBA', (96,96), (0,0,0,0))
           sm = out.resize((96,96), Image.Resampling.LANCZOS)
           sp, sip = sm.load(), sil.load()
