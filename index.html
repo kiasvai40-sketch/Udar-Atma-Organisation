@@ -485,6 +485,193 @@ h1,h2,h3,.display{font-family:'Noto Serif Bengali','Anek Bangla',serif;}
 .stat-box{position:relative;}
 .stat-box:before{content:"";position:absolute;right:12px;top:12px;width:8px;height:8px;border:2px solid var(--red);border-radius:50%;opacity:.7;}
 .stat-box.accent:before{border-color:#fff;}
+
+
+/* =========================================================
+   RESPONSIVE — Tablet & Desktop (mobile ≤599px unchanged)
+   Layout / spacing / alignment only. No logic change.
+   ========================================================= */
+
+/* —— Tablet (600–899px) —— */
+@media (min-width:600px){
+  :root{ --shell-max:640px; }
+  #content{padding:22px 22px calc(112px + var(--safe-b));}
+  .topbar{padding:calc(16px + var(--safe-t)) 24px 24px;}
+  .topbar h2{font-size:30px;}
+  .hero-card{padding:34px 28px 32px;border-radius:8px 28px 8px 8px;}
+  .hero-card h2{font-size:26px;}
+  .hero-card p{font-size:14px;max-width:96%;}
+  .card{padding:20px;}
+  .section-title{margin:36px 0 14px;}
+  .section-title h3{font-size:17.5px;}
+  .stat-grid{grid-template-columns:repeat(2,1fr);gap:14px;}
+  .stat-box{padding:18px;}
+  .stat-box b{font-size:30px;}
+  .list-item{padding:14px 6px;}
+  .btn{padding:15px 18px;font-size:14.5px;}
+  .modal-sheet{border-radius:24px 24px 0 0;padding:20px 24px calc(24px + var(--safe-b));}
+  .bottomnav{
+    width:calc(100% - 28px);
+    max-width:calc(var(--shell-max) - 28px);
+    border-radius:18px;
+    padding:7px;
+  }
+  .chip{padding:9px 16px;font-size:13px;}
+  .notice-card{padding:17px;}
+}
+
+/* —— Desktop / Laptop (900–1199px) —— */
+@media (min-width:900px){
+  :root{ --shell-max:880px; }
+  body{
+    background:var(--navy-deep,#0F0F54);
+    background-image:
+      repeating-linear-gradient(45deg,rgba(255,255,255,.03) 0 1px,transparent 1px 18px),
+      repeating-linear-gradient(-45deg,rgba(255,255,255,.025) 0 1px,transparent 1px 18px),
+      radial-gradient(ellipse 70% 45% at 12% 0%,rgba(227,28,36,.18),transparent 48%),
+      radial-gradient(ellipse 50% 40% at 100% 100%,rgba(15,15,84,.45),transparent 50%);
+  }
+  #shell{
+    min-height:100vh;
+    box-shadow:0 0 0 1px rgba(255,255,255,.08),0 32px 80px rgba(0,0,0,.35);
+    border-radius:0;
+  }
+  #content{
+    padding:28px 28px calc(120px + var(--safe-b));
+  }
+  .topbar{
+    padding:calc(18px + var(--safe-t)) 32px 26px;
+  }
+  .topbar h2{font-size:32px;}
+  .topbar .sub{font-size:13.5px;}
+  .brand-mini .mark{width:46px;height:46px;}
+  .brand-mini .brand-en b,
+  .brand-mini b.brand-en-name{font-size:13.5px;letter-spacing:.1em;}
+  .icon-btn{width:44px;height:44px;border-radius:12px;}
+
+  /* Content rhythm */
+  .hero-card{
+    padding:40px 36px 36px;
+    border-radius:10px 32px 10px 10px;
+    min-height:240px;
+  }
+  .hero-card h2{font-size:28px;}
+  .hero-card p{font-size:14.5px;line-height:1.9;max-width:70%;}
+
+  .section-title{margin:40px 0 16px;}
+  .section-title h3{font-size:18px;}
+
+  /* Multi-column friendly grids — only where structure allows */
+  .stat-grid{grid-template-columns:repeat(4,1fr);gap:16px;}
+  .stat-box{padding:20px;}
+  .stat-box b{font-size:32px;}
+
+  .card{padding:22px 24px;border-radius:14px;}
+  .card + .card{margin-top:14px;}
+  .notice-card{padding:18px 20px;border-radius:12px;}
+
+  /* Pair consecutive simple cards in a soft 2-col flow when space allows */
+  .screen > .card.grid-pair,
+  .two-col{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px;
+  }
+
+  .list-item{padding:15px 8px;gap:14px;}
+  .list-item .ico{width:46px;height:46px;border-radius:12px;}
+  .list-item .meta b{font-size:15px;}
+
+  .btn{max-width:420px;}
+  .btn-row .btn{max-width:none;}
+  .btn-sm{max-width:none;}
+
+  .chip-row{gap:10px;margin-bottom:8px;}
+  .chip{padding:10px 18px;font-size:13.5px;}
+
+  .bottomnav{
+    bottom:calc(16px + var(--safe-b));
+    width:calc(100% - 40px);
+    max-width:calc(var(--shell-max) - 40px);
+    border-radius:20px;
+    padding:8px;
+    box-shadow:0 24px 56px rgba(6,6,31,.5),0 0 0 1px rgba(255,255,255,.1);
+  }
+  .navbtn{padding:10px 4px 9px;font-size:11px;border-radius:14px;}
+  .navbtn .ic{font-size:20px;}
+
+  .modal-back{align-items:center;padding:24px;}
+  .modal-sheet{
+    border-radius:20px;
+    max-height:min(88vh,720px);
+    padding:22px 28px 28px;
+    box-shadow:0 32px 80px rgba(4,4,20,.45);
+  }
+  .modal-handle{display:none;}
+
+  .mcard-wrap{max-width:420px;margin-left:auto;margin-right:auto;}
+  .point-tri{gap:12px;}
+  .point-tri div{padding:16px 10px;}
+  .point-tri b{font-size:24px;}
+
+  .offer-card{padding:18px 20px;}
+  .action-row{padding:14px 16px;}
+
+  #toastwrap{
+    max-width:min(420px, calc(var(--shell-max) - 48px));
+    bottom:calc(110px + var(--safe-b));
+  }
+}
+
+/* —— Large Desktop (1200px+) —— */
+@media (min-width:1200px){
+  :root{ --shell-max:980px; }
+  #content{padding:32px 36px calc(124px + var(--safe-b));}
+  .topbar{padding:calc(20px + var(--safe-t)) 40px 28px;}
+  .topbar h2{font-size:34px;}
+  .hero-card{
+    padding:48px 44px 42px;
+    min-height:260px;
+  }
+  .hero-card h2{font-size:30px;}
+  .hero-card p{font-size:15px;max-width:62%;}
+  .stat-grid{gap:18px;}
+  .stat-box b{font-size:34px;}
+  .section-title h3{font-size:19px;}
+  .card{padding:24px 28px;}
+  .bottomnav{
+    max-width:calc(var(--shell-max) - 48px);
+    width:calc(100% - 48px);
+  }
+  .modal-sheet{max-width:520px;margin:0 auto;}
+}
+
+/* —— Ultra-wide comfort (1400px+) —— */
+@media (min-width:1400px){
+  :root{ --shell-max:1040px; }
+  #shell{
+    margin-top:0;
+    box-shadow:0 0 0 1px rgba(255,255,255,.08),0 40px 100px rgba(0,0,0,.4);
+  }
+}
+
+/* —— Landscape phones: slightly tighter bottom dock —— */
+@media (max-width:899px) and (orientation:landscape) and (max-height:500px){
+  #content{padding-bottom:calc(88px + var(--safe-b));}
+  .bottomnav{bottom:calc(6px + var(--safe-b));padding:4px;}
+  .navbtn{padding:6px 2px 5px;font-size:10px;}
+  .topbar h2{font-size:22px;margin-top:12px;}
+}
+
+/* —— Prefer readable line length on very wide content blocks —— */
+@media (min-width:900px){
+  .card > p,
+  .notice-card p,
+  .empty-state p{
+    max-width:62ch;
+  }
+}
+
 </style>
 </head>
 <body>
