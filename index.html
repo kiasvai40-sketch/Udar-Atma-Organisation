@@ -62,7 +62,7 @@
   --shadow-lg:0 28px 56px rgba(15,15,84,.20);
   --ease:cubic-bezier(.22,1,.36,1);
   --safe-t:env(safe-area-inset-top,0px);--safe-b:env(safe-area-inset-bottom,0px);
-  --shell-max:480px;
+  --shell-max:100%;
   --lattice:repeating-linear-gradient(45deg,rgba(255,255,255,.045) 0 1px,transparent 1px 14px),repeating-linear-gradient(-45deg,rgba(255,255,255,.045) 0 1px,transparent 1px 14px);
 }
 *{box-sizing:border-box;}
@@ -76,7 +76,7 @@ img{max-width:100%;display:block;}
 ::selection{background:var(--red);color:#fff;}
 
 /* SHELL */
-#shell{max-width:var(--shell-max);margin:0 auto;min-height:100%;background:var(--bg);position:relative;display:flex;flex-direction:column;}
+#shell{width:100%;max-width:var(--shell-max);margin:0 auto;min-height:100%;background:var(--bg);position:relative;display:flex;flex-direction:column;}
 @media (min-width:481px){
   body{background:var(--navy);background-image:var(--lattice),radial-gradient(circle at 15% 10%,rgba(227,28,36,.18),transparent 40%);}
   #shell{min-height:100vh;box-shadow:0 0 0 1px rgba(255,255,255,.08),var(--shadow-lg);}
@@ -488,307 +488,201 @@ h1,h2,h3,.display{font-family:'Noto Serif Bengali','Anek Bangla',serif;}
 
 
 /* ==========================================================================
-   COMPLETE RESPONSIVE SYSTEM
-   Mobile (≤599px) = source of truth, unchanged.
-   Fluid layout for tablet / laptop / desktop / XL.
-   No JS, data, roles, or business logic changes.
+   COMPLETE RESPONSIVE SYSTEM (full-width friendly)
+   Mobile layout preserved; sides fill available width.
    ========================================================================== */
 
-/* Safety: never horizontal page scroll */
 html,body{overflow-x:hidden;}
 img,svg,video{max-width:100%;height:auto;}
-#shell,.screen,.card,.modal-sheet,.hero-card,.bottomnav{max-width:100%;}
+#shell,.screen,.card,.modal-sheet,.hero-card{max-width:100%;}
 input,textarea,select,button{max-width:100%;}
 
-/* —— Large mobile / small tablet: 600–767px —— */
+/* Mobile & default: full bleed width */
+:root{ --shell-max:100%; }
+#shell{width:100%;max-width:100%;margin:0;box-shadow:none;}
+
+/* —— 600–767: still full width, slightly more padding —— */
 @media (min-width:600px){
-  :root{ --shell-max:min(100vw, 560px); }
-  #content{padding:20px 20px calc(110px + var(--safe-b));}
-  .topbar{padding:calc(15px + var(--safe-t)) 20px 22px;}
+  #content{padding:20px 22px calc(110px + var(--safe-b));}
+  .topbar{padding:calc(15px + var(--safe-t)) 22px 22px;}
   .topbar h2{font-size:clamp(24px, 4.5vw, 28px);}
   .hero-card{padding:30px 24px 28px;}
   .hero-card h2{font-size:clamp(22px, 4vw, 26px);}
-  .card{padding:18px 18px;}
+  .card{padding:18px;}
   .stat-grid{gap:12px;}
   .stat-box b{font-size:clamp(24px, 5vw, 28px);}
   .bottomnav{
     width:calc(100% - 24px);
-    max-width:calc(var(--shell-max) - 24px);
+    max-width:none;
+    left:50%;
+    transform:translateX(-50%);
     border-radius:18px;
   }
   .modal-sheet{padding:18px 20px calc(22px + var(--safe-b));}
 }
 
-/* —— Tablet: 768–1023px —— */
+/* —— Tablet 768–1023: full width app, comfortable padding —— */
 @media (min-width:768px){
-  :root{ --shell-max:min(100vw, 720px); }
-  #content{padding:24px 24px calc(116px + var(--safe-b));}
+  #content{padding:24px 28px calc(116px + var(--safe-b));}
   .topbar{padding:calc(16px + var(--safe-t)) 28px 24px;}
   .topbar h2{font-size:30px;}
   .topbar .sub{font-size:13px;}
   .brand-mini .mark{width:44px;height:44px;}
   .icon-btn{width:42px;height:42px;}
-
-  .hero-card{
-    padding:36px 32px 32px;
-    border-radius:8px 28px 8px 8px;
-    min-height:220px;
-  }
+  .hero-card{padding:36px 32px 32px;border-radius:8px 28px 8px 8px;min-height:220px;}
   .hero-card h2{font-size:26px;}
-  .hero-card p{font-size:14px;max-width:90%;line-height:1.85;}
-
+  .hero-card p{font-size:14px;max-width:92%;line-height:1.85;}
   .section-title{margin:36px 0 14px;}
   .section-title h3{font-size:17.5px;}
-
-  .stat-grid{
-    grid-template-columns:repeat(2, minmax(0, 1fr));
-    gap:14px;
-  }
+  .stat-grid{grid-template-columns:repeat(2, minmax(0, 1fr));gap:14px;}
   .stat-box{padding:18px;}
   .stat-box b{font-size:30px;}
-
   .card{padding:20px 22px;border-radius:14px;}
-  .card + .card{margin-top:12px;}
-  .notice-card{padding:16px 18px;}
-
   .list-item{padding:14px 8px;gap:14px;}
   .list-item .ico{width:46px;height:46px;}
-
   .chip{padding:9px 16px;font-size:13px;}
-  .btn{padding:15px 18px;}
-
-  .point-tri{gap:10px;}
-  .point-tri b{font-size:22px;}
-
   .bottomnav{
-    bottom:calc(14px + var(--safe-b));
     width:calc(100% - 32px);
-    max-width:calc(var(--shell-max) - 32px);
+    max-width:none;
+    bottom:calc(14px + var(--safe-b));
     border-radius:18px;
     padding:7px;
   }
   .navbtn{padding:9px 3px 8px;font-size:11px;}
-
-  .modal-sheet{
-    border-radius:22px 22px 0 0;
-    padding:20px 24px calc(24px + var(--safe-b));
-    max-height:86vh;
-  }
-
-  /* Optional 2-col for consecutive action rows when space allows */
-  .screen .stat-grid{grid-template-columns:repeat(2, minmax(0, 1fr));}
+  .modal-sheet{border-radius:22px 22px 0 0;padding:20px 24px calc(24px + var(--safe-b));max-height:86vh;}
+  .point-tri b{font-size:22px;}
 }
 
-/* Tablet landscape / large tablet: denser stats */
-@media (min-width:768px) and (min-height:500px){
-  .stat-grid{grid-template-columns:repeat(2, minmax(0, 1fr));}
-}
-
-/* —— Small desktop / laptop: 1024–1279px —— */
+/* —— Laptop 1024–1279: light side margin only, content almost full —— */
 @media (min-width:1024px){
-  :root{ --shell-max:min(100vw - 48px, 920px); }
-
+  :root{ --shell-max:100%; }
   body{
-    background:#06061F;
-    background-image:
-      repeating-linear-gradient(45deg,rgba(255,255,255,.03) 0 1px,transparent 1px 18px),
-      repeating-linear-gradient(-45deg,rgba(255,255,255,.025) 0 1px,transparent 1px 18px),
-      radial-gradient(ellipse 70% 45% at 10% 0%,rgba(227,28,36,.16),transparent 48%),
-      radial-gradient(ellipse 50% 40% at 100% 100%,rgba(15,15,84,.5),transparent 50%);
+    background:var(--bg);
+    background-image:none;
   }
   #shell{
+    width:100%;
+    max-width:100%;
     min-height:100vh;
-    margin:0 auto;
-    box-shadow:0 0 0 1px rgba(255,255,255,.08),0 32px 80px rgba(0,0,0,.35);
+    margin:0;
+    box-shadow:none;
+    border-radius:0;
   }
-
-  #content{padding:28px 32px calc(120px + var(--safe-b));}
-
-  .topbar{padding:calc(18px + var(--safe-t)) 32px 26px;}
+  #content{padding:28px 40px calc(120px + var(--safe-b));max-width:1100px;margin:0 auto;width:100%;box-sizing:border-box;}
+  .topbar{padding:calc(18px + var(--safe-t)) 40px 26px;}
   .topbar h2{font-size:32px;}
   .topbar .sub{font-size:13.5px;}
   .brand-mini .mark{width:46px;height:46px;}
-  .brand-mini .brand-en b,
-  .brand-mini b.brand-en-name{font-size:13.5px;letter-spacing:.1em;}
   .icon-btn{width:44px;height:44px;border-radius:12px;}
-
-  .hero-card{
-    padding:40px 36px 36px;
-    border-radius:10px 32px 10px 10px;
-    min-height:240px;
-  }
+  .hero-card{padding:40px 36px 36px;border-radius:10px 32px 10px 10px;min-height:240px;}
   .hero-card h2{font-size:28px;}
-  .hero-card p{font-size:14.5px;max-width:68%;line-height:1.9;}
-
+  .hero-card p{font-size:14.5px;max-width:70%;line-height:1.9;}
   .section-title{margin:40px 0 16px;}
   .section-title h3{font-size:18px;}
-
-  /* 4-up stats on laptop+ */
-  .stat-grid{
-    grid-template-columns:repeat(4, minmax(0, 1fr));
-    gap:16px;
-  }
+  .stat-grid{grid-template-columns:repeat(4, minmax(0, 1fr));gap:16px;}
   .stat-box{padding:20px;}
   .stat-box b{font-size:32px;}
-
   .card{padding:22px 24px;border-radius:14px;}
-  .notice-card{padding:18px 20px;}
-  .list-item{padding:15px 10px;}
-  .list-item .meta b{font-size:15px;}
-
   .btn{max-width:400px;}
   .btn-row{max-width:560px;}
-  .btn-row .btn{max-width:none;}
-  .btn-sm{max-width:none;}
-
-  .chip-row{gap:10px;}
-  .chip{padding:10px 18px;font-size:13.5px;}
-
+  .btn-row .btn,.btn-sm{max-width:none;}
   .bottomnav{
+    width:min(720px, calc(100% - 48px));
+    max-width:min(720px, calc(100% - 48px));
     bottom:calc(16px + var(--safe-b));
-    width:calc(100% - 40px);
-    max-width:calc(var(--shell-max) - 40px);
     border-radius:20px;
     padding:8px;
   }
   .navbtn{padding:10px 4px 9px;font-size:11px;border-radius:14px;}
   .navbtn .ic{font-size:20px;}
-
-  /* Modal centered dialog on desktop */
-  .modal-back{
-    align-items:center;
-    justify-content:center;
-    padding:24px;
-  }
+  .modal-back{align-items:center;justify-content:center;padding:24px;}
   .modal-sheet{
     border-radius:20px;
     max-width:min(520px, 100%);
     max-height:min(88vh, 720px);
     padding:24px 28px 28px;
     margin:0 auto;
-    box-shadow:0 32px 80px rgba(4,4,20,.45);
   }
   .modal-handle{display:none;}
-
   .mcard-wrap{max-width:400px;margin-left:auto;margin-right:auto;}
   .point-tri{gap:12px;max-width:560px;}
   .point-tri b{font-size:24px;}
-  .offer-card{padding:18px 20px;}
-  .action-row{padding:14px 16px;}
-
-  #toastwrap{
-    max-width:min(400px, calc(var(--shell-max) - 48px));
-    bottom:calc(110px + var(--safe-b));
-  }
-
-  /* Readable line length */
-  .card > p,
-  .notice-card p,
-  .empty-state p,
-  .hero-card p{max-width:65ch;}
+  #toastwrap{max-width:min(400px, calc(100% - 48px));bottom:calc(110px + var(--safe-b));}
+  .card > p,.notice-card p,.empty-state p{max-width:65ch;}
 }
 
-/* —— Standard desktop: 1280–1439px —— */
+/* —— 1280–1439 —— */
 @media (min-width:1280px){
-  :root{ --shell-max:min(100vw - 64px, 1000px); }
-  #content{padding:32px 36px calc(124px + var(--safe-b));}
-  .topbar{padding:calc(18px + var(--safe-t)) 36px 28px;}
+  #content{padding:32px 48px calc(124px + var(--safe-b));max-width:1200px;}
+  .topbar{padding:calc(18px + var(--safe-t)) 48px 28px;}
   .topbar h2{font-size:33px;}
   .hero-card{padding:44px 40px 40px;min-height:250px;}
   .hero-card h2{font-size:29px;}
-  .hero-card p{max-width:60%;}
   .stat-grid{gap:18px;}
   .stat-box b{font-size:33px;}
-  .section-title h3{font-size:18.5px;}
   .card{padding:24px 26px;}
-  .bottomnav{
-    max-width:calc(var(--shell-max) - 48px);
-    width:calc(100% - 48px);
-  }
+  .bottomnav{width:min(760px, calc(100% - 64px));max-width:min(760px, calc(100% - 64px));}
   .modal-sheet{max-width:540px;}
 }
 
-/* —— Large desktop: 1440–1919px —— */
+/* —— 1440–1919 —— */
 @media (min-width:1440px){
-  :root{ --shell-max:min(100vw - 80px, 1080px); }
-  #content{padding:36px 40px calc(128px + var(--safe-b));}
-  .topbar{padding:calc(20px + var(--safe-t)) 40px 28px;}
+  #content{padding:36px 56px calc(128px + var(--safe-b));max-width:1280px;}
+  .topbar{padding:calc(20px + var(--safe-t)) 56px 28px;}
   .topbar h2{font-size:34px;}
-  .hero-card{
-    padding:48px 44px 42px;
-    min-height:260px;
-  }
+  .hero-card{padding:48px 44px 42px;min-height:260px;}
   .hero-card h2{font-size:30px;}
-  .hero-card p{font-size:15px;max-width:58%;}
+  .hero-card p{font-size:15px;max-width:55%;}
   .stat-box b{font-size:34px;}
-  .section-title h3{font-size:19px;}
   .card{padding:24px 28px;}
-  .bottomnav{max-width:calc(var(--shell-max) - 56px);}
+  .bottomnav{width:min(800px, calc(100% - 80px));}
   .modal-sheet{max-width:560px;}
-  .mcard-wrap{max-width:420px;}
 }
 
-/* —— Extra-large / 4K: 1920px+ —— */
+/* —— 1920+ : content capped, shell still full-bleed bg matches app —— */
 @media (min-width:1920px){
-  :root{ --shell-max:1120px; }
-  #shell{
-    box-shadow:0 0 0 1px rgba(255,255,255,.08),0 40px 100px rgba(0,0,0,.4);
-  }
-  #content{padding:40px 48px calc(132px + var(--safe-b));}
-  .topbar{padding:calc(22px + var(--safe-t)) 48px 30px;}
+  #content{padding:40px 64px calc(132px + var(--safe-b));max-width:1360px;}
+  .topbar{padding:calc(22px + var(--safe-t)) 64px 30px;}
   .hero-card{padding:52px 48px 46px;}
   .hero-card h2{font-size:32px;}
   .stat-box b{font-size:36px;}
   .card{padding:26px 30px;}
-  /* Keep content centered — do not stretch to full 2560px */
 }
 
-@media (min-width:2560px){
-  :root{ --shell-max:1200px; }
+/* Override old 481px “phone frame” side chrome if present */
+@media (min-width:481px){
+  body{
+    background:var(--bg) !important;
+    background-image:none !important;
+  }
+  #shell{
+    min-height:100vh;
+    box-shadow:none !important;
+    border-radius:0 !important;
+    max-width:100% !important;
+    width:100% !important;
+  }
 }
 
-/* —— Landscape phones (short height) —— */
+/* Landscape short phones */
 @media (max-width:900px) and (orientation:landscape) and (max-height:480px){
   #content{padding-bottom:calc(84px + var(--safe-b));}
   .bottomnav{bottom:calc(6px + var(--safe-b));padding:4px 5px;}
   .navbtn{padding:5px 2px 4px;font-size:9.5px;}
-  .navbtn .ic{font-size:16px;}
-  .topbar{padding:calc(8px + var(--safe-t)) 16px 14px;}
   .topbar h2{font-size:20px;margin-top:8px;}
   .hero-card{min-height:auto;padding:20px 18px;}
 }
 
-/* —— Forms: two columns on wide screens when side-by-side fields exist —— */
 @media (min-width:768px){
-  .form-grid-2,
-  .fields-2col{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:14px 16px;
-  }
-  .form-grid-2 .field-full,
-  .fields-2col .field-full{grid-column:1 / -1;}
+  .form-grid-2,.fields-2col{display:grid;grid-template-columns:1fr 1fr;gap:14px 16px;}
+  .form-grid-2 .field-full,.fields-2col .field-full{grid-column:1 / -1;}
 }
-
-/* —— Tables / wide lists: scroll container without page overflow —— */
 @media (max-width:767px){
-  .table-wrap,
-  .data-table-wrap{
-    width:100%;
-    overflow-x:auto;
-    -webkit-overflow-scrolling:touch;
-  }
-  .table-wrap table,
-  .data-table-wrap table{min-width:480px;}
+  .table-wrap,.data-table-wrap{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  .table-wrap table,.data-table-wrap table{min-width:480px;}
 }
 @media (min-width:768px){
-  .table-wrap table,
-  .data-table-wrap table{width:100%;min-width:0;}
-}
-
-/* —— Touch targets stay usable; desktop can be slightly denser —— */
-@media (min-width:1024px){
-  .list-item:hover{padding-left:12px;}
+  .table-wrap table,.data-table-wrap table{width:100%;min-width:0;}
 }
 
 
