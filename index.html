@@ -2244,13 +2244,13 @@ function screenAdminDashboard(){
       <div class="stat-box" onclick="openStatDetail('active')"><b>${active}</b><span>সক্রিয় সদস্য</span></div>
       <div class="stat-box" onclick="openStatDetail('pending')"><b>${pendingApprovals}</b><span>অনুমোদনের অপেক্ষায়</span></div>
       <div class="stat-box" onclick="openStatDetail('banned')"><b>${banned}</b><span>নিষিদ্ধ/স্থগিত</span></div>
-      <div class="stat-box" onclick="openIncomeHistory()"><b>৳${totalContribution()}</b><span>মোট বার্ষিক চাঁদা আদায়</span></div>
+      <div class="stat-box" onclick="openIncomeHistory('contribution')"><b>৳${totalContribution()}</b><span>মোট বার্ষিক চাঁদা আদায়</span></div>
       <div class="stat-box" onclick="openStatDetail('activities')"><b>${db.activities.length}</b><span>মোট কার্যক্রম</span></div>
     </div>
 
     <div class="section-title"><h3><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4v6a6 6 0 0012 0V4M6 4h2M16 4h2M12 16v2a4 4 0 108 0v-3"/></svg> কারেন্ট ব্যালেন্স</h3></div>
     <div class="card">
-      <div class="list-item" style="cursor:pointer;padding:8px 4px;" onclick="openIncomeHistory()">
+      <div class="list-item" style="cursor:pointer;padding:8px 4px;" onclick="openIncomeHistory('fund')">
         <div class="ico" style="background:var(--success-bg);color:var(--success);"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div>
         <div class="meta"><b>মোট তহবিল</b><span>বিস্তারিত হিস্টোরি দেখতে ট্যাপ করুন</span></div>
         <div class="tail" style="font-weight:700;color:var(--navy);">৳${totalIncome()}</div>
@@ -2275,15 +2275,18 @@ function totalContribution(){
 }
 function totalExpense(){ return db.expenses.reduce((s,e)=>s+Number(e.amount),0); }
 function currentBalance(){ return totalIncome() - totalExpense(); }
-function openIncomeHistory(){
+function openIncomeHistory(mode){
+  /* mode: 'contribution' = চাঁদা আদায় থেকে; 'fund' বা খালি = মোট তহবিল থেকে */
+  window._incomeAddMode = (mode==='contribution') ? 'contribution' : 'fund';
   const isSuper = session.role==='superadmin';
   const paymentRows = db.payments.filter(p=>p.status==='approved').map(p=>({id:p.id,type:'payment',amount:p.amount, description:`চাঁদা — ${p.memberName} (${p.offer})`, date:p.date, addedBy:'সিস্টেম'}));
   const rows = [...db.donations.map(d=>({...d,type:'donation'})), ...paymentRows];
+  const titleTxt = window._incomeAddMode==='contribution' ? 'চাঁদা আদায় হিস্টোরি' : 'মোট তহবিল হিস্টোরি';
   openModal(`
     <div class="modal-title">
-      <h3><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg> মোট তহবিল হিস্টোরি</h3>
+      <h3><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg> ${titleTxt}</h3>
       <div style="display:flex;gap:8px;">
-        ${isSuper?`<button onclick="closeModal(); openAddIncome();" style="background:var(--navy);color:#fff;border:none;width:30px;height:30px;border-radius:50%;font-size:16px;cursor:pointer;">+</button>`:''}
+        ${isSuper?`<button onclick="closeModal(); openAddIncome(window._incomeAddMode);" style="background:var(--navy);color:#fff;border:none;width:30px;height:30px;border-radius:50%;font-size:16px;cursor:pointer;">+</button>`:''}
         <button onclick="closeModal()"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
       </div>
     </div>
@@ -2309,7 +2312,7 @@ function saveEditIncome(id,type){
   if(!row||amount<=0||!desc){toast('সঠিক পরিমাণ ও বিবরণ দিন','<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M10.3 3.9L1.8 18.1A2 2 0 003.5 21h17a2 2 0 001.7-2.9L13.7 3.9a2 2 0 00-3.4 0zM12 9v4M12 17h.01"/></svg>');return;}
   row.amount=amount;
   if(type==='donation')row.description=desc; else row.offer=desc;
-  addAudit('তহবিল হিস্টোরি সম্পাদনা করেছেন',`${desc} · ৳${amount}`);saveDB();openIncomeHistory();toast('তহবিলের হিস্টোরি আপডেট হয়েছে','<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 13l5 5L20 7"/></svg>');
+  addAudit('তহবিল হিস্টোরি সম্পাদনা করেছেন',`${desc} · ৳${amount}`);saveDB();openIncomeHistory(window._incomeAddMode||'fund');toast('তহবিলের হিস্টোরি আপডেট হয়েছে','<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 13l5 5L20 7"/></svg>');
 }
 function deleteIncomeRecord(id,type){
   if(session.role!=='superadmin')return;
@@ -2318,7 +2321,7 @@ function deleteIncomeRecord(id,type){
     const p=db.payments.find(x=>String(x.id)===String(id));
     if(p){const m=getMember(p.member);if(m&&Array.isArray(m.paidMonths)){m.paidMonths=m.paidMonths.filter(x=>!(p.months||[]).includes(x));m.contribution=m.paidMonths.length>=12?'PAID':'DUE';}db.payments=db.payments.filter(x=>String(x.id)!==String(id));}
   } else db.donations=db.donations.filter(x=>String(x.id)!==String(id));
-  addAudit('তহবিল হিস্টোরি মুছে ফেলেছেন',String(id));saveDB();openIncomeHistory();toast('হিস্টোরি মুছে ফেলা হয়েছে','<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14zM10 11v6M14 11v6"/></svg>');
+  addAudit('তহবিল হিস্টোরি মুছে ফেলেছেন',String(id));saveDB();openIncomeHistory(window._incomeAddMode||'fund');toast('হিস্টোরি মুছে ফেলা হয়েছে','<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14zM10 11v6M14 11v6"/></svg>');
 }
 function openEditExpense(id){
   if(session.role!=='superadmin')return;const e=db.expenses.find(x=>Number(x.id)===Number(id));if(!e)return;
@@ -2327,11 +2330,15 @@ function openEditExpense(id){
 function saveEditExpense(id){if(session.role!=='superadmin')return;const e=db.expenses.find(x=>Number(x.id)===Number(id));const amt=Number(document.getElementById('editExpAmt').value),desc=document.getElementById('editExpDesc').value.trim();if(!e||amt<=0||!desc){toast('সঠিক পরিমাণ ও বিবরণ দিন','<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M10.3 3.9L1.8 18.1A2 2 0 003.5 21h17a2 2 0 001.7-2.9L13.7 3.9a2 2 0 00-3.4 0zM12 9v4M12 17h.01"/></svg>');return;}e.amount=amt;e.description=desc;addAudit('ব্যয় হিস্টোরি সম্পাদনা করেছেন',`${desc} · ৳${amt}`);saveDB();openExpenseHistory();toast('ব্যয়ের হিস্টোরি আপডেট হয়েছে','<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 13l5 5L20 7"/></svg>');}
 function deleteExpenseRecord(id){if(session.role!=='superadmin')return;if(!confirm('এই ব্যয়ের হিস্টোরি মুছে ফেলতে চান?'))return;const e=db.expenses.find(x=>Number(x.id)===Number(id));db.expenses=db.expenses.filter(x=>Number(x.id)!==Number(id));addAudit('ব্যয় হিস্টোরি মুছে ফেলেছেন',e?e.description:String(id));saveDB();openExpenseHistory();toast('ব্যয়ের হিস্টোরি মুছে ফেলা হয়েছে','<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14zM10 11v6M14 11v6"/></svg>');}
 
-function openAddIncome(){
+function openAddIncome(mode){
+  window._incomeAddMode = (mode==='contribution') ? 'contribution' : (mode==='fund' ? 'fund' : (window._incomeAddMode||'fund'));
+  const isChanda = window._incomeAddMode==='contribution';
+  const title = isChanda ? 'নতুন চাঁদা যোগ করুন' : 'নতুন আয়/অনুদান যোগ করুন';
+  const ph = isChanda ? 'যেমন: নগদ চাঁদা আদায়' : 'যেমন: ঈদ উপলক্ষে স্পনসর অনুদান';
   openModal(`
-    <div class="modal-title"><h3><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg> নতুন আয়/অনুদান যোগ করুন</h3><button onclick="closeModal()"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
+    <div class="modal-title"><h3><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg> ${title}</h3><button onclick="closeModal()"><svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
     <label class="field"><span>টাকার পরিমাণ</span><input id="incAmt" type="number" min="1" placeholder="যেমন: ৫০০০"></label>
-    <label class="field"><span>বিবরণ</span><textarea id="incDesc" placeholder="যেমন: ঈদ উপলক্ষে স্পনসর অনুদান"></textarea></label>
+    <label class="field"><span>বিবরণ</span><textarea id="incDesc" placeholder="${ph}"></textarea></label>
     <button class="btn btn-primary" onclick="submitIncome()">Submit</button>
   `);
 }
@@ -2340,12 +2347,37 @@ function submitIncome(){
   const desc = document.getElementById('incDesc').value.trim();
   if(!amt||amt<=0){ toast('সঠিক পরিমাণ দিন','<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M10.3 3.9L1.8 18.1A2 2 0 003.5 21h17a2 2 0 001.7-2.9L13.7 3.9a2 2 0 00-3.4 0zM12 9v4M12 17h.01"/></svg>'); return; }
   if(!desc){ toast('বিবরণ লিখুন','<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M10.3 3.9L1.8 18.1A2 2 0 003.5 21h17a2 2 0 001.7-2.9L13.7 3.9a2 2 0 00-3.4 0zM12 9v4M12 17h.01"/></svg>'); return; }
-  const seq = db.nextDonationSeq++;
-  db.donations.unshift({id:seq, amount:amt, description:desc, date:'আজ', addedBy:currentMember().name});
-  addAudit('আয়/অনুদান যোগ করেছেন', `৳${amt} — ${desc}`);
-  if(session.role==='admin') notifySuperAdmins('এডমিন আয় যোগ করেছেন', `${currentMember().name} — ৳${amt} — ${desc}`, 'payment');
-  saveDB(); toast('যোগ করা হয়েছে','<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 13l5 5L20 7"/></svg>');
-  openIncomeHistory();
+  const who = (typeof currentMember==='function' && currentMember()) ? currentMember().name : 'অ্যাডমিন';
+  const mode = window._incomeAddMode || 'fund';
+  if(mode==='contribution'){
+    /* চাঁদা আদায় থেকে → মোট চাঁদা আদায় + মোট তহবিল উভয়ে যোগ */
+    db.payments.unshift({
+      id: 'UA-PAY-MANUAL-'+Date.now(),
+      member: null,
+      memberName: who,
+      offer: desc,
+      months: [],
+      amount: amt,
+      txid: 'MANUAL-ENTRY',
+      date: new Date().toLocaleDateString('bn-BD'),
+      status: 'approved',
+      manual: true
+    });
+    addAudit('চাঁদা যোগ করেছেন', '৳'+amt+' — '+desc);
+    if(session.role==='admin') notifySuperAdmins('এডমিন চাঁদা যোগ করেছেন', who+' — ৳'+amt+' — '+desc, 'payment');
+    toast('যোগ হয়েছে — মোট চাঁদা আদায় ও মোট তহবিল আপডেট','<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 13l5 5L20 7"/></svg>');
+  } else {
+    /* মোট তহবিল থেকে → শুধু অনুদান/আয় (মোট তহবিল); চাঁদা আদায় বাড়ে না */
+    if(typeof db.nextDonationSeq!=='number') db.nextDonationSeq = (db.donations&&db.donations.length?db.donations.length:0)+1;
+    const seq = db.nextDonationSeq++;
+    db.donations.unshift({id:seq, amount:amt, description:desc, date:new Date().toLocaleDateString('bn-BD'), addedBy:who});
+    addAudit('আয়/অনুদান যোগ করেছেন', '৳'+amt+' — '+desc);
+    if(session.role==='admin') notifySuperAdmins('এডমিন আয় যোগ করেছেন', who+' — ৳'+amt+' — '+desc, 'payment');
+    toast('যোগ হয়েছে — শুধু মোট তহবিল আপডেট','<svg class="svgi" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 13l5 5L20 7"/></svg>');
+  }
+  saveDB();
+  if(typeof render==='function') render();
+  openIncomeHistory(mode);
 }
 function openExpenseHistory(){
   const isSuper = session.role==='superadmin';
