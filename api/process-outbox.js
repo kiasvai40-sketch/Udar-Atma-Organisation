@@ -115,6 +115,9 @@ module.exports = async function handler(req, res) {
                 priority: 'high',
                 defaultSound: true,
                 defaultVibrateTimings: true,
+                icon: 'ic_stat_udar',
+                color: '#0F0F54',
+                imageUrl: 'https://udar-atma.web.app/icon-192.png',
               },
             },
           });
