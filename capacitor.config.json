@@ -13,8 +13,7 @@
         "sound",
         "alert"
       ],
-      "smallIcon": "ic_stat_udar",
-      "iconColor": "#0F0F54"
+      "smallIcon": "ic_stat_udar"
     }
   },
   "android": {
