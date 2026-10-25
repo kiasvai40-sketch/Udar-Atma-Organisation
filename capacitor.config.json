@@ -14,7 +14,7 @@
         "alert"
       ],
       "smallIcon": "ic_stat_udar",
-      "iconColor": "#000000"
+      "iconColor": "#0F0F54"
     }
   },
   "android": {
