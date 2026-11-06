@@ -4,6 +4,7 @@
     "public": ".",
     "ignore": [
       "firebase.json",
+      "release.keystore",
       "**/.*",
       "**/node_modules/**",
       "api/**",
